@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -75,6 +77,7 @@ export async function GET(req: Request) {
         title: s.title,
         chairNumber: s.chairNumber,
         status: s.status,
+        statusReason: (s as any).statusReason || null,
         rating: s.rating,
         payType: s.payType,
         baseSalary: s.baseSalary,
@@ -189,6 +192,7 @@ export async function PATCH(req: Request) {
       title,
       chairNumber,
       status,
+      statusReason,
       payType,
       baseSalary,
       commissionRate,
@@ -209,6 +213,7 @@ export async function PATCH(req: Request) {
         ...(title && { title: title.trim() }),
         ...(chairNumber !== undefined && { chairNumber: Number(chairNumber) }),
         ...(status && { status }),
+        ...(statusReason !== undefined && { statusReason: statusReason?.trim() || null }),
         ...(payType && { payType }),
         ...(baseSalary !== undefined && { baseSalary: Number(baseSalary) }),
         ...(commissionRate !== undefined && { commissionRate: Number(commissionRate) }),

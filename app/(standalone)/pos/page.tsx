@@ -23,6 +23,7 @@ import {
   Search,
   Tag,
   AlertCircle,
+  Users,
 } from "lucide-react";
 
 export default function CashierPosPage() {
@@ -33,9 +34,11 @@ export default function CashierPosPage() {
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [branches, setBranches] = useState<any[]>([]);
 
-  // Tickets & Products
+  // Tickets & Products & Specialists
   const [tickets, setTickets] = useState<any[]>([]);
   const [retailProducts, setRetailProducts] = useState<any[]>([]);
+  const [specialists, setSpecialists] = useState<any[]>([]);
+  const [showShiftModal, setShowShiftModal] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   // Active Ticket Selected for Checkout
@@ -81,16 +84,18 @@ export default function CashierPosPage() {
   // Load Data
   const fetchPosData = async () => {
     try {
-      const [resB, resT, resP] = await Promise.all([
-        fetch("/api/branches"),
-        fetch(`/api/tickets?branchId=${selectedBranchId || "ALL"}&activeOnly=true`),
-        fetch(`/api/products?branchId=${selectedBranchId || "ALL"}`),
+      const [resB, resT, resP, resSpec] = await Promise.all([
+        fetch("/api/branches", { cache: "no-store" }),
+        fetch(`/api/tickets?branchId=${selectedBranchId || "ALL"}&activeOnly=true`, { cache: "no-store" }),
+        fetch(`/api/products?branchId=${selectedBranchId || "ALL"}`, { cache: "no-store" }),
+        fetch(`/api/specialists?branchId=${selectedBranchId || "ALL"}`, { cache: "no-store" }),
       ]);
 
-      const [dataB, dataT, dataP] = await Promise.all([
+      const [dataB, dataT, dataP, dataSpec] = await Promise.all([
         resB.json(),
         resT.json(),
         resP.json(),
+        resSpec.json(),
       ]);
 
       if (dataB.success && dataB.branches) {
@@ -112,10 +117,36 @@ export default function CashierPosPage() {
       if (dataP.success && dataP.products) {
         setRetailProducts(dataP.products);
       }
+
+      if (dataSpec.success && dataSpec.specialists) {
+        setSpecialists(dataSpec.specialists);
+      }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickShiftStatus = async (specId: string, status: string, reason: string) => {
+    try {
+      const res = await fetch("/api/specialists", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: specId,
+          status,
+          statusReason: reason,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchPosData();
+      } else {
+        alert(data.error || "فشل تحديث الوردية");
+      }
+    } catch {
+      alert("تعذر الاتصال بالخادم");
     }
   };
 
@@ -277,6 +308,14 @@ export default function CashierPosPage() {
               {currentUser?.branchName || "الفرع الحالي"}
             </span>
           )}
+
+          <button
+            onClick={() => setShowShiftModal(true)}
+            className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>ورديات وحضور المختصين 💈</span>
+          </button>
 
           <button
             onClick={fetchPosData}
@@ -556,6 +595,123 @@ export default function CashierPosPage() {
           </div>
         </div>
       </main>
+
+      {/* ─────────────────────────────────────────────────────────────
+          CASHIER SPECIALISTS SHIFT ATTENDANCE DRAWER / MODAL
+         ───────────────────────────────────────────────────────────── */}
+      {showShiftModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print" dir="rtl">
+          <div className="relative w-full max-w-2xl bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">إدارة ورديات وحضور المختصين اليوم</h3>
+                  <p className="text-xs text-slate-400">تفعيل حضور المختص لبدء استقبال الحجوزات أو تعطيله عند المغادرة/الإجازة 💈</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowShiftModal(false)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+              {specialists.map((spec) => (
+                <div key={spec.id} className="p-4 rounded-2xl bg-[#181824] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-amber-500/40 transition">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-amber-400 bg-black shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={spec.photo || "/logo.jpg"} alt={spec.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-black text-sm text-white">{spec.name}</h4>
+                        <span className="text-[10px] text-amber-300 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                          كرسي #{spec.chairNumber}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400">{spec.title}</p>
+                      {spec.statusReason && (
+                        <p className="text-[10px] text-amber-300/80 pt-0.5">
+                          📌 {spec.statusReason}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Shift Status Selector Chips */}
+                  <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleQuickShiftStatus(spec.id, "AVAILABLE", "حاضر وبدأ الوردية")}
+                      className={`py-1.5 px-2.5 rounded-xl text-xs font-bold transition border ${
+                        spec.status === "AVAILABLE"
+                          ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-md font-black"
+                          : "bg-white/5 hover:bg-emerald-500/20 text-emerald-300 border-white/5"
+                      }`}
+                    >
+                      بدأ الوردية 🟢
+                    </button>
+                    <button
+                      onClick={() => handleQuickShiftStatus(spec.id, "WITH_CLIENT", "على الكرسي مع عميل")}
+                      className={`py-1.5 px-2.5 rounded-xl text-xs font-bold transition border ${
+                        spec.status === "WITH_CLIENT"
+                          ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black"
+                          : "bg-white/5 hover:bg-amber-500/20 text-amber-300 border-white/5"
+                      }`}
+                    >
+                      على الكرسي 💺
+                    </button>
+                    <button
+                      onClick={() => handleQuickShiftStatus(spec.id, "BREAK", "استراحة قصيرة")}
+                      className={`py-1.5 px-2.5 rounded-xl text-xs font-bold transition border ${
+                        spec.status === "BREAK"
+                          ? "bg-sky-500 text-slate-950 border-sky-400 shadow-md font-black"
+                          : "bg-white/5 hover:bg-sky-500/20 text-sky-300 border-white/5"
+                      }`}
+                    >
+                      استراحة ☕
+                    </button>
+                    <button
+                      onClick={() => handleQuickShiftStatus(spec.id, "OFF_DUTY", "انتهت الوردية ومشي")}
+                      className={`py-1.5 px-2.5 rounded-xl text-xs font-bold transition border ${
+                        spec.status === "OFF_DUTY"
+                          ? "bg-slate-700 text-white border-slate-600 shadow-md font-black"
+                          : "bg-white/5 hover:bg-slate-700 text-slate-300 border-white/5"
+                      }`}
+                    >
+                      مشي / انتهى اليوم 🏠
+                    </button>
+                    <button
+                      onClick={() => handleQuickShiftStatus(spec.id, "DAY_OFF", "إجازة رسمية")}
+                      className={`py-1.5 px-2.5 rounded-xl text-xs font-bold transition border ${
+                        spec.status === "DAY_OFF"
+                          ? "bg-purple-600 text-white border-purple-500 shadow-md font-black"
+                          : "bg-white/5 hover:bg-purple-600/30 text-purple-300 border-white/5"
+                      }`}
+                    >
+                      إجازة 🏖️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-white/10 flex justify-end">
+              <button
+                onClick={() => setShowShiftModal(false)}
+                className="py-2 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+              >
+                إغلاق النافذة ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─────────────────────────────────────────────────────────────
           3. THERMAL RECEIPT PRINT TEMPLATE (80MM)

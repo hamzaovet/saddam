@@ -119,6 +119,12 @@ export default function AdminPage() {
   const [payoutAmount, setPayoutAmount] = useState<number>(500);
   const [payoutNotes, setPayoutNotes] = useState<string>("");
 
+  // Shift Attendance Status Modal
+  const [showShiftStatusModal, setShowShiftStatusModal] = useState(false);
+  const [statusTargetSpecialist, setStatusTargetSpecialist] = useState<any>(null);
+  const [newShiftStatus, setNewShiftStatus] = useState<string>("AVAILABLE");
+  const [shiftStatusReason, setShiftStatusReason] = useState<string>("");
+
   // Service Modal (Create/Edit)
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [editingService, setEditingService] = useState<any>(null);
@@ -128,6 +134,9 @@ export default function AdminPage() {
     price: 150,
     durationMinutes: 30,
     description: "",
+    image: "",
+    sortOrder: 0,
+    isActive: true,
   });
 
   // Offer Modal (Create/Edit)
@@ -819,6 +828,72 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteSpecialist = async (id: string, name: string) => {
+    if (!confirm(`هل أنت متأكد من حذف المتخصص "${name}" نهائياً من السيستم؟`)) return;
+    try {
+      const res = await fetch(`/api/specialists?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+      } else {
+        alert(data.error || "فشل حذف المتخصص");
+      }
+    } catch {
+      alert("تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleOpenShiftModal = (spec: any) => {
+    setStatusTargetSpecialist(spec);
+    setNewShiftStatus(spec.status || "AVAILABLE");
+    setShiftStatusReason(spec.statusReason || "");
+    setShowShiftStatusModal(true);
+  };
+
+  const handleSaveShiftStatus = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!statusTargetSpecialist) return;
+    try {
+      const res = await fetch("/api/specialists", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: statusTargetSpecialist.id,
+          status: newShiftStatus,
+          statusReason: shiftStatusReason.trim() || null,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+        setShowShiftStatusModal(false);
+        setStatusTargetSpecialist(null);
+      } else {
+        alert(data.error || "فشل تحديث حالة الوردية");
+      }
+    } catch {
+      alert("تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleQuickSetStatus = async (spec: any, status: string, reason: string) => {
+    try {
+      const res = await fetch("/api/specialists", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: spec.id,
+          status,
+          statusReason: reason,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+      }
+    } catch {}
+  };
+
   const handleRecordPayout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payoutSpecialist) return;
@@ -875,6 +950,50 @@ export default function AdminPage() {
     } catch {
       alert("تعذر الاتصال بالخادم");
     }
+  };
+
+  const handleOpenEditService = (srv: any) => {
+    setEditingService(srv);
+    setServiceForm({
+      nameAr: srv.nameAr || "",
+      category: srv.category || "HAIR",
+      price: srv.price || 150,
+      durationMinutes: srv.durationMinutes || 30,
+      description: srv.description || "",
+      image: srv.image || "",
+      sortOrder: srv.sortOrder || 0,
+      isActive: srv.isActive !== false,
+    });
+    setShowServiceModal(true);
+  };
+
+  const handleDeleteService = async (id: string, name: string) => {
+    if (!confirm(`هل أنت متأكد من حذف الخدمة "${name}" نهائياً من السيستم؟`)) return;
+    try {
+      const res = await fetch(`/api/services?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+      } else {
+        alert(data.error || "فشل حذف الخدمة");
+      }
+    } catch {
+      alert("تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleToggleServiceActive = async (srv: any) => {
+    try {
+      const res = await fetch("/api/services", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: srv.id, isActive: !srv.isActive }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+      }
+    } catch {}
   };
 
   // Branch Actions
@@ -1710,37 +1829,122 @@ export default function AdminPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {specialists.map((spec) => (
-                <div key={spec.id} className="p-5 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={spec.photo || "/logo.jpg"} alt={spec.name} className="w-full h-full object-cover" />
+                <div key={spec.id} className="p-5 rounded-3xl bg-[#14141e] border-2 border-amber-500/30 space-y-4 shadow-xl flex flex-col justify-between hover:border-amber-400 transition">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={spec.photo || "/logo.jpg"} alt={spec.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-black text-sm text-white truncate">{spec.name}</h4>
+                        <p className="text-[11px] text-slate-400 truncate">{spec.title}</p>
+                        <span className="text-[10px] text-amber-300 font-bold block pt-0.5">
+                          {spec.branch?.name} • كرسي {spec.chairNumber}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-black text-sm text-white">{spec.name}</h4>
-                      <p className="text-[11px] text-slate-400">{spec.title}</p>
-                      <span className="text-[10px] text-amber-300 font-bold block pt-0.5">
-                        {spec.branch?.name} • كرسي {spec.chairNumber}
-                      </span>
+
+                    {/* Shift Attendance Status & Reasons */}
+                    <div className="p-3 rounded-2xl bg-black/60 border border-white/5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400 font-bold">حالة الوردية والحضور:</span>
+                        <span className={`text-[10px] font-black py-0.5 px-2.5 rounded-full border ${
+                          spec.status === "AVAILABLE"
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                            : spec.status === "WITH_CLIENT"
+                            ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                            : spec.status === "BREAK"
+                            ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
+                            : spec.status === "OFF_DUTY"
+                            ? "bg-slate-700/80 text-slate-300 border-slate-600"
+                            : spec.status === "DAY_OFF"
+                            ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                            : "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                        }`}>
+                          {spec.status === "AVAILABLE" && "حاضر وبدأ الوردية 🟢"}
+                          {spec.status === "WITH_CLIENT" && "على الكرسي مع عميل 💺"}
+                          {spec.status === "BREAK" && "استراحة مؤقتة ☕"}
+                          {spec.status === "OFF_DUTY" && "انتهت الوردية ومشي 🏠"}
+                          {spec.status === "DAY_OFF" && "إجازة رسمية 🏖️"}
+                          {spec.status === "ABSENT" && "غائب / معطل 🔴"}
+                        </span>
+                      </div>
+
+                      {spec.statusReason && (
+                        <p className="text-[10px] text-amber-300/90 bg-amber-500/5 px-2.5 py-1 rounded-xl border border-amber-500/15">
+                          📌 السبب: {spec.statusReason}
+                        </p>
+                      )}
+
+                      {/* Quick Shift Controls */}
+                      <div className="flex items-center gap-1 pt-1 border-t border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => handleQuickSetStatus(spec, "AVAILABLE", "حاضر وبدأ الوردية")}
+                          className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
+                            spec.status === "AVAILABLE"
+                              ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm"
+                              : "bg-white/5 hover:bg-emerald-500/20 text-emerald-300 border-white/5"
+                          }`}
+                          title="تفعيل وحضور - بدأ الوردية"
+                        >
+                          بدأ 🟢
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickSetStatus(spec, "WITH_CLIENT", "على الكرسي مع عميل")}
+                          className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
+                            spec.status === "WITH_CLIENT"
+                              ? "bg-amber-500 text-slate-950 border-amber-400 shadow-sm"
+                              : "bg-white/5 hover:bg-amber-500/20 text-amber-300 border-white/5"
+                          }`}
+                          title="على الكرسي حالياً"
+                        >
+                          كرسي 💺
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickSetStatus(spec, "BREAK", "استراحة راحة")}
+                          className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
+                            spec.status === "BREAK"
+                              ? "bg-sky-500 text-slate-950 border-sky-400 shadow-sm"
+                              : "bg-white/5 hover:bg-sky-500/20 text-sky-300 border-white/5"
+                          }`}
+                          title="استراحة مؤقتة"
+                        >
+                          استراحة ☕
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenShiftModal(spec)}
+                          className="py-1 px-2 rounded-lg text-[10px] font-bold bg-white/5 hover:bg-white/10 text-amber-300 border border-white/10"
+                          title="تحديد سبب التعطيل أو إجازة أو نهاية الوردية"
+                        >
+                          تعطيل/إجازة ⚙️
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Payroll Breakdown */}
+                    <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">نظام الأجر:</span>
+                        <span className="font-bold text-amber-300">{spec.payType}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">الراتب الأساسي:</span>
+                        <span className="font-mono text-white">{spec.baseSalary} ج.م</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">نسبة العمولة:</span>
+                        <span className="font-mono text-amber-400 font-bold">{spec.commissionRate}%</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">نظام الأجر:</span>
-                      <span className="font-bold text-amber-300">{spec.payType}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">الراتب الأساسي:</span>
-                      <span className="font-mono text-white">{spec.baseSalary} ج.م</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">نسبة العمولة:</span>
-                      <span className="font-mono text-amber-400 font-bold">{spec.commissionRate}%</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
+                  {/* Actions: Payout, Edit, Delete */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                     <button
                       onClick={() => {
                         setPayoutSpecialist(spec);
@@ -1769,9 +1973,17 @@ export default function AdminPage() {
                         });
                         setShowSpecialistModal(true);
                       }}
-                      className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-amber-300 border border-white/10 transition"
+                      className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition"
+                      title="تعديل بيانات المتخصص"
                     >
                       <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSpecialist(spec.id, spec.name)}
+                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition"
+                      title="حذف المتخصص نهائياً"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -1781,14 +1993,14 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 6: SERVICES CATALOG
+            TAB 6: SERVICES CATALOG (FULLY DYNAMIC & EDITABLE)
            ======================================================== */}
         {activeTab === "services" && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-base font-black text-white">قائمة الخدمات التجميلية وأسعار الحلاقة</h3>
-                <p className="text-xs text-slate-400">إضافة وتعديل الخدمات والأسعار والمدد الزمنية 💈</p>
+                <h3 className="text-base font-black text-white">قائمة الخدمات التجميلية وأسعار الحلاقة (ربط مباشر باللاندينج)</h3>
+                <p className="text-xs text-slate-400">إضافة وتعديل وحذف الخدمات والأسعار وتفعيلها ديناميكياً على الصفحة الرئيسية 💈</p>
               </div>
 
               <button
@@ -1800,6 +2012,9 @@ export default function AdminPage() {
                     price: 150,
                     durationMinutes: 30,
                     description: "",
+                    image: "",
+                    sortOrder: 0,
+                    isActive: true,
                   });
                   setShowServiceModal(true);
                 }}
@@ -1812,15 +2027,74 @@ export default function AdminPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {services.map((srv) => (
-                <div key={srv.id} className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] py-0.5 px-2 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 font-bold">
+                <div key={srv.id} className="rounded-3xl bg-[#14141e] border-2 border-amber-500/30 overflow-hidden flex flex-col justify-between shadow-xl hover:border-amber-400 transition group">
+                  {/* Service Image Banner Preview */}
+                  <div className="relative h-32 w-full bg-black overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={
+                        srv.image ||
+                        "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&auto=format&fit=crop&q=80"
+                      }
+                      alt={srv.nameAr}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#14141e] via-black/30 to-transparent" />
+                    
+                    <span className="absolute top-2.5 right-2.5 py-0.5 px-2.5 rounded-xl bg-black/75 backdrop-blur-md text-[10px] font-bold text-amber-300 border border-white/10">
                       {srv.category}
                     </span>
-                    <span className="font-mono text-xs font-black text-amber-400">{srv.price} ج.م</span>
+                    <span className="absolute top-2.5 left-2.5 py-0.5 px-2.5 rounded-xl text-[10px] font-bold bg-black/75 backdrop-blur-md text-slate-300 border border-white/10 font-mono">
+                      {srv.durationMinutes || 30} دقيقة
+                    </span>
+                    <span className={`absolute bottom-2.5 right-2.5 py-0.5 px-2 rounded-full text-[10px] font-black ${
+                      srv.isActive !== false ? "bg-emerald-500/90 text-slate-950" : "bg-rose-500/90 text-white"
+                    }`}>
+                      {srv.isActive !== false ? "نشط ومتاح 🟢" : "معطل 🔴"}
+                    </span>
                   </div>
-                  <h4 className="font-black text-sm text-white">{srv.nameAr}</h4>
-                  <p className="text-xs text-slate-400 line-clamp-2">{srv.description}</p>
+
+                  <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-black text-sm text-white group-hover:text-amber-300 transition">{srv.nameAr}</h4>
+                        <span className="font-mono text-sm font-black text-amber-400">{srv.price} ج.م</span>
+                      </div>
+                      {srv.description && (
+                        <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">{srv.description}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-3 mt-2">
+                      <button
+                        onClick={() => handleToggleServiceActive(srv)}
+                        className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition border ${
+                          srv.isActive !== false
+                            ? "bg-rose-500/10 text-rose-300 border-rose-500/20 hover:bg-rose-500/20"
+                            : "bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/20"
+                        }`}
+                      >
+                        {srv.isActive !== false ? "تعطيل 🚫" : "تفعيل 🟢"}
+                      </button>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEditService(srv)}
+                          className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1 transition"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          <span>تعديل</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteService(srv.id, srv.nameAr)}
+                          className="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition"
+                          title="حذف الخدمة"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -2056,7 +2330,43 @@ export default function AdminPage() {
                   required
                   value={specForm.name}
                   onChange={(e) => setSpecForm({ ...specForm, name: e.target.value })}
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                  placeholder="مثال: كابتن صدام"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">المسمى المهني والتخصص:</label>
+                  <input
+                    type="text"
+                    value={specForm.title}
+                    onChange={(e) => setSpecForm({ ...specForm, title: e.target.value })}
+                    placeholder="كبير خبراء التصفيف والحلاقة"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">رقم الهاتف:</label>
+                  <input
+                    type="text"
+                    value={specForm.phone}
+                    onChange={(e) => setSpecForm({ ...specForm, phone: e.target.value })}
+                    placeholder="010XXXXXXXX"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">رابط الصورة الشخصية (URL):</label>
+                <input
+                  type="text"
+                  value={specForm.photo}
+                  onChange={(e) => setSpecForm({ ...specForm, photo: e.target.value })}
+                  placeholder="https://... أو /logo.jpg"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -2450,24 +2760,98 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 5. SERVICE MODAL */}
-      {showServiceModal && (
+      {/* SHIFT ATTENDANCE & REASON MODAL */}
+      {showShiftStatusModal && statusTargetSpecialist && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
           <div className="relative w-full max-w-sm bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-sm font-black text-white">إضافة / تعديل خدمة تجميل</h3>
+              <div>
+                <h3 className="text-sm font-black text-white">تحديد حالة الوردية والحضور</h3>
+                <p className="text-[11px] text-amber-300 font-bold">{statusTargetSpecialist.name}</p>
+              </div>
+              <button onClick={() => setShowShiftStatusModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <form onSubmit={handleSaveShiftStatus} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">الحالة المطلوبة:</label>
+                <select
+                  value={newShiftStatus}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewShiftStatus(val);
+                    if (val === "AVAILABLE" && !shiftStatusReason) setShiftStatusReason("حاضر وبدأ الوردية");
+                    if (val === "OFF_DUTY" && !shiftStatusReason) setShiftStatusReason("انتهت الوردية وغادر الصالون");
+                    if (val === "DAY_OFF" && !shiftStatusReason) setShiftStatusReason("إجازة رسمية / أسبوعية");
+                    if (val === "BREAK" && !shiftStatusReason) setShiftStatusReason("استراحة قصيرة");
+                    if (val === "ABSENT" && !shiftStatusReason) setShiftStatusReason("غائب بدون إذن");
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                >
+                  <option value="AVAILABLE">🟢 حاضر ومتاح وبدأ الوردية</option>
+                  <option value="WITH_CLIENT">💺 على الكرسي مع عميل</option>
+                  <option value="BREAK">☕ في استراحة مؤقتة</option>
+                  <option value="OFF_DUTY">🏠 انتهت الوردية ومشي (تعطيل اليوم)</option>
+                  <option value="DAY_OFF">🏖️ إجازة رسمية (تعطيل اليوم)</option>
+                  <option value="ABSENT">🔴 غائب بدون إذن (تعطيل اليوم)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">سبب التعطيل / الملاحظة (يظهر للعميل والإدارة):</label>
+                <input
+                  type="text"
+                  value={shiftStatusReason}
+                  onChange={(e) => setShiftStatusReason(e.target.value)}
+                  placeholder="مثال: إجازة أسبوعية، راحة غداء، غادر بعد انتهاء الوردية"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                />
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {["بدأ الوردية الصباحية", "راحة غداء ☕", "انتهت الوردية ومشي 🏠", "إجازة أسبوعية 🏖️", "إجازة مرضية 🏥"].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setShiftStatusReason(chip)}
+                      className="text-[10px] py-0.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5 transition"
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition mt-2 shadow-lg shadow-amber-500/20"
+              >
+                تطبيق وتحديث حالة الوردية 💈
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. SERVICE MODAL */}
+      {showServiceModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
+          <div className="relative w-full max-w-md bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-sm font-black text-white">
+                {editingService ? `تعديل خدمة (${editingService.nameAr})` : "إضافة خدمة تجميل جديدة"}
+              </h3>
               <button onClick={() => setShowServiceModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
             <form onSubmit={handleSaveService} className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-300 font-bold block mb-1">اسم الخدمة:</label>
+                <label className="text-slate-300 font-bold block mb-1">اسم الخدمة (عربي):</label>
                 <input
                   type="text"
                   required
                   value={serviceForm.nameAr}
                   onChange={(e) => setServiceForm({ ...serviceForm, nameAr: e.target.value })}
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                  placeholder="مثال: حلاقة شعر ملكية كلاسيك"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -2480,43 +2864,79 @@ export default function AdminPage() {
                     required
                     value={serviceForm.price}
                     onChange={(e) => setServiceForm({ ...serviceForm, price: Number(e.target.value) })}
-                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-amber-400 focus:outline-none focus:border-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-300 font-bold block mb-1">المدة (بالدقائق):</label>
+                  <label className="text-slate-300 font-bold block mb-1">المدة التقديرية (بالدقائق):</label>
                   <input
                     type="number"
                     min={5}
                     value={serviceForm.durationMinutes}
                     onChange={(e) => setServiceForm({ ...serviceForm, durationMinutes: Number(e.target.value) })}
-                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">القسم والتصنيف:</label>
+                  <select
+                    value={serviceForm.category}
+                    onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                  >
+                    <option value="HAIR">شعر ✂️</option>
+                    <option value="BEARD">دقن 🧔</option>
+                    <option value="VIP_PACKAGES">بكجات VIP 👑</option>
+                    <option value="SKIN_CARE">عناية بالبشرة 🔥</option>
+                    <option value="COLOR_KERATIN">فرد وصبغة وبروتين 💆</option>
+                    <option value="KIDS">أطفال 👶</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">حالة الخدمة:</label>
+                  <select
+                    value={serviceForm.isActive ? "true" : "false"}
+                    onChange={(e) => setServiceForm({ ...serviceForm, isActive: e.target.value === "true" })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                  >
+                    <option value="true">نشط ومتاح للحجز 🟢</option>
+                    <option value="false">معطل ومخفي 🔴</option>
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <label className="text-slate-300 font-bold block mb-1">القسم:</label>
-                <select
-                  value={serviceForm.category}
-                  onChange={(e) => setServiceForm({ ...serviceForm, category: e.target.value })}
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
-                >
-                  <option value="HAIR">شعر</option>
-                  <option value="BEARD">دقن</option>
-                  <option value="VIP_PACKAGES">بكجات VIP</option>
-                  <option value="SKIN_CARE">عناية بالبشرة</option>
-                  <option value="COLOR_KERATIN">فرد وصبغة وبروتين</option>
-                  <option value="KIDS">أطفال</option>
-                </select>
+                <label className="text-slate-300 font-bold block mb-1">رابط صورة الخدمة (URL):</label>
+                <input
+                  type="text"
+                  value={serviceForm.image}
+                  onChange={(e) => setServiceForm({ ...serviceForm, image: e.target.value })}
+                  placeholder="https://images.unsplash.com/... أو مسار الصورة"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">وصف الخدمة:</label>
+                <textarea
+                  rows={2}
+                  value={serviceForm.description}
+                  onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                  placeholder="تفاصيل الخدمة وما تقدمه للزبون..."
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition mt-2 shadow-lg shadow-amber-500/20"
               >
-                حفظ الخدمة 💈
+                {editingService ? "حفظ تعديلات الخدمة 💈" : "إضافة ونشر الخدمة 💈"}
               </button>
             </form>
           </div>

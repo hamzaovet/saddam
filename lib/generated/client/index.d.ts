@@ -4619,6 +4619,7 @@ export namespace Prisma {
     title: string | null
     chairNumber: number | null
     status: string | null
+    statusReason: string | null
     rating: number | null
     payType: string | null
     baseSalary: number | null
@@ -4637,6 +4638,7 @@ export namespace Prisma {
     title: string | null
     chairNumber: number | null
     status: string | null
+    statusReason: string | null
     rating: number | null
     payType: string | null
     baseSalary: number | null
@@ -4655,6 +4657,7 @@ export namespace Prisma {
     title: number
     chairNumber: number
     status: number
+    statusReason: number
     rating: number
     payType: number
     baseSalary: number
@@ -4689,6 +4692,7 @@ export namespace Prisma {
     title?: true
     chairNumber?: true
     status?: true
+    statusReason?: true
     rating?: true
     payType?: true
     baseSalary?: true
@@ -4707,6 +4711,7 @@ export namespace Prisma {
     title?: true
     chairNumber?: true
     status?: true
+    statusReason?: true
     rating?: true
     payType?: true
     baseSalary?: true
@@ -4725,6 +4730,7 @@ export namespace Prisma {
     title?: true
     chairNumber?: true
     status?: true
+    statusReason?: true
     rating?: true
     payType?: true
     baseSalary?: true
@@ -4830,6 +4836,7 @@ export namespace Prisma {
     title: string
     chairNumber: number
     status: string
+    statusReason: string | null
     rating: number
     payType: string
     baseSalary: number
@@ -4867,6 +4874,7 @@ export namespace Prisma {
     title?: boolean
     chairNumber?: boolean
     status?: boolean
+    statusReason?: boolean
     rating?: boolean
     payType?: boolean
     baseSalary?: boolean
@@ -4891,6 +4899,7 @@ export namespace Prisma {
     title?: boolean
     chairNumber?: boolean
     status?: boolean
+    statusReason?: boolean
     rating?: boolean
     payType?: boolean
     baseSalary?: boolean
@@ -4911,6 +4920,7 @@ export namespace Prisma {
     title?: boolean
     chairNumber?: boolean
     status?: boolean
+    statusReason?: boolean
     rating?: boolean
     payType?: boolean
     baseSalary?: boolean
@@ -4931,6 +4941,7 @@ export namespace Prisma {
     title?: boolean
     chairNumber?: boolean
     status?: boolean
+    statusReason?: boolean
     rating?: boolean
     payType?: boolean
     baseSalary?: boolean
@@ -4939,7 +4950,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type SpecialistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "branchId" | "name" | "phone" | "photo" | "title" | "chairNumber" | "status" | "rating" | "payType" | "baseSalary" | "commissionRate" | "isActive" | "createdAt", ExtArgs["result"]["specialist"]>
+  export type SpecialistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "branchId" | "name" | "phone" | "photo" | "title" | "chairNumber" | "status" | "statusReason" | "rating" | "payType" | "baseSalary" | "commissionRate" | "isActive" | "createdAt", ExtArgs["result"]["specialist"]>
   export type SpecialistInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | Specialist$userArgs<ExtArgs>
     branch?: boolean | BranchDefaultArgs<ExtArgs>
@@ -4976,6 +4987,7 @@ export namespace Prisma {
       title: string
       chairNumber: number
       status: string
+      statusReason: string | null
       rating: number
       payType: string
       baseSalary: number
@@ -5419,6 +5431,7 @@ export namespace Prisma {
     readonly title: FieldRef<"Specialist", 'String'>
     readonly chairNumber: FieldRef<"Specialist", 'Int'>
     readonly status: FieldRef<"Specialist", 'String'>
+    readonly statusReason: FieldRef<"Specialist", 'String'>
     readonly rating: FieldRef<"Specialist", 'Float'>
     readonly payType: FieldRef<"Specialist", 'String'>
     readonly baseSalary: FieldRef<"Specialist", 'Float'>
@@ -16919,6 +16932,7 @@ export namespace Prisma {
     title: 'title',
     chairNumber: 'chairNumber',
     status: 'status',
+    statusReason: 'statusReason',
     rating: 'rating',
     payType: 'payType',
     baseSalary: 'baseSalary',
@@ -17399,6 +17413,7 @@ export namespace Prisma {
     title?: StringFilter<"Specialist"> | string
     chairNumber?: IntFilter<"Specialist"> | number
     status?: StringFilter<"Specialist"> | string
+    statusReason?: StringNullableFilter<"Specialist"> | string | null
     rating?: FloatFilter<"Specialist"> | number
     payType?: StringFilter<"Specialist"> | string
     baseSalary?: FloatFilter<"Specialist"> | number
@@ -17422,6 +17437,7 @@ export namespace Prisma {
     title?: SortOrder
     chairNumber?: SortOrder
     status?: SortOrder
+    statusReason?: SortOrderInput | SortOrder
     rating?: SortOrder
     payType?: SortOrder
     baseSalary?: SortOrder
@@ -17448,6 +17464,7 @@ export namespace Prisma {
     title?: StringFilter<"Specialist"> | string
     chairNumber?: IntFilter<"Specialist"> | number
     status?: StringFilter<"Specialist"> | string
+    statusReason?: StringNullableFilter<"Specialist"> | string | null
     rating?: FloatFilter<"Specialist"> | number
     payType?: StringFilter<"Specialist"> | string
     baseSalary?: FloatFilter<"Specialist"> | number
@@ -17471,6 +17488,7 @@ export namespace Prisma {
     title?: SortOrder
     chairNumber?: SortOrder
     status?: SortOrder
+    statusReason?: SortOrderInput | SortOrder
     rating?: SortOrder
     payType?: SortOrder
     baseSalary?: SortOrder
@@ -17497,6 +17515,7 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"Specialist"> | string
     chairNumber?: IntWithAggregatesFilter<"Specialist"> | number
     status?: StringWithAggregatesFilter<"Specialist"> | string
+    statusReason?: StringNullableWithAggregatesFilter<"Specialist"> | string | null
     rating?: FloatWithAggregatesFilter<"Specialist"> | number
     payType?: StringWithAggregatesFilter<"Specialist"> | string
     baseSalary?: FloatWithAggregatesFilter<"Specialist"> | number
@@ -18641,6 +18660,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -18664,6 +18684,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -18683,6 +18704,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -18706,6 +18728,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -18727,6 +18750,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -18743,6 +18767,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -18761,6 +18786,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -20135,6 +20161,7 @@ export namespace Prisma {
     title?: SortOrder
     chairNumber?: SortOrder
     status?: SortOrder
+    statusReason?: SortOrder
     rating?: SortOrder
     payType?: SortOrder
     baseSalary?: SortOrder
@@ -20160,6 +20187,7 @@ export namespace Prisma {
     title?: SortOrder
     chairNumber?: SortOrder
     status?: SortOrder
+    statusReason?: SortOrder
     rating?: SortOrder
     payType?: SortOrder
     baseSalary?: SortOrder
@@ -20178,6 +20206,7 @@ export namespace Prisma {
     title?: SortOrder
     chairNumber?: SortOrder
     status?: SortOrder
+    statusReason?: SortOrder
     rating?: SortOrder
     payType?: SortOrder
     baseSalary?: SortOrder
@@ -21974,6 +22003,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -21995,6 +22025,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -22328,6 +22359,7 @@ export namespace Prisma {
     title?: StringFilter<"Specialist"> | string
     chairNumber?: IntFilter<"Specialist"> | number
     status?: StringFilter<"Specialist"> | string
+    statusReason?: StringNullableFilter<"Specialist"> | string | null
     rating?: FloatFilter<"Specialist"> | number
     payType?: StringFilter<"Specialist"> | string
     baseSalary?: FloatFilter<"Specialist"> | number
@@ -22602,6 +22634,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -22623,6 +22656,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -22707,6 +22741,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -22728,6 +22763,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -23311,6 +23347,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -23333,6 +23370,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -23463,6 +23501,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -23485,6 +23524,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -23546,6 +23586,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -23568,6 +23609,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -23692,6 +23734,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -23714,6 +23757,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -23871,6 +23915,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -23893,6 +23938,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -23970,6 +24016,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -23992,6 +24039,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -24257,6 +24305,7 @@ export namespace Prisma {
     title?: string
     chairNumber?: number
     status?: string
+    statusReason?: string | null
     rating?: number
     payType?: string
     baseSalary?: number
@@ -24409,6 +24458,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -24430,6 +24480,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
@@ -24450,6 +24501,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     chairNumber?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
+    statusReason?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: FloatFieldUpdateOperationsInput | number
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number

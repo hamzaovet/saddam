@@ -63,7 +63,8 @@ model Specialist {
   photo           String?            // ImgBB URL
   title           String             @default("خبير حلاقة وتصفيف")
   chairNumber     Int                @default(1)
-  status          String             @default("AVAILABLE") // AVAILABLE, WITH_CLIENT, BREAK, OFF_DUTY
+  status          String             @default("AVAILABLE") // AVAILABLE, WITH_CLIENT, BREAK, OFF_DUTY, DAY_OFF, ABSENT
+  statusReason    String?            // سبب التعطيل أو الملاحظة (مثلاً: إجازة أسبوعية، استراحة غداء، انتهى اليوم ومشي)
   rating          Float              @default(4.9)
   
   // Compensation & Payroll scheme

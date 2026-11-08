@@ -101,11 +101,11 @@ export default function HomePage() {
       try {
         setLoading(true);
         const [resSet, resB, resS, resSpec, resO] = await Promise.all([
-          fetch("/api/settings"),
-          fetch("/api/branches"),
-          fetch("/api/services"),
-          fetch("/api/specialists"),
-          fetch("/api/offers?activeOnly=true"),
+          fetch("/api/settings", { cache: "no-store" }),
+          fetch("/api/branches", { cache: "no-store" }),
+          fetch("/api/services", { cache: "no-store" }),
+          fetch("/api/specialists", { cache: "no-store" }),
+          fetch("/api/offers?activeOnly=true", { cache: "no-store" }),
         ]);
 
         const [dataSet, dataB, dataS, dataSpec, dataO] = await Promise.all([
@@ -135,10 +135,20 @@ export default function HomePage() {
     loadData();
   }, []);
 
-  // Filter Specialists by Branch
-  const filteredSpecialists = specialists.filter(
-    (s) => !selectedBranchId || s.branchId === selectedBranchId
-  );
+  // Filter Specialists by Branch & Sort by Active Shift Presence
+  const filteredSpecialists = specialists
+    .filter((s) => !selectedBranchId || s.branchId === selectedBranchId)
+    .sort((a, b) => {
+      const order: Record<string, number> = {
+        AVAILABLE: 1,
+        WITH_CLIENT: 2,
+        BREAK: 3,
+        OFF_DUTY: 4,
+        DAY_OFF: 5,
+        ABSENT: 6,
+      };
+      return (order[a.status] || 99) - (order[b.status] || 99);
+    });
 
   // Filter Offers by Branch
   const filteredOffers = offers.filter(
@@ -717,34 +727,64 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Specialist Cards */}
+            {/* Specialist Cards with Live Shift Attendance Status */}
             {filteredSpecialists.map((spec) => {
               const isSelected = selectedSpecialistId === spec.id;
+              const isAvailable = spec.status === "AVAILABLE";
               const isWithClient = spec.status === "WITH_CLIENT";
+              const isBreak = spec.status === "BREAK";
+              const isOffDuty = spec.status === "OFF_DUTY" || spec.status === "DAY_OFF" || spec.status === "ABSENT";
 
               return (
                 <div
                   key={spec.id}
-                  onClick={() => setSelectedSpecialistId(spec.id)}
-                  className={`cursor-pointer p-3.5 rounded-3xl border transition text-center space-y-2.5 flex flex-col items-center relative group ${
+                  onClick={() => {
+                    if (isOffDuty) {
+                      alert(`عذراً، المتخصص (${spec.name}) غير متواجد بالصالون حالياً (${spec.statusReason || "إجازة / انتهت الوردية اليوم"}). يُرجى اختيار متخصص آخر متواجد أو "أي متخصص متاح" 💈`);
+                      return;
+                    }
+                    setSelectedSpecialistId(spec.id);
+                  }}
+                  className={`p-3.5 rounded-3xl border transition text-center space-y-2.5 flex flex-col items-center relative group ${
+                    isOffDuty
+                      ? "opacity-50 grayscale-[40%] bg-[#0e0e16] border-white/5 cursor-not-allowed"
+                      : "cursor-pointer"
+                  } ${
                     isSelected
                       ? "bg-amber-500/20 border-amber-400 ring-2 ring-amber-400 shadow-xl shadow-amber-500/15"
-                      : "bg-[#101018] hover:bg-[#161622] border-white/10"
+                      : !isOffDuty
+                      ? "bg-[#101018] hover:bg-[#161622] border-white/10"
+                      : ""
                   }`}
                 >
                   {/* Status Indicator Pill */}
                   <span
-                    className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[9px] font-black ${
-                      isWithClient
-                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                        : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                    className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[9px] font-black border ${
+                      isAvailable
+                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                        : isWithClient
+                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                        : isBreak
+                        ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
+                        : spec.status === "OFF_DUTY"
+                        ? "bg-slate-700/80 text-slate-300 border-slate-600"
+                        : spec.status === "DAY_OFF"
+                        ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                        : "bg-rose-500/20 text-rose-300 border-rose-500/40"
                     }`}
                   >
-                    {isWithClient ? "على الكرسي 💺" : "متاح الآن 🟢"}
+                    {isAvailable && "متاح الآن 🟢"}
+                    {isWithClient && "على الكرسي 💺"}
+                    {isBreak && "استراحة ☕"}
+                    {spec.status === "OFF_DUTY" && "انتهت ورديته 🏠"}
+                    {spec.status === "DAY_OFF" && "إجازة اليوم 🏖️"}
+                    {spec.status === "ABSENT" && "غير متواجد 🔴"}
                   </span>
 
                   {/* Specialist Photo */}
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-md bg-black shrink-0 group-hover:scale-105 transition">
+                  <div className={`w-20 h-20 rounded-2xl overflow-hidden border-2 shadow-md bg-black shrink-0 transition ${
+                    isOffDuty ? "border-slate-700" : "border-amber-400 group-hover:scale-105"
+                  }`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={spec.photo || "/logo.jpg"}
@@ -753,11 +793,16 @@ export default function HomePage() {
                     />
                   </div>
 
-                  <div className="space-y-0.5">
-                    <h4 className="font-black text-xs sm:text-sm text-white truncate max-w-[130px]">
+                  <div className="space-y-0.5 w-full">
+                    <h4 className="font-black text-xs sm:text-sm text-white truncate max-w-[130px] mx-auto">
                       {spec.name}
                     </h4>
-                    <p className="text-[10px] text-slate-400 truncate max-w-[130px]">{spec.title}</p>
+                    <p className="text-[10px] text-slate-400 truncate max-w-[130px] mx-auto">{spec.title}</p>
+                    {spec.statusReason && (
+                      <p className="text-[9px] text-amber-300/80 truncate max-w-[125px] mx-auto pt-0.5">
+                        {spec.statusReason}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5 text-[10px] text-amber-400 font-bold bg-black/40 py-0.5 px-2 rounded-full border border-white/5">

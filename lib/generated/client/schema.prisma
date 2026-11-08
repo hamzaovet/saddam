@@ -53,18 +53,19 @@ model User {
 // 3. SPECIALISTS / BARBERS (المتخصصين وكراسي الحلاقة)
 // ----------------------------------------------------
 model Specialist {
-  id          String  @id @default(cuid())
-  userId      String? @unique
-  user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-  branchId    String
-  branch      Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  name        String
-  phone       String?
-  photo       String? // ImgBB URL
-  title       String  @default("خبير حلاقة وتصفيف")
-  chairNumber Int     @default(1)
-  status      String  @default("AVAILABLE") // AVAILABLE, WITH_CLIENT, BREAK, OFF_DUTY
-  rating      Float   @default(4.9)
+  id           String  @id @default(cuid())
+  userId       String? @unique
+  user         User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  branchId     String
+  branch       Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String?
+  photo        String? // ImgBB URL
+  title        String  @default("خبير حلاقة وتصفيف")
+  chairNumber  Int     @default(1)
+  status       String  @default("AVAILABLE") // AVAILABLE, WITH_CLIENT, BREAK, OFF_DUTY, DAY_OFF, ABSENT
+  statusReason String? // سبب التعطيل أو الملاحظة (مثلاً: إجازة أسبوعية، استراحة غداء، انتهى اليوم ومشي)
+  rating       Float   @default(4.9)
 
   // Compensation & Payroll scheme
   payType        String @default("SALARY_PLUS_COMMISSION") // DAILY, WEEKLY, MONTHLY, COMMISSION_ONLY, SALARY_PLUS_COMMISSION

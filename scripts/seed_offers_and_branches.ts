@@ -67,30 +67,54 @@ async function main() {
   await prisma.offer.createMany({
     data: [
       {
-        titleAr: "عرض العريس الملكي المتكامل (GROOM VIP)",
+        titleAr: "عرض العريس الملكي المتكامل (GROOM VIP EXPERIENCE)",
         badge: "العرض الملكي الأقوى 👑",
         price: 3500,
-        oldPrice: 4000,
-        discountPercent: 13,
-        image: "/offers/offer-groom-3500.jpg",
-        description: "تجربة متكاملة تخليك في أفضل لوك وأعلى استرخاء قبل أهم يوم في حياتك - مش مجرد حلاقة دي تجربة صدام",
+        oldPrice: 4900,
+        discountPercent: 29,
+        image: "/offers/offer-groom-vip-3500-full.jpg",
+        description: "مش مجرد خدمات .. دي تجربة ملكية متكاملة تخليك في أفضل لوك وأعلى استرخاء قبل أهم يوم في حياتك - تجربة صدام VIP",
         features: JSON.stringify([
-          "قص شعر وتدريج ملكي احترافي",
-          "تحديد ورسم الذقن بالخيط والموس الإيطالي",
+          "قص شعر ملكي احترافي بأحدث القصات",
+          "تحديد ورسم الذقن بالموس والخيط",
           "تنظيف بشرة هيدروفيشيل 11 مرحلة متكاملة",
-          "وكس كامل للبشرة وإزالة الشوائب والرؤوس السوداء",
-          "صبغة شعر أو إخفاء الشيب وتلوين احترافي",
-          "جلسة ترميم للشعر وحمام زيت + حمام كريم",
+          "وكس كامل للبشرة وإزالة الرؤوس السوداء",
+          "صبغة شعر احترافية أو إخفاء الشيب",
+          "جلسة ترميم شعر + حمام زيت + حمام كريم",
           "مساج استرخائي كامل للجسم",
           "ساونا وبخار ستيم تركي + ليفة مغربي",
           "جاكوزي مائي دافئ منعش",
           "باديكير كامل لليد والقدمين وتقليم أظافر",
           "سشوار وتثبيت اللوك وشاور ملكي مع تعطير",
+          "توبيك لملء الفراغات في الشعر",
           "غرفة تغيير خاصة + لوكر شخصي + تعقيم كامل + مشروبات مجانية",
         ]),
         branchId: null, // all branches
         isActive: true,
         sortOrder: 1,
+      },
+      {
+        titleAr: "العرض المميز VIP CARE PACKAGE",
+        badge: "عرض خاص ومميز 🔥",
+        price: 1499,
+        oldPrice: 2000,
+        discountPercent: 25,
+        image: "/offers/offer-vip-care-1499.jpg",
+        description: "خدمات متكاملة .. للعناية بمظهرك وأناقتك بأعلى جودة واحترافية (متاح بفرع عباس العقاد وفرع حدائق القبة)",
+        features: JSON.stringify([
+          "قص شعر احترافي وتدريج عالمي",
+          "تحديد ورسم الذقن بالموس والبخار",
+          "سيشوار وتثبيت اللوك",
+          "توبيك لملء الفراغات في الشعر",
+          "تنظيف بشرة سوفت ونضارة فورية",
+          "باديكير يد متكامل",
+          "باديكير قدم استرخائي",
+          "شاور ملكي وتعطير كامل بعد الشاور",
+          "غسيل شعر قبل الخدمة وبعد الخدمة",
+        ]),
+        branchId: null, // all branches
+        isActive: true,
+        sortOrder: 2,
       },
       {
         titleAr: "باكدج الاسترخاء الملكي VIP RELAXATION",
@@ -110,7 +134,28 @@ async function main() {
         ]),
         branchId: null, // all branches
         isActive: true,
-        sortOrder: 2,
+        sortOrder: 3,
+      },
+      {
+        titleAr: "عرض صاحب العريس",
+        badge: "إطلالة مميزة 🎩",
+        price: 399,
+        oldPrice: 600,
+        discountPercent: 34,
+        image: "/offers/offer-groom-friend-399.jpg",
+        description: "إطلالة مميزة ومبهرة في أهم يوم مع صاحبك أو أخوك العريس (متاح بفرعي عباس العقاد وحدائق القبة)",
+        features: JSON.stringify([
+          "قص شعر وتدريج احترافي",
+          "تحديد ذقن بالموس الفاخر",
+          "سشوار وتثبيت اللوك",
+          "سكرب تنظيف ونضارة للبشرة",
+          "فوطة سخنة لفتح المسام وإنعاش الوجه",
+          "فوطة ساقعة لغلق المسام وشد البشرة",
+          "غسيل شعر قبل الخدمة وبعد الخدمة",
+        ]),
+        branchId: null, // all branches
+        isActive: true,
+        sortOrder: 4,
       },
       {
         titleAr: "باكدج العناية المتكاملة شعر ودقن VIP",
@@ -130,7 +175,7 @@ async function main() {
         ]),
         branchId: nasrId, // Nasr City only
         isActive: true,
-        sortOrder: 3,
+        sortOrder: 5,
       },
       {
         titleAr: "SADDAM VIP COMBO باكدج الشعر والدقن",
@@ -147,7 +192,7 @@ async function main() {
         ]),
         branchId: nasrId, // Nasr City only
         isActive: true,
-        sortOrder: 4,
+        sortOrder: 6,
       },
       {
         titleAr: "عرض عريس حدائق القبة (GROOM VIP)",
@@ -166,12 +211,12 @@ async function main() {
         ]),
         branchId: kobbaId, // Hadayek El-Qobba only
         isActive: true,
-        sortOrder: 5,
+        sortOrder: 7,
       },
     ],
   });
 
-  console.log("Successfully seeded 5 royal offers!");
+  console.log("Successfully seeded all 7 royal offers from Saddam flyers!");
 }
 
 main()
