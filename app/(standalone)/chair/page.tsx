@@ -41,6 +41,8 @@ export default function SpecialistChairPage() {
 
   // Waiting Bookings Queue
   const [waitingBookings, setWaitingBookings] = useState<any[]>([]);
+  // Waiting Lounge Queue (Walk-ins waiting for this specialist or first available)
+  const [waitingLoungeTickets, setWaitingLoungeTickets] = useState<any[]>([]);
 
   // Walk-in modal
   const [showWalkInModal, setShowWalkInModal] = useState(false);
@@ -119,6 +121,18 @@ export default function SpecialistChairPage() {
           const dataBookings = await resBookings.json();
           if (dataBookings.success && dataBookings.bookings) {
             setWaitingBookings(dataBookings.bookings);
+          }
+
+          // Fetch waiting lounge tickets for this specialist or first available
+          const resWaiting = await fetch(`/api/tickets?branchId=${matched.branchId}&status=WAITING`);
+          const dataWaiting = await resWaiting.json();
+          if (dataWaiting.success && dataWaiting.tickets) {
+            const forMe = dataWaiting.tickets.filter(
+              (t: any) => t.specialistId === matched.id || t.notes?.includes("أول كابتن")
+            );
+            setWaitingLoungeTickets(forMe);
+          } else {
+            setWaitingLoungeTickets([]);
           }
         }
       }
@@ -238,6 +252,36 @@ export default function SpecialistChairPage() {
       }
     } catch {
       notify("error", "تعذر استقبال العميل");
+    } finally {
+      setStartingTicket(false);
+    }
+  };
+
+  // Admit Waiting Lounge Client Directly onto Chair
+  const handleAdmitWaitingClient = async (waitingTicket: any) => {
+    if (!specialist) return;
+    try {
+      setStartingTicket(true);
+      const res = await fetch("/api/tickets", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "SEAT_NOW",
+          ticketId: waitingTicket.id,
+          specialistId: specialist.id,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.ticket) {
+        setActiveTicket(data.ticket);
+        fetchChairData();
+        notify("success", `تم إجلاس العميل (${waitingTicket.customerName}) على كرسيك وبدء الجلسة 💺✨`);
+      } else {
+        notify("error", data.error || "فشل إجلاس العميل");
+      }
+    } catch {
+      notify("error", "تعذر الاتصال بالخادم");
     } finally {
       setStartingTicket(false);
     }
@@ -412,6 +456,13 @@ export default function SpecialistChairPage() {
 
         {/* Chair Status & Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {waitingLoungeTickets.length > 0 && (
+            <span className="py-1 px-3 rounded-full text-xs font-black bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1 animate-pulse">
+              <span>🛋️</span>
+              <span>{waitingLoungeTickets.length} بالاستراحة</span>
+            </span>
+          )}
+
           <span
             className={`py-1 px-3 rounded-full text-xs font-black flex items-center gap-1.5 ${
               activeTicket
@@ -480,6 +531,69 @@ export default function SpecialistChairPage() {
                   <span>إجلاس عميل يدوي مباشر (اختياري) ✂️</span>
                 </button>
               </div>
+            </div>
+
+            {/* Waiting Lounge Queue for this Specialist */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-black text-white flex items-center gap-2">
+                  <span className="text-lg">🛋️</span>
+                  <span>زبائن بانتظارك في صالة الاستراحة ({waitingLoungeTickets.length} زبائن)</span>
+                </h4>
+                {waitingLoungeTickets.length > 0 && (
+                  <span className="text-[11px] text-amber-300 font-bold animate-pulse">
+                    ⚡ يمكنك إجلاس الزبون التالي فوراً
+                  </span>
+                )}
+              </div>
+
+              {waitingLoungeTickets.length === 0 ? (
+                <div className="p-5 rounded-2xl bg-[#121218] border border-white/5 text-center text-xs text-slate-500 font-bold">
+                  لا يوجد زبائن بانتظارك في صالة الاستراحة حالياً.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {waitingLoungeTickets.map((wt) => {
+                    const waitMin = Math.max(1, Math.round((Date.now() - new Date(wt.createdAt).getTime()) / 60000));
+                    const isSpecific = !wt.notes?.includes("أول كابتن");
+
+                    return (
+                      <div
+                        key={wt.id}
+                        className="p-4 rounded-2xl bg-gradient-to-b from-[#181824] to-[#121218] border border-sky-500/30 space-y-3 flex flex-col justify-between shadow-lg"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-xs text-amber-400 font-black">
+                            #{wt.ticketNumber}
+                          </span>
+                          <span className="py-0.5 px-2 rounded-lg bg-sky-500/10 text-sky-300 font-mono text-[10px] font-bold border border-sky-500/20">
+                            ⏱️ ينتظر منذ {waitMin} د
+                          </span>
+                        </div>
+
+                        <div>
+                          <h5 className="font-black text-sm text-white">{wt.customerName}</h5>
+                          {wt.customerPhone && (
+                            <p className="text-xs text-slate-400 font-mono">{wt.customerPhone}</p>
+                          )}
+                          <span className="text-[10px] text-amber-300 font-bold block pt-1">
+                            {isSpecific ? "👑 طلبك بالاسم شخصياً" : "⏳ في انتظار أول كابتن متاح"}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => handleAdmitWaitingClient(wt)}
+                          disabled={startingTicket}
+                          className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
+                        >
+                          <Scissors className="w-3.5 h-3.5" />
+                          <span>إدخال وإجلاس على الكرسي الآن 💺</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Waiting Bookings Queue */}

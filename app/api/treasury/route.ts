@@ -40,13 +40,18 @@ export async function GET(req: Request) {
       where: {
         ...branchWhere,
         status: "COMPLETED",
-        ...(period !== "ALL" && { endTime: dateFilter }),
+        ...(period !== "ALL" && {
+          OR: [
+            { endTime: dateFilter },
+            { createdAt: dateFilter },
+          ],
+        }),
       },
       include: {
         specialist: { select: { id: true, name: true, chairNumber: true } },
         branch: { select: { id: true, name: true } },
       },
-      orderBy: { endTime: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     // 2. Specialist Ledgers (Commissions, Advances, Payouts)
@@ -225,6 +230,7 @@ export async function GET(req: Request) {
       success: true,
       period,
       summary: {
+        // Standard keys
         totalRevenue,
         servicesRevenue,
         retailRevenue,
@@ -240,6 +246,16 @@ export async function GET(req: Request) {
         specialistBonuses,
         generalExpenses,
         netCashInDrawer,
+
+        // Aliases for POS and other components (fixes 0 EGP discrepancy)
+        totalSales: totalRevenue,
+        servicesTotal: servicesRevenue,
+        retailTotal: retailRevenue,
+        cashCollected: cashRevenue,
+        electronicCollected: visaRevenue + instapayRevenue + vodafoneRevenue,
+        advancesPaid: specialistAdvances,
+        expensesPaid: generalExpenses,
+        netDrawerCash: netCashInDrawer,
       },
       transactions: transactions.slice(0, 150),
       shifts,

@@ -5545,11 +5545,11 @@ export default function AdminPage() {
          ───────────────────────────────────────────────────────────── */}
       {showAdminCloseShiftModal && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex justify-center items-start sm:items-center py-6 sm:py-10 px-3 font-sans"
           dir="rtl"
         >
-          <div className="relative w-full max-w-lg bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="relative w-full max-w-lg my-auto bg-[#12121a] border border-amber-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-amber-400" />
                 <div>
@@ -5562,11 +5562,13 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => setShowAdminCloseShiftModal(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
+
+            <div className="overflow-y-auto pr-1 space-y-3 flex-1 text-xs">
 
             {/* Live Shift Breakdown Statistics */}
             <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
@@ -5733,6 +5735,7 @@ export default function AdminPage() {
                 <span>إقفال الوردية وتسليم النقدية للمالك 🔒</span>
               </button>
             </form>
+            </div>
           </div>
         </div>
       )}

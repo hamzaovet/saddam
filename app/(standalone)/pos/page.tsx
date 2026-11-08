@@ -47,7 +47,9 @@ export default function CashierPosPage() {
   const [showAdmitModal, setShowAdmitModal] = useState<boolean>(false);
   const [admitCustomerName, setAdmitCustomerName] = useState<string>("");
   const [admitCustomerPhone, setAdmitCustomerPhone] = useState<string>("");
-  const [admitSpecialistId, setAdmitSpecialistId] = useState<string>("");
+  const [admitSpecialistId, setAdmitSpecialistId] = useState<string>("FIRST_AVAILABLE");
+  const [admitMode, setAdmitMode] = useState<"CHAIR" | "WAITING">("CHAIR");
+  const [showSeatPickerModal, setShowSeatPickerModal] = useState<any>(null); // ticket being seated
   const [admittingClient, setAdmittingClient] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
@@ -199,42 +201,119 @@ export default function CashierPosPage() {
     }
   };
 
-  // Admit customer to chair by Cashier
+  // Admit customer to chair or waiting lounge
   const handleAdmitCustomerToChair = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!admitCustomerName.trim() || !admitSpecialistId) {
-      showToast("error", "يرجى إدخال اسم العميل واختيار المتخصص");
+    if (!admitCustomerName.trim()) {
+      showToast("error", "يرجى إدخال اسم العميل");
       return;
     }
 
+    const isFirstAvailable = admitSpecialistId === "FIRST_AVAILABLE" || !admitSpecialistId;
+    const targetSpecId = isFirstAvailable
+      ? (specialists.find((s) => s.status === "AVAILABLE")?.id || specialists[0]?.id)
+      : admitSpecialistId;
+
+    if (!targetSpecId) {
+      showToast("error", "لا يوجد كباتن متاحين حالياً في هذا الفرع");
+      return;
+    }
+
+    const chosenSpec = specialists.find((s) => s.id === targetSpecId);
+    const isSpecAvailable = chosenSpec?.status === "AVAILABLE";
+    const finalMode = admitMode === "CHAIR" && isSpecAvailable && !isFirstAvailable ? "IN_CHAIR" : "WAITING";
+
     try {
       setAdmittingClient(true);
-      const chosenSpec = specialists.find((s) => s.id === admitSpecialistId);
       const res = await fetch("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          specialistId: admitSpecialistId,
+          specialistId: targetSpecId,
           branchId: chosenSpec?.branchId || (selectedBranchId !== "ALL" ? selectedBranchId : branches[0]?.id),
           customerName: admitCustomerName.trim(),
           customerPhone: admitCustomerPhone.trim() || null,
+          status: finalMode,
+          waitingMode: isFirstAvailable ? "FIRST_AVAILABLE" : "SPECIFIC_SPECIALIST",
+          notes: isFirstAvailable
+            ? "🛋️ صالة الاستراحة: في انتظار أول كابتن يفضى"
+            : finalMode === "WAITING"
+            ? `🛋️ صالة الاستراحة: طلب كابتن (${chosenSpec?.name}) بالاسم`
+            : null,
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        showToast("success", `تم إجلاس العميل (${admitCustomerName}) على كرسي ${chosenSpec?.name} 💺`);
+        if (finalMode === "WAITING") {
+          showToast("info", `تم تسجيل (${admitCustomerName}) في "صالة الاستراحة وقائمة الانتظار" 🛋️`);
+        } else {
+          showToast("success", `تم إجلاس العميل (${admitCustomerName}) على كرسي كابتن (${chosenSpec?.name}) 💺`);
+        }
         setShowAdmitModal(false);
         setAdmitCustomerName("");
         setAdmitCustomerPhone("");
+        await fetchPosData();
+      } else {
+        showToast("error", data.error || "فشل تسجيل العميل");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    } finally {
+      setAdmittingClient(false);
+    }
+  };
+
+  // Seat a waiting client from the lounge onto a chair
+  const handleSeatWaitingTicket = async (ticket: any, targetSpecialistId?: string) => {
+    try {
+      const specId = targetSpecialistId || ticket.specialistId;
+      const targetSpec = specialists.find((s) => s.id === specId);
+
+      const res = await fetch("/api/tickets", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "SEAT_NOW",
+          ticketId: ticket.id,
+          specialistId: specId,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", `تم إجلاس العميل (${ticket.customerName}) على كرسي كابتن (${targetSpec?.name || ticket.specialist?.name}) الآن 💺✨`);
+        setShowSeatPickerModal(null);
         await fetchPosData();
       } else {
         showToast("error", data.error || "فشل إجلاس العميل");
       }
     } catch {
       showToast("error", "تعذر الاتصال بالخادم");
-    } finally {
-      setAdmittingClient(false);
+    }
+  };
+
+  // Cancel waiting ticket
+  const handleCancelWaitingTicket = async (ticketId: string, customerName: string) => {
+    try {
+      const res = await fetch("/api/tickets", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "CANCEL_WAITING",
+          ticketId,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast("info", `تم إلغاء انتظار العميل (${customerName}) ✕`);
+        await fetchPosData();
+      } else {
+        showToast("error", data.error || "فشل إلغاء التذكرة");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -603,84 +682,232 @@ export default function CashierPosPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
         {/* LEFT / MAIN COLUMN: ACTIVE CHAIRS & TICKETS (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          {/* Active Chairs & Finished Tickets */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <Scissors className="w-4 h-4 text-amber-400" />
-                <span>كراسي الحلاقة والتذاكر اللحظية ({tickets.length})</span>
-              </h3>
-              <span className="text-[11px] text-amber-300 font-bold">
-                تحديث تلقائي كل 4 ثوانٍ ⚡
-              </span>
-            </div>
+          {(() => {
+            const waitingTickets = tickets.filter((t) => t.status === "WAITING");
+            const chairTickets = tickets.filter((t) => t.status !== "WAITING");
 
-            {tickets.length === 0 ? (
-              <div className="p-8 rounded-3xl bg-[#14141c] border border-white/10 text-center space-y-2">
-                <div className="text-2xl">💈</div>
-                <p className="text-xs text-slate-400 font-bold">
-                  لا توجد كراسي مشغولة أو تذاكر بانتظار الحساب حالياً
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {tickets.map((t) => {
-                  const isSelected = selectedTicket?.id === t.id;
-                  const isReadyForCashier = t.status === "READY_FOR_CASHIER";
-
-                  let servCount = 0;
-                  try {
-                    const s = typeof t.services === "string" ? JSON.parse(t.services) : t.services;
-                    servCount = s.length;
-                  } catch {}
-
-                  return (
-                    <div
-                      key={t.id}
-                      onClick={() => handleSelectTicket(t)}
-                      className={`cursor-pointer p-4 rounded-2xl border transition space-y-3 flex flex-col justify-between ${
-                        isSelected
-                          ? "bg-amber-500/20 border-amber-400 ring-2 ring-amber-400 shadow-lg shadow-amber-500/10"
-                          : isReadyForCashier
-                          ? "bg-gradient-to-b from-[#181822] to-[#121218] border-emerald-500/50 hover:border-emerald-400 ring-1 ring-emerald-500/30"
-                          : "bg-[#14141c] hover:bg-[#181824] border-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs text-amber-400 font-black">
-                          #{t.ticketNumber}
-                        </span>
-                        <span
-                          className={`py-0.5 px-2 rounded-full text-[10px] font-black ${
-                            isReadyForCashier
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse"
-                              : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
-                          }`}
-                        >
-                          {isReadyForCashier ? "جاهز للحساب 💰" : "على الكرسي ✂️"}
-                        </span>
+            return (
+              <>
+                {/* ─────────────────────────────────────────────────────────────
+                    1. WAITING LOUNGE & QUEUE (صالة الاستراحة وقائمة الانتظار بالصالون)
+                   ───────────────────────────────────────────────────────────── */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm">
+                        🛋️
                       </div>
-
                       <div>
-                        <h4 className="font-black text-sm text-white">{t.customerName}</h4>
-                        <p className="text-xs text-slate-400">
-                          المتخصص: <strong className="text-amber-300">{t.specialist?.name}</strong>{" "}
-                          (ك #{t.chairNumber})
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between border-t border-white/5 pt-2 text-xs">
-                        <span className="text-slate-400">{servCount} خدمات مسجلة</span>
-                        <span className="font-mono text-base font-black text-amber-400">
-                          {t.finalAmount} ج.م
-                        </span>
+                        <h3 className="text-sm font-black text-white flex items-center gap-2">
+                          <span>صالة الاستراحة وقائمة الانتظار بالصالون</span>
+                          <span className="py-0.5 px-2 rounded-full bg-sky-500/20 text-sky-300 font-mono text-[11px] font-black border border-sky-500/30">
+                            {waitingTickets.length} زبائن
+                          </span>
+                        </h3>
+                        <p className="text-[11px] text-slate-400">زبائن مباشرين وصلوا وينتظرون كابتن بالاسم أو أول كابتن يفضى</p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAdmitCustomerName("");
+                        setAdmitCustomerPhone("");
+                        setAdmitSpecialistId("FIRST_AVAILABLE");
+                        setAdmitMode("WAITING");
+                        setShowAdmitModal(true);
+                      }}
+                      className="py-1 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>إضافة زبون للاستراحة 🛋️</span>
+                    </button>
+                  </div>
+
+                  {waitingTickets.length === 0 ? (
+                    <div className="p-4 rounded-2xl bg-[#121218] border border-white/5 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                      <span>🛋️</span>
+                      <span>لا يوجد زبائن حالياً في صالة الاستراحة • جميع الكباتن المتاحين جاهزون لاستقبال الزبائن على الكراسي 💈</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {waitingTickets.map((wt) => {
+                        const targetSpec = specialists.find((s) => s.id === wt.specialistId);
+                        const isSpecific = !wt.notes?.includes("أول كابتن");
+                        const isSpecReady = targetSpec?.status === "AVAILABLE";
+                        const anySpecAvailable = specialists.some((s) => s.status === "AVAILABLE");
+                        const waitMinutes = Math.max(1, Math.round((Date.now() - new Date(wt.createdAt).getTime()) / 60000));
+
+                        return (
+                          <div
+                            key={wt.id}
+                            className={`p-3.5 rounded-2xl border transition space-y-2.5 flex flex-col justify-between ${
+                              isSpecReady || (!isSpecific && anySpecAvailable)
+                                ? "bg-emerald-500/10 border-emerald-500/40 ring-1 ring-emerald-500/30 shadow-lg shadow-emerald-500/5"
+                                : "bg-[#14141c] border-white/10"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs text-amber-400 font-black">
+                                #{wt.ticketNumber}
+                              </span>
+                              <span className="py-0.5 px-2 rounded-lg bg-white/5 text-slate-300 font-mono text-[10px] font-bold">
+                                ⏱️ ينتظر منذ {waitMinutes} د
+                              </span>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-black text-sm text-white">{wt.customerName}</h4>
+                                {wt.customerPhone && (
+                                  <span className="text-[11px] text-slate-400 font-mono">{wt.customerPhone}</span>
+                                )}
+                              </div>
+
+                              {/* Specialist Preference & Live Status */}
+                              <div className="text-[11px] p-2 rounded-xl bg-black/40 border border-white/5 space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-slate-400 font-bold">المطلوب:</span>
+                                  <span className="font-bold text-amber-300">
+                                    {isSpecific ? `طلب كابتن (${targetSpec?.name || wt.specialist?.name}) بالاسم 👑` : "في انتظار أول كابتن يفضى ⏳"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between pt-0.5">
+                                  <span className="text-slate-400">حالة الكابتن:</span>
+                                  <span>
+                                    {isSpecific ? (
+                                      isSpecReady ? (
+                                        <strong className="text-emerald-400 font-bold animate-pulse">🟢 الكرسي متاح الآن!</strong>
+                                      ) : (
+                                        <span className="text-amber-400 font-bold">🔴 مشغول على الكرسي #{targetSpec?.chairNumber}</span>
+                                      )
+                                    ) : anySpecAvailable ? (
+                                      <strong className="text-emerald-400 font-bold animate-pulse">🟢 يوجد كابتن متاح الآن!</strong>
+                                    ) : (
+                                      <span className="text-rose-400 font-bold">🔴 جميع الكباتن مشغولون حالياً</span>
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!isSpecific) {
+                                    setShowSeatPickerModal(wt);
+                                  } else {
+                                    handleSeatWaitingTicket(wt, targetSpec?.id);
+                                  }
+                                }}
+                                className={`flex-1 py-2 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
+                                  isSpecReady || (!isSpecific && anySpecAvailable)
+                                    ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20"
+                                    : "bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300"
+                                }`}
+                              >
+                                <Scissors className="w-3.5 h-3.5" />
+                                <span>إجلاس على الكرسي الآن 💺</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleCancelWaitingTicket(wt.id, wt.customerName)}
+                                className="py-2 px-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 hover:text-white transition text-xs font-bold cursor-pointer"
+                                title="إلغاء الانتظار / مغادرة الصالون"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Active Chairs & Finished Tickets */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-black text-white flex items-center gap-2">
+                      <Scissors className="w-4 h-4 text-amber-400" />
+                      <span>كراسي الحلاقة والتذاكر اللحظية ({chairTickets.length})</span>
+                    </h3>
+                    <span className="text-[11px] text-amber-300 font-bold">
+                      تحديث تلقائي كل 4 ثوانٍ ⚡
+                    </span>
+                  </div>
+
+                  {chairTickets.length === 0 ? (
+                    <div className="p-8 rounded-3xl bg-[#14141c] border border-white/10 text-center space-y-2">
+                      <div className="text-2xl">💈</div>
+                      <p className="text-xs text-slate-400 font-bold">
+                        لا توجد كراسي مشغولة أو تذاكر بانتظار الحساب حالياً
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {chairTickets.map((t) => {
+                        const isSelected = selectedTicket?.id === t.id;
+                        const isReadyForCashier = t.status === "READY_FOR_CASHIER";
+
+                        let servCount = 0;
+                        try {
+                          const s = typeof t.services === "string" ? JSON.parse(t.services) : t.services;
+                          servCount = s.length;
+                        } catch {}
+
+                        return (
+                          <div
+                            key={t.id}
+                            onClick={() => handleSelectTicket(t)}
+                            className={`cursor-pointer p-4 rounded-2xl border transition space-y-3 flex flex-col justify-between ${
+                              isSelected
+                                ? "bg-amber-500/20 border-amber-400 ring-2 ring-amber-400 shadow-lg shadow-amber-500/10"
+                                : isReadyForCashier
+                                ? "bg-gradient-to-b from-[#181822] to-[#121218] border-emerald-500/50 hover:border-emerald-400 ring-1 ring-emerald-500/30"
+                                : "bg-[#14141c] hover:bg-[#181824] border-white/10"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs text-amber-400 font-black">
+                                #{t.ticketNumber}
+                              </span>
+                              <span
+                                className={`py-0.5 px-2 rounded-full text-[10px] font-black ${
+                                  isReadyForCashier
+                                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse"
+                                    : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                                }`}
+                              >
+                                {isReadyForCashier ? "جاهز للحساب 💰" : "على الكرسي ✂️"}
+                              </span>
+                            </div>
+
+                            <div>
+                              <h4 className="font-black text-sm text-white">{t.customerName}</h4>
+                              <p className="text-xs text-slate-400">
+                                المتخصص: <strong className="text-amber-300">{t.specialist?.name}</strong>{" "}
+                                (ك #{t.chairNumber})
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between border-t border-white/5 pt-2 text-xs">
+                              <span className="text-slate-400">{servCount} خدمات مسجلة</span>
+                              <span className="font-mono text-base font-black text-amber-400">
+                                {t.finalAmount} ج.م
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </>
+            );
+          })()}
 
           {/* Retail Beauty Products Catalog (Add to Cart) */}
           <div className="space-y-3">
@@ -969,44 +1196,47 @@ export default function CashierPosPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          CASHIER ADMIT WALK-IN CUSTOMER TO CHAIR MODAL
+          CASHIER ADMIT WALK-IN CUSTOMER TO CHAIR OR WAITING LOUNGE MODAL
          ───────────────────────────────────────────────────────────── */}
       {showAdmitModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print" dir="rtl">
-          <div className="relative w-full max-w-md bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex justify-center items-start sm:items-center py-6 sm:py-10 px-3 font-sans no-print"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-md my-auto bg-[#12121a] border border-amber-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center">
                   <Scissors className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white">إجلاس زبون جديد على كرسي الحلاقة 💺</h3>
-                  <p className="text-[11px] text-slate-400">توجيه العميل إلى كرسي متخصص محدد لبدء التذكرة آلياً</p>
+                  <h3 className="text-sm font-black text-white">استقبال وإجلاس زبون بالصالون 💺</h3>
+                  <p className="text-[11px] text-slate-400">إجلاس فوري على الكرسي أو إضافة لصالة الاستراحة وقائمة الانتظار</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAdmitModal(false)}
-                className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-xs"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleAdmitCustomerToChair} className="space-y-3 text-xs">
+            <form onSubmit={handleAdmitCustomerToChair} className="overflow-y-auto pr-1 space-y-3 flex-1 text-xs">
               <div>
-                <label className="text-slate-300 font-bold block mb-1">اسم العميل:</label>
+                <label className="text-slate-300 font-bold block mb-1">اسم العميل *:</label>
                 <input
                   type="text"
                   required
                   value={admitCustomerName}
                   onChange={(e) => setAdmitCustomerName(e.target.value)}
                   placeholder="مثال: محمد مصطفى"
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                  className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400 font-bold"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1">رقم هاتف العميل (اختياري للـ CRM والواتساب):</label>
+                <label className="text-slate-300 font-bold block mb-1">رقم هاتف العميل (اختياري للـ CRM وسجل الزيارات):</label>
                 <input
                   type="text"
                   value={admitCustomerPhone}
@@ -1017,34 +1247,170 @@ export default function CashierPosPage() {
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1">المتخصص والكرسي الموجه إليه:</label>
+                <label className="text-slate-300 font-bold block mb-1">تفضيل المتخصص والكرسي:</label>
                 <select
                   required
                   value={admitSpecialistId}
-                  onChange={(e) => setAdmitSpecialistId(e.target.value)}
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                  onChange={(e) => {
+                    setAdmitSpecialistId(e.target.value);
+                    if (e.target.value === "FIRST_AVAILABLE") {
+                      setAdmitMode("WAITING");
+                    } else {
+                      const spec = specialists.find((s) => s.id === e.target.value);
+                      if (spec && spec.status !== "AVAILABLE") {
+                        setAdmitMode("WAITING");
+                      }
+                    }
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
                 >
-                  <option value="">-- اختر المتخصص --</option>
+                  <option value="FIRST_AVAILABLE">⏳ في انتظار أول كابتن يفضى (بدون تفضيل شخصي)</option>
                   {specialists.map((spec) => (
                     <option key={spec.id} value={spec.id}>
-                      {spec.name} • كرسي #{spec.chairNumber} ({spec.status === "AVAILABLE" ? "متاح 🟢" : spec.status === "WITH_CLIENT" ? "مشغول 💺" : spec.status})
+                      {spec.name} • كرسي #{spec.chairNumber} ({spec.status === "AVAILABLE" ? "متاح فوراً 🟢" : "مشغول على الكرسي 🔴"})
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
-                ⚡ بمجرد التوجيه، ستظهر التذكرة فوراً على شاشة المتخصص على الكرسي لتسجيل الخدمات والعروض وإنهائها للكاشير.
-              </div>
+              {/* Dynamic Logic Explanations & Seating Mode Selection */}
+              {(() => {
+                const isFirst = admitSpecialistId === "FIRST_AVAILABLE" || !admitSpecialistId;
+                const chosenSpec = specialists.find((s) => s.id === admitSpecialistId);
+                const isSpecBusy = chosenSpec && chosenSpec.status !== "AVAILABLE";
+
+                if (isFirst) {
+                  return (
+                    <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-300 text-[11px] space-y-1">
+                      <div className="font-bold flex items-center gap-1">
+                        <span>🛋️</span>
+                        <span>صالة الاستراحة وقائمة الانتظار VIP</span>
+                      </div>
+                      <p className="text-slate-300 text-[10px] leading-relaxed">
+                        سيتم تسجيل الزبون في قائمة الانتظار، وبمجرد فراغ أي كابتن بالصالون ستتمكن من إجلاسه فوراً بنقرة زر واحدة.
+                      </p>
+                    </div>
+                  );
+                }
+
+                if (isSpecBusy) {
+                  return (
+                    <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] space-y-1">
+                      <div className="font-black flex items-center gap-1">
+                        <span>⚠️</span>
+                        <span>الكابتن ({chosenSpec?.name}) مشغول حالياً على الكرسي #{chosenSpec?.chairNumber}</span>
+                      </div>
+                      <p className="text-slate-300 text-[10px] leading-relaxed">
+                        الزبون اختار هذا الكابتن بالاسم ومستعد للانتظار. سيتم إدراج الزبون في "صالة الاستراحة وقائمة الانتظار"، وعند انتهاء الكابتن ستتمكن من إجلاسه فوراً 👑
+                      </p>
+                    </div>
+                  );
+                }
+
+                // Specialist is AVAILABLE
+                return (
+                  <div className="space-y-2 pt-1">
+                    <label className="text-slate-300 font-bold block mb-1">طريقة التوجيه المطلوبة:</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setAdmitMode("CHAIR")}
+                        className={`p-2.5 rounded-xl border text-center font-bold text-xs transition cursor-pointer ${
+                          admitMode === "CHAIR"
+                            ? "bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-md shadow-emerald-500/20"
+                            : "bg-white/5 hover:bg-white/10 border-white/10 text-slate-300"
+                        }`}
+                      >
+                        💺 إجلاس فوري على الكرسي
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAdmitMode("WAITING")}
+                        className={`p-2.5 rounded-xl border text-center font-bold text-xs transition cursor-pointer ${
+                          admitMode === "WAITING"
+                            ? "bg-sky-500 text-slate-950 border-sky-400 font-black shadow-md shadow-sky-500/20"
+                            : "bg-white/5 hover:bg-white/10 border-white/10 text-slate-300"
+                        }`}
+                      >
+                        🛋️ صالة الاستراحة (ينتظر)
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <button
                 type="submit"
                 disabled={admittingClient}
-                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 disabled:opacity-50"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer pt-2"
               >
-                {admittingClient ? "جاري التوجيه..." : "توجيه الزبون للكرسي وبدء الحلاقة 🚀"}
+                {admittingClient
+                  ? "جاري التسجيل..."
+                  : admitMode === "CHAIR" && admitSpecialistId !== "FIRST_AVAILABLE"
+                  ? "توجيه الزبون للكرسي وبدء الحلاقة 🚀"
+                  : "تسجيل الزبون بصالة الاستراحة وقائمة الانتظار 🛋️"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          SEAT WAITING CLIENT PICKER MODAL (اختيار الكرسي للإجلاس)
+         ───────────────────────────────────────────────────────────── */}
+      {showSeatPickerModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex justify-center items-start sm:items-center py-6 sm:py-10 px-3 font-sans no-print"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-md my-auto bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <Scissors className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="text-sm font-black text-white">إجلاس العميل ({showSeatPickerModal.customerName}) 💺</h3>
+                  <p className="text-[11px] text-slate-400">اختر الكرسي والكابتن المتاح لبدء الحلاقة فوراً</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSeatPickerModal(null)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="overflow-y-auto pr-1 space-y-2 flex-1">
+              <span className="text-xs text-slate-300 font-bold block mb-1">الكباتن المتاحين في الصالون الآن:</span>
+              {specialists.map((sp) => {
+                const isAvailable = sp.status === "AVAILABLE";
+                return (
+                  <button
+                    key={sp.id}
+                    type="button"
+                    onClick={() => handleSeatWaitingTicket(showSeatPickerModal, sp.id)}
+                    className={`w-full p-3 rounded-2xl border text-right transition flex items-center justify-between ${
+                      isAvailable
+                        ? "bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/40 cursor-pointer"
+                        : "bg-white/5 hover:bg-white/10 border-white/5 opacity-60 cursor-pointer"
+                    }`}
+                  >
+                    <div>
+                      <h4 className="font-black text-xs text-white">{sp.name}</h4>
+                      <p className="text-[10px] text-slate-400">كرسي #{sp.chairNumber} • {sp.title || "حلاق ومصفف VIP"}</p>
+                    </div>
+                    <span
+                      className={`py-1 px-2.5 rounded-xl text-[10px] font-black ${
+                        isAvailable ? "bg-emerald-500 text-slate-950 font-black shadow-md" : "bg-white/10 text-amber-300"
+                      }`}
+                    >
+                      {isAvailable ? "إجلاس على هذا الكرسي 💺" : "مشغول حالياً (تجاوز وإجلاس)"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -1150,11 +1516,11 @@ export default function CashierPosPage() {
          ───────────────────────────────────────────────────────────── */}
       {showCloseShiftModal && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex justify-center items-start sm:items-center py-6 sm:py-10 px-3 font-sans no-print"
           dir="rtl"
         >
-          <div className="relative w-full max-w-lg bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="relative w-full max-w-lg my-auto bg-[#12121a] border border-amber-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-amber-400" />
                 <div>
@@ -1167,174 +1533,176 @@ export default function CashierPosPage() {
               <button
                 type="button"
                 onClick={() => setShowCloseShiftModal(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            {/* Live Shift Drawer Breakdown */}
-            <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
-              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-white/10">
-                <div>
-                  <span className="text-slate-400 block text-[10px]">الكاشير المسؤول:</span>
-                  <span className="text-white font-bold">{openShift?.openedBy || currentUser?.name}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">بدء الوردية:</span>
-                  <span className="text-amber-300 font-mono text-[11px]">
-                    {openShift?.openedAt
-                      ? new Date(openShift.openedAt).toLocaleTimeString("ar-EG", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "الآن"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-slate-400 block text-[10px]">إيراد الحلاقة:</span>
-                  <span className="font-mono font-bold text-white">
-                    {shiftStats?.servicesTotal || 0} ج
-                  </span>
-                </div>
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-slate-400 block text-[10px]">إيراد المنتجات:</span>
-                  <span className="font-mono font-bold text-white">
-                    {shiftStats?.retailTotal || 0} ج
-                  </span>
-                </div>
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-slate-400 block text-[10px]">سلف المختصين:</span>
-                  <span className="font-mono font-bold text-rose-300">
-                    -{shiftStats?.advancesPayouts || 0} ج
-                  </span>
-                </div>
-                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-slate-400 block text-[10px]">المصروفات:</span>
-                  <span className="font-mono font-bold text-rose-300">
-                    -{shiftStats?.expensesTotal || 0} ج
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[11px]">
-                <span className="text-slate-400 font-bold">المقبوضات:</span>
-                <span className="font-mono text-slate-300">
-                  كاش: <strong className="text-amber-300">{shiftStats?.cashCollected || 0} ج</strong> • 
-                  إلكتروني:{" "}
-                  <strong className="text-sky-300">
-                    {(shiftStats?.visaCollected || 0) +
-                      (shiftStats?.instapayCollected || 0) +
-                      (shiftStats?.vodafoneCollected || 0)}{" "}
-                    ج
-                  </strong>
-                </span>
-              </div>
-
-              {/* Expected Drawer Cash */}
-              <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-black text-amber-300 block">النقدية المحسوبة المتوقعة بالدرج:</span>
-                  <span className="text-[10px] text-slate-400">كاش المقبوضات - سلف الكاش - مصروفات الكاش</span>
-                </div>
-                <span className="text-lg font-mono font-black text-amber-400">
-                  {shiftStats?.expectedCash || 0} ج.م
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleExecuteCloseShift} className="space-y-3 text-xs">
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">
-                  النقدية الفعلية بعد الجرد بالدرج (ج.م) *:
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={shiftForm.actualCash}
-                  onChange={(e) => setShiftForm({ ...shiftForm, actualCash: Number(e.target.value) })}
-                  className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-base focus:border-amber-400"
-                />
-              </div>
-
-              {/* Live difference indicator */}
-              {(() => {
-                const diff = Number(shiftForm.actualCash) - Number(shiftStats?.expectedCash || 0);
-                return (
-                  <div
-                    className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
-                      diff === 0
-                        ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
-                        : diff < 0
-                        ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
-                        : "bg-sky-500/15 border-sky-500/30 text-sky-300"
-                    }`}
-                  >
-                    <span>حالة مطابقة الدرج:</span>
-                    <span className="font-mono font-black">
-                      {diff === 0
-                        ? "النقدية متطابقة تماماً مع الحسابات ✅ (0 ج.م)"
-                        : diff < 0
-                        ? `يوجد عجز نقدي بالدرج: ${diff} ج.م 🔴`
-                        : `يوجد فائض نقدي بالدرج: +${diff} ج.م 🟢`}
+            <div className="overflow-y-auto pr-1 space-y-3 flex-1">
+              {/* Live Shift Drawer Breakdown */}
+              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 pb-2 border-b border-white/10">
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">الكاشير المسؤول:</span>
+                    <span className="text-white font-bold">{openShift?.openedBy || currentUser?.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">بدء الوردية:</span>
+                    <span className="text-amber-300 font-mono text-[11px]">
+                      {openShift?.openedAt
+                        ? new Date(openShift.openedAt).toLocaleTimeString("ar-EG", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "الآن"}
                     </span>
                   </div>
-                );
-              })()}
+                </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">تم تسليم النقدية إلى *:</label>
-                <div className="space-y-1.5">
-                  <input
-                    type="text"
-                    required
-                    value={shiftForm.handedTo}
-                    onChange={(e) => setShiftForm({ ...shiftForm, handedTo: e.target.value })}
-                    placeholder="مثال: أ/ حمزة عباس (المايسترو - المالك) 👑"
-                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
-                  />
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      "أ/ حمزة عباس (المايسترو - المالك) 👑",
-                      "مدير الفرع المناوب 👔",
-                      "الخزنة الرئيسية للصالون 🏦",
-                    ].map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => setShiftForm({ ...shiftForm, handedTo: opt })}
-                        className="py-0.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[10px] border border-white/5 cursor-pointer"
-                      >
-                        {opt}
-                      </button>
-                    ))}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-slate-400 block text-[10px]">إيراد الحلاقة:</span>
+                    <span className="font-mono font-bold text-white">
+                      {shiftStats?.servicesTotal || 0} ج
+                    </span>
                   </div>
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-slate-400 block text-[10px]">إيراد المنتجات:</span>
+                    <span className="font-mono font-bold text-white">
+                      {shiftStats?.retailTotal || 0} ج
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-slate-400 block text-[10px]">سلف المختصين:</span>
+                    <span className="font-mono font-bold text-rose-300">
+                      -{shiftStats?.advancesPayouts || 0} ج
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                    <span className="text-slate-400 block text-[10px]">المصروفات:</span>
+                    <span className="font-mono font-bold text-rose-300">
+                      -{shiftStats?.expensesTotal || 0} ج
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[11px]">
+                  <span className="text-slate-400 font-bold">المقبوضات:</span>
+                  <span className="font-mono text-slate-300">
+                    كاش: <strong className="text-amber-300">{shiftStats?.cashCollected || 0} ج</strong> • 
+                    إلكتروني:{" "}
+                    <strong className="text-sky-300">
+                      {(shiftStats?.visaCollected || 0) +
+                        (shiftStats?.instapayCollected || 0) +
+                        (shiftStats?.vodafoneCollected || 0)}{" "}
+                      ج
+                    </strong>
+                  </span>
+                </div>
+
+                {/* Expected Drawer Cash */}
+                <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-black text-amber-300 block">النقدية المحسوبة المتوقعة بالدرج:</span>
+                    <span className="text-[10px] text-slate-400">كاش المقبوضات - سلف الكاش - مصروفات الكاش</span>
+                  </div>
+                  <span className="text-lg font-mono font-black text-amber-400">
+                    {shiftStats?.expectedCash || 0} ج.م
+                  </span>
                 </div>
               </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">ملاحظات الإقفال (اختياري):</label>
-                <input
-                  type="text"
-                  value={shiftForm.notes}
-                  onChange={(e) => setShiftForm({ ...shiftForm, notes: e.target.value })}
-                  placeholder="أي ملاحظات حول التوريد أو الوردية"
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
-                />
-              </div>
+              <form onSubmit={handleExecuteCloseShift} className="space-y-3 text-xs">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">
+                    النقدية الفعلية بعد الجرد بالدرج (ج.م) *:
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={shiftForm.actualCash}
+                    onChange={(e) => setShiftForm({ ...shiftForm, actualCash: Number(e.target.value) })}
+                    className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-base focus:border-amber-400"
+                  />
+                </div>
 
-              <button
-                type="submit"
-                disabled={closingShift}
-                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <Lock className="w-4 h-4" />
-                <span>{closingShift ? "جاري الإقفال..." : "إقفال الوردية وطباعة إيصال التسليم 🔒🖨️"}</span>
-              </button>
-            </form>
+                {/* Live difference indicator */}
+                {(() => {
+                  const diff = Number(shiftForm.actualCash) - Number(shiftStats?.expectedCash || 0);
+                  return (
+                    <div
+                      className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
+                        diff === 0
+                          ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                          : diff < 0
+                          ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                          : "bg-sky-500/15 border-sky-500/30 text-sky-300"
+                      }`}
+                    >
+                      <span>حالة مطابقة الدرج:</span>
+                      <span className="font-mono font-black">
+                        {diff === 0
+                          ? "النقدية متطابقة تماماً مع الحسابات ✅ (0 ج.م)"
+                          : diff < 0
+                          ? `يوجد عجز نقدي بالدرج: ${diff} ج.م 🔴`
+                          : `يوجد فائض نقدي بالدرج: +${diff} ج.م 🟢`}
+                      </span>
+                    </div>
+                  );
+                })()}
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">تم تسليم النقدية إلى *:</label>
+                  <div className="space-y-1.5">
+                    <input
+                      type="text"
+                      required
+                      value={shiftForm.handedTo}
+                      onChange={(e) => setShiftForm({ ...shiftForm, handedTo: e.target.value })}
+                      placeholder="مثال: أ/ حمزة عباس (المايسترو - المالك) 👑"
+                      className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                    />
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        "أ/ حمزة عباس (المايسترو - المالك) 👑",
+                        "مدير الفرع المناوب 👔",
+                        "الخزنة الرئيسية للصالون 🏦",
+                      ].map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setShiftForm({ ...shiftForm, handedTo: opt })}
+                          className="py-0.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[10px] border border-white/5 cursor-pointer"
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">ملاحظات الإقفال (اختياري):</label>
+                  <input
+                    type="text"
+                    value={shiftForm.notes}
+                    onChange={(e) => setShiftForm({ ...shiftForm, notes: e.target.value })}
+                    placeholder="أي ملاحظات حول التوريد أو الوردية"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={closingShift}
+                  className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>{closingShift ? "جاري الإقفال..." : "إقفال الوردية وطباعة إيصال التسليم 🔒🖨️"}</span>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}
@@ -1344,11 +1712,11 @@ export default function CashierPosPage() {
          ───────────────────────────────────────────────────────────── */}
       {showAdvanceModal && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex justify-center items-start sm:items-center py-6 sm:py-10 px-3 font-sans no-print"
           dir="rtl"
         >
-          <div className="relative w-full max-w-sm bg-[#12121a] border border-sky-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="relative w-full max-w-sm my-auto bg-[#12121a] border border-sky-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Wallet className="w-5 h-5 text-sky-400" />
                 <h3 className="text-sm font-black text-white">صرف سلفة كاش لمختص من الدرج</h3>
@@ -1356,13 +1724,13 @@ export default function CashierPosPage() {
               <button
                 type="button"
                 onClick={() => setShowAdvanceModal(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleRecordAdvance} className="space-y-3 text-xs">
+            <form onSubmit={handleRecordAdvance} className="overflow-y-auto pr-1 space-y-3 flex-1 text-xs">
               <div>
                 <label className="text-slate-300 font-bold block mb-1">المتخصص المستلم للسلفة:</label>
                 <select
@@ -1424,11 +1792,11 @@ export default function CashierPosPage() {
          ───────────────────────────────────────────────────────────── */}
       {showTreasuryModal && treasurySummary && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex justify-center items-start sm:items-center py-6 sm:py-10 px-3 font-sans no-print"
           dir="rtl"
         >
-          <div className="relative w-full max-w-md bg-[#12121a] border border-emerald-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="relative w-full max-w-md my-auto bg-[#12121a] border border-emerald-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-emerald-400" />
                 <h3 className="text-sm font-black text-white">ملخص خزنة ودرج اليوم</h3>
@@ -1436,24 +1804,24 @@ export default function CashierPosPage() {
               <button
                 type="button"
                 onClick={() => setShowTreasuryModal(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="overflow-y-auto pr-1 space-y-3 flex-1 text-xs">
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-3 rounded-2xl bg-black/60 border border-white/10">
                   <span className="text-slate-400 block text-[10px]">إجمالي المبيعات اليوم:</span>
                   <span className="text-lg font-mono font-black text-white">
-                    {treasurySummary.totalSales} ج.م
+                    {(treasurySummary.totalSales ?? treasurySummary.totalRevenue ?? 0).toLocaleString()} ج.م
                   </span>
                 </div>
                 <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30">
                   <span className="text-amber-300 font-bold block text-[10px]">صافي نقدية الدرج الآن:</span>
                   <span className="text-lg font-mono font-black text-amber-400">
-                    {treasurySummary.netDrawerCash} ج.م
+                    {(treasurySummary.netDrawerCash ?? treasurySummary.netCashInDrawer ?? 0).toLocaleString()} ج.م
                   </span>
                 </div>
               </div>
@@ -1461,27 +1829,45 @@ export default function CashierPosPage() {
               <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-[11px]">
                 <div className="flex justify-between">
                   <span className="text-slate-400">حلاقة وخدمات وبكجات:</span>
-                  <span className="font-mono text-white font-bold">{treasurySummary.servicesTotal} ج.م</span>
+                  <span className="font-mono text-white font-bold">
+                    {(treasurySummary.servicesTotal ?? treasurySummary.servicesRevenue ?? 0).toLocaleString()} ج.م
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">بيع منتجات ومستحضرات:</span>
-                  <span className="font-mono text-white font-bold">{treasurySummary.retailTotal} ج.م</span>
+                  <span className="font-mono text-white font-bold">
+                    {(treasurySummary.retailTotal ?? treasurySummary.retailRevenue ?? 0).toLocaleString()} ج.م
+                  </span>
                 </div>
                 <div className="flex justify-between text-emerald-300">
                   <span>مقبوضات كاش نقدي:</span>
-                  <span className="font-mono font-bold">+{treasurySummary.cashCollected} ج.م</span>
+                  <span className="font-mono font-bold">
+                    +{(treasurySummary.cashCollected ?? treasurySummary.cashRevenue ?? 0).toLocaleString()} ج.م
+                  </span>
                 </div>
                 <div className="flex justify-between text-sky-300">
                   <span>مقبوضات إلكتروني (فيزا/انستاباي/فودافون):</span>
-                  <span className="font-mono font-bold">+{treasurySummary.electronicCollected} ج.م</span>
+                  <span className="font-mono font-bold">
+                    +{(
+                      treasurySummary.electronicCollected ??
+                      ((treasurySummary.visaRevenue || 0) +
+                        (treasurySummary.instapayRevenue || 0) +
+                        (treasurySummary.vodafoneRevenue || 0))
+                    ).toLocaleString()}{" "}
+                    ج.م
+                  </span>
                 </div>
                 <div className="flex justify-between text-rose-300">
                   <span>سلف نقدية منصرفة من الدرج:</span>
-                  <span className="font-mono font-bold">-{treasurySummary.advancesPaid} ج.م</span>
+                  <span className="font-mono font-bold">
+                    -{(treasurySummary.advancesPaid ?? treasurySummary.specialistAdvances ?? 0).toLocaleString()} ج.م
+                  </span>
                 </div>
-                <div className="flex justify-between text-rose-300">
+                <div className="flex justify-between text-rose-400">
                   <span>مصروفات ونثريات نقدية:</span>
-                  <span className="font-mono font-bold">-{treasurySummary.expensesPaid} ج.م</span>
+                  <span className="font-mono font-bold">
+                    -{(treasurySummary.expensesPaid ?? treasurySummary.generalExpenses ?? 0).toLocaleString()} ج.م
+                  </span>
                 </div>
               </div>
 
@@ -1490,7 +1876,7 @@ export default function CashierPosPage() {
                 onClick={() => setShowTreasuryModal(false)}
                 className="w-full py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-black text-xs transition cursor-pointer"
               >
-                إغلاق
+                إغلاق النافذة
               </button>
             </div>
           </div>

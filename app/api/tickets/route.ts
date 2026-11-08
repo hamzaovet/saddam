@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     if (specialistId) where.specialistId = specialistId;
 
     if (activeOnly) {
-      where.status = { in: ["IN_CHAIR", "READY_FOR_CASHIER"] };
+      where.status = { in: ["WAITING", "IN_CHAIR", "READY_FOR_CASHIER"] };
     } else if (status) {
       where.status = status;
     }
@@ -41,7 +41,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { specialistId, branchId, customerName, customerPhone, customerId, bookingId, initialServices } = body;
+    const {
+      specialistId,
+      branchId,
+      customerName,
+      customerPhone,
+      customerId,
+      bookingId,
+      initialServices,
+      status: requestedStatus,
+      waitingMode,
+      notes,
+    } = body;
 
     if (!specialistId || !branchId || !customerName) {
       return NextResponse.json(
@@ -60,10 +71,19 @@ export async function POST(req: Request) {
     }
 
     const ticketNumber = `CHAIR-${Math.floor(1000 + Math.random() * 9000)}`;
+    const isWaiting = requestedStatus === "WAITING";
 
     // Prepare initial services
     let servicesList = initialServices || [];
     let servicesTotal = servicesList.reduce((sum: number, s: any) => sum + Number(s.price || 0), 0);
+
+    const ticketNotes =
+      notes ||
+      (isWaiting
+        ? waitingMode === "FIRST_AVAILABLE"
+          ? "🛋️ صالة الاستراحة: في انتظار أول كابتن يفضى"
+          : `🛋️ صالة الاستراحة: طلب كابتن (${specialist.name}) بالاسم`
+        : null);
 
     const ticket = await prisma.ticket.create({
       data: {
@@ -74,25 +94,35 @@ export async function POST(req: Request) {
         customerId: customerId || null,
         customerName: customerName.trim(),
         customerPhone: customerPhone?.trim() || null,
-        status: "IN_CHAIR",
+        status: isWaiting ? "WAITING" : "IN_CHAIR",
         services: JSON.stringify(servicesList),
         servicesTotal,
         finalAmount: servicesTotal,
         startTime: new Date(),
+        notes: ticketNotes,
+      },
+      include: {
+        specialist: {
+          select: { id: true, name: true, photo: true, chairNumber: true, status: true, commissionRate: true },
+        },
+        branch: { select: { id: true, name: true, code: true } },
+        customer: { select: { id: true, name: true, phone: true } },
       },
     });
 
-    // Update specialist status to WITH_CLIENT
-    await prisma.specialist.update({
-      where: { id: specialistId },
-      data: { status: "WITH_CLIENT" },
-    });
+    // Update specialist status to WITH_CLIENT only if actually seated in chair
+    if (!isWaiting) {
+      await prisma.specialist.update({
+        where: { id: specialistId },
+        data: { status: "WITH_CLIENT" },
+      });
+    }
 
     // If coming from a booking, update booking status
     if (bookingId) {
       await prisma.booking.update({
         where: { id: bookingId },
-        data: { status: "IN_CHAIR" },
+        data: { status: isWaiting ? "WAITING_LOUNGE" : "IN_CHAIR" },
       });
     }
 
@@ -132,6 +162,61 @@ export async function PATCH(req: Request) {
       retailItems = typeof ticket.retailItems === "string" ? JSON.parse(ticket.retailItems) : ticket.retailItems || [];
     } catch {
       retailItems = [];
+    }
+
+    // 0. SEAT WAITING CLIENT ON CHAIR (Walk-in or Waiting lounge customer admitted to chair)
+    if (action === "SEAT_NOW" || action === "SEAT_WAITING_CLIENT") {
+      const targetSpecialistId = body.specialistId || ticket.specialistId;
+      const targetSpecialist = await prisma.specialist.findUnique({
+        where: { id: targetSpecialistId },
+      });
+
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: {
+          status: "IN_CHAIR",
+          specialistId: targetSpecialistId,
+          chairNumber: targetSpecialist?.chairNumber || ticket.chairNumber,
+          startTime: new Date(),
+          notes: body.notes !== undefined ? body.notes : ticket.notes,
+        },
+        include: {
+          specialist: {
+            select: { id: true, name: true, photo: true, chairNumber: true, status: true, commissionRate: true },
+          },
+          branch: { select: { id: true, name: true, code: true } },
+          customer: { select: { id: true, name: true, phone: true } },
+        },
+      });
+
+      if (targetSpecialistId) {
+        await prisma.specialist.update({
+          where: { id: targetSpecialistId },
+          data: { status: "WITH_CLIENT" },
+        });
+      }
+
+      return NextResponse.json({ success: true, ticket: updated });
+    }
+
+    // 0.1 CANCEL WAITING TICKET (Customer left or cancelled)
+    if (action === "CANCEL_WAITING" || action === "CANCEL_TICKET") {
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: {
+          status: "CANCELLED",
+          endTime: new Date(),
+        },
+      });
+
+      if (ticket.status === "IN_CHAIR" && ticket.specialistId) {
+        await prisma.specialist.update({
+          where: { id: ticket.specialistId },
+          data: { status: "AVAILABLE" },
+        });
+      }
+
+      return NextResponse.json({ success: true, ticket: updated });
     }
 
     // 1. ADD SERVICE (Called by Barber on chair pad)
