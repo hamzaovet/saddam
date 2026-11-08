@@ -102,7 +102,14 @@ export default function AdminPage() {
   const [specialistsSummary, setSpecialistsSummary] = useState<any[]>([]);
   const [specialistStatement, setSpecialistStatement] = useState<any>(null);
   const [selectedLedgerSpecialistId, setSelectedLedgerSpecialistId] = useState<string>("");
+  const selectedLedgerSpecialistIdRef = useRef<string>("");
   const [specialistSubView, setSpecialistSubView] = useState<"CARDS" | "STATEMENT">("CARDS");
+
+  const handleSelectLedgerSpecialist = (id: string) => {
+    selectedLedgerSpecialistIdRef.current = id;
+    setSelectedLedgerSpecialistId(id);
+    fetchSpecialistStatement(id);
+  };
 
   // Expense Modal State
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
@@ -413,7 +420,7 @@ export default function AdminPage() {
         fetch("/api/customers"),
         fetch("/api/users"),
         fetch("/api/tickets"),
-        fetch(`/api/ledgers?specialistId=${selectedLedgerSpecialistId || ""}&branchId=${selectedBranchId}`),
+        fetch(`/api/ledgers?specialistId=${selectedLedgerSpecialistIdRef.current || ""}&branchId=${selectedBranchId}`),
         fetch("/api/chat?limit=50"),
         fetch(`/api/treasury?period=${treasuryPeriod}&branchId=${selectedBranchId}`),
         fetch(`/api/shifts?branchId=${selectedBranchId}`),
@@ -463,7 +470,8 @@ export default function AdminPage() {
       }
       if (dataSpec.success && dataSpec.specialists) {
         setSpecialists(dataSpec.specialists);
-        if (!selectedLedgerSpecialistId && dataSpec.specialists.length > 0) {
+        if (!selectedLedgerSpecialistIdRef.current && dataSpec.specialists.length > 0) {
+          selectedLedgerSpecialistIdRef.current = dataSpec.specialists[0].id;
           setSelectedLedgerSpecialistId(dataSpec.specialists[0].id);
         }
       }
@@ -475,7 +483,11 @@ export default function AdminPage() {
       if (dataT.success && dataT.tickets) setTickets(dataT.tickets);
       if (dataL.success && dataL.ledgers) {
         setLedgers(dataL.ledgers);
-        if (dataL.statement) setSpecialistStatement(dataL.statement);
+        if (dataL.statement) {
+          if (!selectedLedgerSpecialistIdRef.current || dataL.statement.specialist?.id === selectedLedgerSpecialistIdRef.current) {
+            setSpecialistStatement(dataL.statement);
+          }
+        }
         if (dataL.specialistsSummary) setSpecialistsSummary(dataL.specialistsSummary);
       }
       if (dataTreasury.success && dataTreasury.summary) {
@@ -2656,9 +2668,8 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => {
                       setSpecialistSubView("STATEMENT");
-                      if (!selectedLedgerSpecialistId && specialists.length > 0) {
-                        setSelectedLedgerSpecialistId(specialists[0].id);
-                        fetchSpecialistStatement(specialists[0].id);
+                      if (!selectedLedgerSpecialistIdRef.current && specialists.length > 0) {
+                        handleSelectLedgerSpecialist(specialists[0].id);
                       }
                     }}
                     className={`py-1.5 px-3.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 ${
@@ -2854,9 +2865,8 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedLedgerSpecialistId(spec.id);
+                            handleSelectLedgerSpecialist(spec.id);
                             setSpecialistSubView("STATEMENT");
-                            fetchSpecialistStatement(spec.id);
                           }}
                           className="w-full py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30 font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                         >
@@ -2949,9 +2959,7 @@ export default function AdminPage() {
                       <select
                         value={selectedLedgerSpecialistId}
                         onChange={(e) => {
-                          const id = e.target.value;
-                          setSelectedLedgerSpecialistId(id);
-                          fetchSpecialistStatement(id);
+                          handleSelectLedgerSpecialist(e.target.value);
                         }}
                         className="py-2 px-3 rounded-xl bg-black/60 border border-amber-500/40 text-amber-300 text-xs font-bold focus:outline-none"
                       >
@@ -3401,8 +3409,8 @@ export default function AdminPage() {
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          setSelectedLedgerSpecialistId(row.specialist?.id);
-                                          fetchSpecialistStatement(row.specialist?.id);
+                                          handleSelectLedgerSpecialist(row.specialist?.id);
+                                          setSpecialistSubView("STATEMENT");
                                         }}
                                         className="py-1 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition"
                                       >

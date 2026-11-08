@@ -114,28 +114,83 @@ export default function HomePage() {
     }
   };
 
-  // Customer Royal Reminder Audio Chime
+  // Customer Royal Reminder Audio Chime with Chrome Autoplay Support
   const playCustomerReminderChime = () => {
+    try {
+      const audioEl = document.getElementById("saddamReminderAudio") as HTMLAudioElement;
+      if (audioEl) {
+        audioEl.currentTime = 0;
+        const p = audioEl.play();
+        if (p !== undefined) {
+          p.catch(() => {
+            tryNewAudio();
+          });
+        }
+      } else {
+        tryNewAudio();
+      }
+    } catch {
+      tryWebAudio();
+    }
+  };
+
+  const tryNewAudio = () => {
+    try {
+      const a = new Audio("/notification.wav");
+      a.volume = 0.9;
+      const p = a.play();
+      if (p !== undefined) {
+        p.catch(() => tryWebAudio());
+      }
+    } catch {
+      tryWebAudio();
+    }
+  };
+
+  const tryWebAudio = () => {
     try {
       const AC = window.AudioContext || (window as any).webkitAudioContext;
       if (!AC) return;
       const ctx = new AC();
       if (ctx.state === "suspended") ctx.resume();
       const now = ctx.currentTime;
-      [[659.25, 0], [880, 0.25], [1318.51, 0.5]].forEach(([freq, delay]) => {
+      [[659.25, 0], [880, 0.25], [1108.73, 0.45], [1318.51, 0.65]].forEach(([freq, delay]) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "sine";
         osc.frequency.value = freq;
         gain.gain.setValueAtTime(0.4, now + delay);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.45);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now + delay);
-        osc.stop(now + delay + 0.45);
+        osc.stop(now + delay + 0.5);
       });
     } catch {}
   };
+
+  // Unlock audio on first user touch/click anywhere on the page
+  useEffect(() => {
+    const unlock = () => {
+      try {
+        const audioEl = document.getElementById("saddamReminderAudio") as HTMLAudioElement;
+        if (audioEl) {
+          audioEl.play().then(() => {
+            audioEl.pause();
+            audioEl.currentTime = 0;
+          }).catch(() => {});
+        }
+      } catch {}
+      window.removeEventListener("click", unlock);
+      window.removeEventListener("touchstart", unlock);
+    };
+    window.addEventListener("click", unlock, { once: true });
+    window.addEventListener("touchstart", unlock, { once: true });
+    return () => {
+      window.removeEventListener("click", unlock);
+      window.removeEventListener("touchstart", unlock);
+    };
+  }, []);
 
   // Available Time Slots
   const timeSlots = [
@@ -182,6 +237,11 @@ export default function HomePage() {
           const todayBookings = data.bookings.filter((b: any) => b.bookingDate === today);
           if (todayBookings.length > 0) {
             const b = todayBookings[0];
+            const ackKey = `saddam_ack_reminder_${b.id}`;
+            if (sessionStorage.getItem(ackKey)) {
+              return; // Already acknowledged, do not show again
+            }
+
             const parts = (b.timeSlot || "").trim().split(" ");
             if (parts.length === 2) {
               let [h, m] = parts[0].split(":").map(Number);
@@ -210,6 +270,58 @@ export default function HomePage() {
     const interval = setInterval(checkUpcomingAppointment, 60000);
     return () => clearInterval(interval);
   }, [customer, settings]);
+
+  // Acknowledge & Respond to 15-Minute Reminder
+  const handleAcknowledgeReminder = async (
+    actionType: "ON_THE_WAY" | "ARRIVED" | "DELAYED_5" | "DELAYED_15" | "DISMISS"
+  ) => {
+    if (!activeAppointmentReminder) return;
+    const targetBooking = activeAppointmentReminder;
+    const bId = targetBooking.id;
+    const ackKey = `saddam_ack_reminder_${bId}`;
+    sessionStorage.setItem(ackKey, actionType);
+    setActiveAppointmentReminder(null);
+
+    let messageText = "";
+    let toastMsg = "";
+
+    if (actionType === "ON_THE_WAY") {
+      messageText = `🚗 إشعار موعد (حجز #${targetBooking.bookingNumber}): العميل (${customer?.name || "VIP"}) يؤكد أنه في الطريق إلى صالون صدام الآن.`;
+      toastMsg = "تسلم يا فندم! تم إبلاغ الصالون بأنك في الطريق 🚗 نتشرف بزيارتك!";
+    } else if (actionType === "ARRIVED") {
+      messageText = `💈 إشعار موعد (حجز #${targetBooking.bookingNumber}): العميل (${customer?.name || "VIP"}) وصل بالفعل ومتواجد داخل الصالون.`;
+      toastMsg = "ألف مرحب بيك في صالون صدام! تم إبلاغ الكابتن والكاشير بوجودك 👑";
+    } else if (actionType === "DELAYED_5") {
+      messageText = `⏳ إشعار موعد (حجز #${targetBooking.bookingNumber}): العميل (${customer?.name || "VIP"}) يعتذر عن تأخير بسيط حوالي 5 إلى 10 دقائق.`;
+      toastMsg = "تم إبلاغ الصالون بتأخرك البسيط ⏳ بانتظارك بأرقى ترحيب!";
+    } else if (actionType === "DELAYED_15") {
+      messageText = `⏱️ إشعار موعد (حجز #${targetBooking.bookingNumber}): العميل (${customer?.name || "VIP"}) يبلغ بتأخير حوالي 15 دقيقة ويرجو تجهيز دوره.`;
+      toastMsg = "تم إبلاغ الصالون بتأخرك 15 دقيقة ⏱️ لا تقلق، دورك محفوظ!";
+    }
+
+    if (toastMsg) {
+      showToast("success", toastMsg);
+    }
+
+    if (messageText && (customer?.phone || targetBooking.customerPhone)) {
+      try {
+        await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sender: "CUSTOMER",
+            senderName: customer?.name || targetBooking.customerName || "عميل VIP",
+            customerPhone: customer?.phone || targetBooking.customerPhone,
+            customerId: customer?.id || targetBooking.customerId,
+            branchId: targetBooking.branchId,
+            message: messageText,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to notify salon chat:", err);
+      }
+    }
+  };
 
   // Initialize Data
   useEffect(() => {
@@ -519,18 +631,50 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-1.5 shrink-0">
               <button
                 type="button"
-                onClick={() => setActiveAppointmentReminder(null)}
-                className="py-1.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-md cursor-pointer"
+                onClick={() => handleAcknowledgeReminder("ON_THE_WAY")}
+                className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] transition shadow-md flex items-center gap-1 cursor-pointer active:scale-95"
               >
-                أنا في الطريق 🚗
+                <span>أنا في الطريق 🚗</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAcknowledgeReminder("ARRIVED")}
+                className="py-1.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] transition shadow-md flex items-center gap-1 cursor-pointer active:scale-95"
+              >
+                <span>موجود بالصالون 💈</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAcknowledgeReminder("DELAYED_5")}
+                className="py-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-amber-200 border border-amber-500/30 font-bold text-[11px] transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>سأتأخر 5-10 د ⏳</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAcknowledgeReminder("DELAYED_15")}
+                className="py-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 border border-white/10 font-bold text-[11px] transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>سأتأخر ربع ساعة ⏱️</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAcknowledgeReminder("DISMISS")}
+                className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
+                title="إغلاق التنبيه"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
         </aside>
       )}
+
+      {/* Audio Element for Browser Autoplay Compliance */}
+      <audio id="saddamReminderAudio" src="/notification.wav" preload="auto" className="hidden" />
 
       {/* ─────────────────────────────────────────────────────────────
           1. LUXURY TOP NAVIGATION BAR (RESPONSIVE & AIRY ON MOBILE)
