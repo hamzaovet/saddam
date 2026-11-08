@@ -34,8 +34,10 @@ export default function SpecialistChairPage() {
   const [activeTicket, setActiveTicket] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Available Services
+  // Available Services & Offers
   const [services, setServices] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
   // Waiting Bookings Queue
   const [waitingBookings, setWaitingBookings] = useState<any[]>([]);
@@ -110,10 +112,14 @@ export default function SpecialistChairPage() {
         }
       }
 
-      // Fetch all services
-      const resS = await fetch("/api/services");
-      const dataS = await resS.json();
+      // Fetch all services & royal offers
+      const [resS, resO] = await Promise.all([
+        fetch("/api/services", { cache: "no-store" }),
+        fetch("/api/offers?activeOnly=true", { cache: "no-store" }),
+      ]);
+      const [dataS, dataO] = await Promise.all([resS.json(), resO.json()]);
       if (dataS.success && dataS.services) setServices(dataS.services);
+      if (dataO.success && dataO.offers) setOffers(dataO.offers);
     } catch (e) {
       console.error(e);
     } finally {
@@ -238,6 +244,34 @@ export default function SpecialistChairPage() {
           serviceId: service.id,
           nameAr: service.nameAr,
           price: service.price,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.ticket) {
+        setActiveTicket(data.ticket);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Add Royal Offer / Package To Active Ticket (One-Tap!)
+  const handleAddOffer = async (offer: any) => {
+    if (!activeTicket) return;
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/tickets", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticketId: activeTicket.id,
+          action: "ADD_SERVICE",
+          serviceId: `offer-${offer.id}`,
+          nameAr: `${offer.titleAr} (${offer.badge || "عرض خاص"}) 👑`,
+          price: offer.price,
         }),
       });
 
@@ -412,22 +446,25 @@ export default function SpecialistChairPage() {
                 💺
               </div>
 
-              <div>
-                <h3 className="text-2xl sm:text-3xl font-black text-white">
-                  كرسي الحلاقة جاهز لاستقبال العميل
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-widest bg-amber-500/10 py-1 px-3 rounded-full border border-amber-500/20 inline-block">
+                  {specialist ? `${specialist.name} • كرسي رقم #${specialist.chairNumber} (${specialist.branch?.name || "الفرع"})` : "الكرسي متاح"}
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-black text-white pt-1">
+                  الكرسي جاهز ومتاح لاستقبال الزبون القادم 👑
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-400 font-medium max-w-md mx-auto mt-1">
-                  اختر من قائمة الحجوزات المؤكدة بالأسفل أو اضغط لاستقبال زبون دخل المحل مباشرة (Walk-in)
+                <p className="text-xs sm:text-sm text-slate-400 font-medium max-w-lg mx-auto leading-relaxed">
+                  يقوم الكاشير أو الإدارة بتوجيه العميل إلى كرسيك مباشرة من شاشة الكاشير، وستظهر التذكرة وبيانات العميل هنا فوراً دون الحاجة للكتابة.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
                   onClick={() => setShowWalkInModal(true)}
-                  className="py-3 px-8 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition flex items-center gap-2 shadow-xl shadow-amber-500/20"
+                  className="py-2.5 px-6 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-bold text-xs transition flex items-center gap-2 border border-white/10"
                 >
-                  <Plus className="w-5 h-5" />
-                  <span>استقبال عميل مباشر على الكرسي ✂️</span>
+                  <Plus className="w-4 h-4 text-amber-400" />
+                  <span>إجلاس عميل يدوي مباشر (اختياري) ✂️</span>
                 </button>
               </div>
             </div>
@@ -483,48 +520,126 @@ export default function SpecialistChairPage() {
         ) : (
           /* ACTIVE TICKET IN PROGRESS ON CHAIR */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
-            {/* LEFT / MAIN COLUMN: QUICK SERVICE TAP PAD (8 cols) */}
+            {/* LEFT / MAIN COLUMN: QUICK SERVICE & OFFERS TAP PAD (8 cols) */}
             <div className="lg:col-span-8 space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
                 <div>
                   <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
                     <Scissors className="w-5 h-5 text-amber-400" />
-                    <span>لوحة الخدمات السريعة (اضغط على الخدمة لتسجيلها فوراً)</span>
+                    <span>لوحة الخدمات والعروض الملكية السريعة ⚡</span>
                   </h3>
                   <p className="text-xs text-slate-400">
-                    كل ضغطة بتتسجل وتظهر في فاتورة الكاشير آلياً ⚡
+                    اضغط على أي خدمة أو عرض لتسجيله فوراً في حساب الكاشير 💈
                   </p>
                 </div>
               </div>
 
-              {/* Service Buttons Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {services.map((srv) => (
+              {/* Category Filter Tabs */}
+              <div className="flex flex-wrap items-center gap-1.5 border-b border-white/5 pb-2">
+                {[
+                  { id: "ALL", label: "جميع الخدمات 💈" },
+                  { id: "OFFERS", label: `العروض الملكية 👑 (${offers.length})` },
+                  { id: "HAIR", label: "شعر ✂️" },
+                  { id: "BEARD", label: "دقن 🧔" },
+                  { id: "VIP_PACKAGES", label: "بكجات VIP 👑" },
+                  { id: "SKIN_CARE", label: "عناية وتنظيف البشرة 🔥" },
+                  { id: "COLOR_KERATIN", label: "فرد وصبغة وبروتين 💆" },
+                  { id: "KIDS", label: "أطفال 👶" },
+                ].map((cat) => (
                   <button
-                    key={srv.id}
-                    onClick={() => handleAddService(srv)}
-                    disabled={actionLoading}
-                    className="p-4 rounded-2xl bg-[#14141e] hover:bg-amber-500/15 border border-amber-500/20 hover:border-amber-400 transition text-right space-y-1.5 shadow-md flex flex-col justify-between group active:scale-95 disabled:opacity-50"
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`py-1.5 px-3 rounded-xl text-xs font-bold transition ${
+                      selectedCategory === cat.id
+                        ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                        : "bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5"
+                    }`}
                   >
-                    <div className="flex items-center justify-between w-full">
-                      <span className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs font-bold group-hover:bg-amber-500 group-hover:text-black transition">
-                        +
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-bold">
-                        {srv.durationMinutes} د
-                      </span>
-                    </div>
-
-                    <h4 className="font-black text-xs sm:text-sm text-white group-hover:text-amber-300 transition">
-                      {srv.nameAr}
-                    </h4>
-
-                    <span className="font-mono text-amber-400 font-black text-sm block">
-                      {srv.price} ج.م
-                    </span>
+                    {cat.label}
                   </button>
                 ))}
               </div>
+
+              {/* Royal Offers Grid */}
+              {selectedCategory === "OFFERS" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-fade-in">
+                  {offers.map((offer) => (
+                    <button
+                      key={offer.id}
+                      onClick={() => handleAddOffer(offer)}
+                      disabled={actionLoading}
+                      className="p-3.5 rounded-2xl bg-[#14141e] hover:bg-amber-500/15 border-2 border-amber-500/30 hover:border-amber-400 transition text-right flex items-center gap-3 group active:scale-95 disabled:opacity-50 shadow-lg"
+                    >
+                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-amber-400 bg-black shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={offer.image || "/offers/offer-vip-1000.jpg"}
+                          alt={offer.titleAr}
+                          className="w-full h-full object-cover group-hover:scale-105 transition"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">
+                            {offer.badge || "عرض خاص"}
+                          </span>
+                          <span className="font-mono text-amber-400 font-black text-sm">
+                            {offer.price} ج.م
+                          </span>
+                        </div>
+                        <h4 className="font-black text-xs text-white truncate">{offer.titleAr}</h4>
+                        {offer.oldPrice && (
+                          <span className="text-[10px] text-rose-400 line-through font-mono block">
+                            بدلاً من {offer.oldPrice} ج
+                          </span>
+                        )}
+                        <span className="text-[10px] text-emerald-400 font-bold block">
+                          + اضغط لإضافة الباكدج للتذكرة
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Regular Services Grid */}
+              {selectedCategory !== "OFFERS" && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 animate-fade-in">
+                  {services
+                    .filter((s) => selectedCategory === "ALL" || s.category === selectedCategory)
+                    .map((srv) => (
+                      <button
+                        key={srv.id}
+                        onClick={() => handleAddService(srv)}
+                        disabled={actionLoading}
+                        className="p-4 rounded-2xl bg-[#14141e] hover:bg-amber-500/15 border border-amber-500/20 hover:border-amber-400 transition text-right space-y-1.5 shadow-md flex flex-col justify-between group active:scale-95 disabled:opacity-50"
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs font-bold group-hover:bg-amber-500 group-hover:text-black transition">
+                            +
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold font-mono">
+                            {srv.durationMinutes || 30} د
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="text-[9px] text-amber-300/80 font-bold block mb-0.5">
+                            {srv.category}
+                          </span>
+                          <h4 className="font-black text-xs sm:text-sm text-white group-hover:text-amber-300 transition line-clamp-2">
+                            {srv.nameAr}
+                          </h4>
+                        </div>
+
+                        <span className="font-mono text-amber-400 font-black text-sm block">
+                          {srv.price} ج.م
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
 
             {/* RIGHT COLUMN: CURRENT CLIENT IN-CHAIR INVOICE (4 cols) */}

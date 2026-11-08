@@ -48,6 +48,7 @@ import {
   Check,
   Tag,
   Eye,
+  Upload,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -124,6 +125,7 @@ export default function AdminPage() {
   const [statusTargetSpecialist, setStatusTargetSpecialist] = useState<any>(null);
   const [newShiftStatus, setNewShiftStatus] = useState<string>("AVAILABLE");
   const [shiftStatusReason, setShiftStatusReason] = useState<string>("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Service Modal (Create/Edit)
   const [showServiceModal, setShowServiceModal] = useState(false);
@@ -952,6 +954,38 @@ export default function AdminPage() {
     }
   };
 
+  // Upload image to ImgBB and return URL
+  const handleUploadFile = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onSuccess: (url: string) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        onSuccess(data.url);
+      } else {
+        alert(data.error || "فشل رفع الصورة على ImgBB");
+      }
+    } catch {
+      alert("تعذر الاتصال بخادم رفع الصور");
+    } finally {
+      setUploadingImage(false);
+      e.target.value = "";
+    }
+  };
+
   const handleOpenEditService = (srv: any) => {
     setEditingService(srv);
     setServiceForm({
@@ -1185,22 +1219,22 @@ export default function AdminPage() {
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. NAVIGATION TABS
+          3. NAVIGATION TABS (RESPONSIVE & CLEAN MULTI-ROW WRAP)
          ───────────────────────────────────────────────────────────── */}
-      <div className="bg-[#0e0e14] border-b border-amber-500/20 px-4 sm:px-8 py-2 overflow-x-auto text-xs scrollbar-none">
-        <div className="flex items-center gap-1.5 min-w-max">
+      <div className="bg-[#0e0e14] border-b border-amber-500/20 px-3 sm:px-6 py-2.5">
+        <div className="flex flex-wrap items-center gap-1.5 max-w-7xl mx-auto">
           {[
-            { id: "overview", label: "نظرة عامة وإحصاءات 📊", icon: LayoutDashboard },
-            { id: "bookings", label: `الحجوزات والمواعيد 📅 ${bookings.filter(b => b.status === "PENDING").length > 0 ? `(${bookings.filter(b => b.status === "PENDING").length})` : ""}`, icon: Calendar },
-            { id: "offers", label: "العروض والباكدجات الملكية 👑", icon: Sparkles },
+            { id: "overview", label: "نظرة عامة 📊", icon: LayoutDashboard },
+            { id: "bookings", label: `الحجوزات 📅 ${bookings.filter(b => b.status === "PENDING").length > 0 ? `(${bookings.filter(b => b.status === "PENDING").length})` : ""}`, icon: Calendar },
+            { id: "offers", label: "العروض الملكية 👑", icon: Sparkles },
             { id: "chat", label: `شات العملاء 💬 ${unreadChatTotal > 0 ? `(${unreadChatTotal})` : ""}`, icon: MessageSquare },
-            { id: "specialists", label: "المتخصصين والأجور والعمولات ✂️", icon: Scissors },
+            { id: "specialists", label: "المتخصصين والورديات ✂️", icon: Scissors },
             { id: "services", label: "الخدمات والأسعار 💈", icon: Award },
-            { id: "inventory", label: "بضاعة التجميل والمخزن 🛍️", icon: ShoppingBag },
-            { id: "customers", label: "قاعدة العملاء والدعاية 👥", icon: Users },
-            { id: "users", label: "طاقم العمل والصلاحيات 🔒", icon: ShieldCheck },
-            { id: "branches", label: "الفروع والتوسعات 📍", icon: MapPin },
-            { id: "settings", label: "إعدادات المنظومة ⚙️", icon: Settings },
+            { id: "inventory", label: "المخزن والتجميل 🛍️", icon: ShoppingBag },
+            { id: "customers", label: "قاعدة العملاء 👥", icon: Users },
+            { id: "users", label: "الصلاحيات والمستخدمين 🔒", icon: ShieldCheck },
+            { id: "branches", label: "الفروع 📍", icon: MapPin },
+            { id: "settings", label: "الإعدادات ⚙️", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
             const isCurrent = activeTab === tab.id;
@@ -1208,10 +1242,10 @@ export default function AdminPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`py-2 px-3.5 rounded-xl transition flex items-center gap-1.5 font-bold ${
+                className={`py-1.5 px-3 rounded-xl transition flex items-center gap-1.5 text-xs font-bold ${
                   isCurrent
-                    ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/25 ring-1 ring-amber-400"
+                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/5"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -2359,15 +2393,42 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">رابط الصورة الشخصية (URL):</label>
-                <input
-                  type="text"
-                  value={specForm.photo}
-                  onChange={(e) => setSpecForm({ ...specForm, photo: e.target.value })}
-                  placeholder="https://... أو /logo.jpg"
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
-                />
+              <div className="space-y-1.5 p-3 rounded-2xl bg-black/40 border border-white/10">
+                <label className="text-slate-300 font-bold block text-xs">
+                  الصورة الشخصية للمتخصص (رفع فوري عبر ImgBB 📷):
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={specForm.photo || "/logo.jpg"}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="w-full py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>{uploadingImage ? "جاري الرفع على ImgBB..." : "اختر صورة للمتخصص لرفعها 📷"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingImage}
+                        onChange={(e) =>
+                          handleUploadFile(e, (url) => setSpecForm({ ...specForm, photo: url }))
+                        }
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={specForm.photo}
+                      onChange={(e) => setSpecForm({ ...specForm, photo: e.target.value })}
+                      placeholder="رابط ImgBB المولد تلقائياً"
+                      className="w-full py-1 px-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-[10px] focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -2625,16 +2686,43 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">رابط أو مسار الصورة الإعلانية (Flyer):</label>
-                <input
-                  type="text"
-                  required
-                  value={offerForm.image}
-                  onChange={(e) => setOfferForm({ ...offerForm, image: e.target.value })}
-                  placeholder="/offers/offer-vip-1000.jpg"
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
-                />
+              <div className="space-y-1.5 p-3 rounded-2xl bg-black/40 border border-white/10">
+                <label className="text-slate-300 font-bold block text-xs">
+                  فلاير أو صورة العرض الإعلانية (رفع فوري عبر ImgBB 📷):
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={offerForm.image || "/offers/offer-vip-1000.jpg"}
+                      alt="Flyer Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="w-full py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>{uploadingImage ? "جاري الرفع على ImgBB..." : "اختر فلاير العرض لرفعه 📷"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingImage}
+                        onChange={(e) =>
+                          handleUploadFile(e, (url) => setOfferForm({ ...offerForm, image: url }))
+                        }
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={offerForm.image}
+                      onChange={(e) => setOfferForm({ ...offerForm, image: e.target.value })}
+                      placeholder="/offers/offer-vip-1000.jpg أو رابط ImgBB"
+                      className="w-full py-1 px-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-[10px] focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -2910,15 +2998,45 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">رابط صورة الخدمة (URL):</label>
-                <input
-                  type="text"
-                  value={serviceForm.image}
-                  onChange={(e) => setServiceForm({ ...serviceForm, image: e.target.value })}
-                  placeholder="https://images.unsplash.com/... أو مسار الصورة"
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
-                />
+              <div className="space-y-1.5 p-3 rounded-2xl bg-black/40 border border-white/10">
+                <label className="text-slate-300 font-bold block text-xs">
+                  صورة الخدمة (رفع فوري عبر ImgBB 📷):
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={
+                        serviceForm.image ||
+                        "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&auto=format&fit=crop&q=80"
+                      }
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="w-full py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>{uploadingImage ? "جاري الرفع على ImgBB..." : "اختر صورة للخدمة لرفعها 📷"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingImage}
+                        onChange={(e) =>
+                          handleUploadFile(e, (url) => setServiceForm({ ...serviceForm, image: url }))
+                        }
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={serviceForm.image}
+                      onChange={(e) => setServiceForm({ ...serviceForm, image: e.target.value })}
+                      placeholder="رابط ImgBB أو مسار الصورة"
+                      className="w-full py-1 px-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-[10px] focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>

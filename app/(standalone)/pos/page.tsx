@@ -39,6 +39,11 @@ export default function CashierPosPage() {
   const [retailProducts, setRetailProducts] = useState<any[]>([]);
   const [specialists, setSpecialists] = useState<any[]>([]);
   const [showShiftModal, setShowShiftModal] = useState<boolean>(false);
+  const [showAdmitModal, setShowAdmitModal] = useState<boolean>(false);
+  const [admitCustomerName, setAdmitCustomerName] = useState<string>("");
+  const [admitCustomerPhone, setAdmitCustomerPhone] = useState<string>("");
+  const [admitSpecialistId, setAdmitSpecialistId] = useState<string>("");
+  const [admittingClient, setAdmittingClient] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   // Active Ticket Selected for Checkout
@@ -147,6 +152,44 @@ export default function CashierPosPage() {
       }
     } catch {
       alert("تعذر الاتصال بالخادم");
+    }
+  };
+
+  // Admit customer to chair by Cashier
+  const handleAdmitCustomerToChair = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!admitCustomerName.trim() || !admitSpecialistId) {
+      alert("يرجى إدخال اسم العميل واختيار المتخصص");
+      return;
+    }
+
+    try {
+      setAdmittingClient(true);
+      const chosenSpec = specialists.find((s) => s.id === admitSpecialistId);
+      const res = await fetch("/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          specialistId: admitSpecialistId,
+          branchId: chosenSpec?.branchId || (selectedBranchId !== "ALL" ? selectedBranchId : branches[0]?.id),
+          customerName: admitCustomerName.trim(),
+          customerPhone: admitCustomerPhone.trim() || null,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setShowAdmitModal(false);
+        setAdmitCustomerName("");
+        setAdmitCustomerPhone("");
+        await fetchPosData();
+      } else {
+        alert(data.error || "فشل إجلاس العميل");
+      }
+    } catch {
+      alert("تعذر الاتصال بالخادم");
+    } finally {
+      setAdmittingClient(false);
     }
   };
 
@@ -308,6 +351,19 @@ export default function CashierPosPage() {
               {currentUser?.branchName || "الفرع الحالي"}
             </span>
           )}
+
+          <button
+            onClick={() => {
+              setAdmitCustomerName("");
+              setAdmitCustomerPhone("");
+              setAdmitSpecialistId(specialists[0]?.id || "");
+              setShowAdmitModal(true);
+            }}
+            className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>إجلاس زبون بالكرسي 💺</span>
+          </button>
 
           <button
             onClick={() => setShowShiftModal(true)}
@@ -709,6 +765,87 @@ export default function CashierPosPage() {
                 إغلاق النافذة ✓
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          CASHIER ADMIT WALK-IN CUSTOMER TO CHAIR MODAL
+         ───────────────────────────────────────────────────────────── */}
+      {showAdmitModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print" dir="rtl">
+          <div className="relative w-full max-w-md bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center">
+                  <Scissors className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">إجلاس زبون جديد على كرسي الحلاقة 💺</h3>
+                  <p className="text-[11px] text-slate-400">توجيه العميل إلى كرسي متخصص محدد لبدء التذكرة آلياً</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAdmitModal(false)}
+                className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAdmitCustomerToChair} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">اسم العميل:</label>
+                <input
+                  type="text"
+                  required
+                  value={admitCustomerName}
+                  onChange={(e) => setAdmitCustomerName(e.target.value)}
+                  placeholder="مثال: محمد مصطفى"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">رقم هاتف العميل (اختياري للـ CRM والواتساب):</label>
+                <input
+                  type="text"
+                  value={admitCustomerPhone}
+                  onChange={(e) => setAdmitCustomerPhone(e.target.value)}
+                  placeholder="010XXXXXXXX"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">المتخصص والكرسي الموجه إليه:</label>
+                <select
+                  required
+                  value={admitSpecialistId}
+                  onChange={(e) => setAdmitSpecialistId(e.target.value)}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                >
+                  <option value="">-- اختر المتخصص --</option>
+                  {specialists.map((spec) => (
+                    <option key={spec.id} value={spec.id}>
+                      {spec.name} • كرسي #{spec.chairNumber} ({spec.status === "AVAILABLE" ? "متاح 🟢" : spec.status === "WITH_CLIENT" ? "مشغول 💺" : spec.status})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
+                ⚡ بمجرد التوجيه، ستظهر التذكرة فوراً على شاشة المتخصص على الكرسي لتسجيل الخدمات والعروض وإنهائها للكاشير.
+              </div>
+
+              <button
+                type="submit"
+                disabled={admittingClient}
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 disabled:opacity-50"
+              >
+                {admittingClient ? "جاري التوجيه..." : "توجيه الزبون للكرسي وبدء الحلاقة 🚀"}
+              </button>
+            </form>
           </div>
         </div>
       )}

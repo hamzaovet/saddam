@@ -31,6 +31,7 @@ import {
   Coffee,
   Sparkle,
   Tag,
+  LogOut,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -62,6 +63,15 @@ export default function HomePage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authSuccessMsg, setAuthSuccessMsg] = useState("");
+  const [showCustomerMenu, setShowCustomerMenu] = useState(false);
+
+  const handleCustomerLogout = () => {
+    if (confirm("هل تريد بالتأكيد تسجيل الخروج من حسابك؟")) {
+      localStorage.removeItem("saddam_customer");
+      setCustomer(null);
+      setShowCustomerMenu(false);
+    }
+  };
 
   // Confirmed Booking State
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
@@ -385,12 +395,64 @@ export default function HomePage() {
 
           {/* Customer Profile / Login */}
           {customer ? (
-            <div className="flex items-center gap-2 py-1.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/40 text-xs shadow-xs">
-              <User className="w-4 h-4 text-amber-400" />
-              <span className="font-bold text-white max-w-[110px] truncate">{customer.name}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-black border border-amber-500/30">
-                VIP
-              </span>
+            <div className="relative">
+              <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-xl bg-black/70 border border-amber-500/40 text-xs shadow-md">
+                <button
+                  type="button"
+                  onClick={() => setShowCustomerMenu(!showCustomerMenu)}
+                  className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+                  title="عرض تفاصيل الحساب"
+                >
+                  <User className="w-4 h-4 text-amber-400" />
+                  <span className="font-bold text-white max-w-[100px] truncate">{customer.name}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-black border border-amber-500/30">
+                    VIP
+                  </span>
+                </button>
+
+                <div className="h-4 w-px bg-white/10 mx-0.5" />
+
+                <button
+                  type="button"
+                  onClick={handleCustomerLogout}
+                  className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition"
+                  title="تسجيل الخروج من الحساب 🚪"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Customer Dropdown Menu */}
+              {showCustomerMenu && (
+                <div className="absolute left-0 top-full mt-2 w-64 bg-[#12121a] border border-amber-500/40 rounded-2xl p-4 shadow-2xl z-50 space-y-3 animate-fade-in font-sans text-xs">
+                  <div className="border-b border-white/10 pb-2.5">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-black text-white text-sm">{customer.name}</h4>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">
+                        VIP عضو ملكي
+                      </span>
+                    </div>
+                    <p className="text-slate-400 font-mono text-[11px] pt-1">{customer.phone}</p>
+                    {customer.email && (
+                      <p className="text-slate-500 text-[10px] truncate">{customer.email}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1 text-slate-300 text-[11px]">
+                    <p className="text-amber-300 font-bold">✨ مرحباً بك في صالون صدام الملكي</p>
+                    <p className="text-slate-400 text-[10px]">يمكنك حجز مواعيدك ومتابعة عروضك الملكية أولاً بأول.</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCustomerLogout}
+                    className="w-full py-2 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-black text-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>تسجيل الخروج من الحساب 🚪</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <button
