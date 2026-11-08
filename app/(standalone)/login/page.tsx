@@ -20,7 +20,7 @@ export default function StaffLoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [pin, setPin] = useState("157230");
+  const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -71,12 +71,6 @@ export default function StaffLoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickFill = (u: string, p: string, pinCode: string = "157230") => {
-    setUsername(u);
-    setPassword(p);
-    setPin(pinCode);
   };
 
   return (
@@ -154,7 +148,7 @@ export default function StaffLoginPage() {
               maxLength={6}
               value={pin}
               onChange={(e) => setPin(e.target.value)}
-              placeholder="157230"
+              placeholder="••••••"
               className="w-full py-2.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/30 text-center text-xs text-amber-400 font-mono font-black focus:outline-none focus:border-amber-400 tracking-widest"
             />
           </div>
@@ -168,51 +162,6 @@ export default function StaffLoginPage() {
             <span>{loading ? "جارٍ التحقق..." : "تسجيل الدخول للمنظومة 🔒"}</span>
           </button>
         </form>
-
-        {/* Quick Fill Credentials Shortcuts (Maestro & Staff) */}
-        <div className="pt-2 border-t border-white/10 space-y-2">
-          <p className="text-[11px] font-bold text-amber-300/80 text-center">
-            حسابات الدخول السريعة للاختبار:
-          </p>
-
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <button
-              type="button"
-              onClick={() => handleQuickFill("maestro", "123456789")}
-              className="p-2 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-amber-500/20 text-slate-300 hover:text-amber-300 transition text-right"
-            >
-              👑 <strong className="text-amber-400">المالك (Maestro)</strong>
-              <span className="block text-[10px] text-slate-500 font-mono">تحكم وإدارة كاملة</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill("saddam-vip", "123456789")}
-              className="p-2 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-amber-500/20 text-slate-300 hover:text-amber-300 transition text-right"
-            >
-              ✂️ <strong className="text-amber-400">صدام (كرسي 1)</strong>
-              <span className="block text-[10px] text-slate-500 font-mono">شاشة المتخصص</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill("cashier-qobba", "123456789")}
-              className="p-2 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-amber-500/20 text-slate-300 hover:text-amber-300 transition text-right"
-            >
-              💰 <strong className="text-amber-400">كاشير القبة</strong>
-              <span className="block text-[10px] text-slate-500 font-mono">نقطة البيع POS</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickFill("barber-ahmed", "123456789")}
-              className="p-2 rounded-xl bg-white/5 hover:bg-amber-500/10 border border-amber-500/20 text-slate-300 hover:text-amber-300 transition text-right"
-            >
-              💺 <strong className="text-amber-400">كابتن أحمد (كرسي 2)</strong>
-              <span className="block text-[10px] text-slate-500 font-mono">شاشة المتخصص</span>
-            </button>
-          </div>
-        </div>
 
         {/* Back to Homepage */}
         <div className="text-center pt-2">

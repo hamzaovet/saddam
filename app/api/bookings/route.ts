@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         serviceIds: JSON.stringify(servicesArr),
         bookingDate,
         timeSlot,
-        status: "CONFIRMED",
+        status: body.status || "PENDING",
         totalAmount,
         notes: notes?.trim() || null,
       },

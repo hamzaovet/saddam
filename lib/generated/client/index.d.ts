@@ -63,6 +63,16 @@ export type SpecialistLedger = $Result.DefaultSelection<Prisma.$SpecialistLedger
  * 
  */
 export type SystemSettings = $Result.DefaultSelection<Prisma.$SystemSettingsPayload>
+/**
+ * Model Offer
+ * 
+ */
+export type Offer = $Result.DefaultSelection<Prisma.$OfferPayload>
+/**
+ * Model ChatMessage
+ * 
+ */
+export type ChatMessage = $Result.DefaultSelection<Prisma.$ChatMessagePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -284,6 +294,26 @@ export class PrismaClient<
     * ```
     */
   get systemSettings(): Prisma.SystemSettingsDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.offer`: Exposes CRUD operations for the **Offer** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Offers
+    * const offers = await prisma.offer.findMany()
+    * ```
+    */
+  get offer(): Prisma.OfferDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.chatMessage`: Exposes CRUD operations for the **ChatMessage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ChatMessages
+    * const chatMessages = await prisma.chatMessage.findMany()
+    * ```
+    */
+  get chatMessage(): Prisma.ChatMessageDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -740,7 +770,9 @@ export namespace Prisma {
     Ticket: 'Ticket',
     Product: 'Product',
     SpecialistLedger: 'SpecialistLedger',
-    SystemSettings: 'SystemSettings'
+    SystemSettings: 'SystemSettings',
+    Offer: 'Offer',
+    ChatMessage: 'ChatMessage'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -756,7 +788,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "branch" | "user" | "specialist" | "service" | "customer" | "booking" | "ticket" | "product" | "specialistLedger" | "systemSettings"
+      modelProps: "branch" | "user" | "specialist" | "service" | "customer" | "booking" | "ticket" | "product" | "specialistLedger" | "systemSettings" | "offer" | "chatMessage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1500,6 +1532,154 @@ export namespace Prisma {
           }
         }
       }
+      Offer: {
+        payload: Prisma.$OfferPayload<ExtArgs>
+        fields: Prisma.OfferFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OfferFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OfferFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>
+          }
+          findFirst: {
+            args: Prisma.OfferFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OfferFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>
+          }
+          findMany: {
+            args: Prisma.OfferFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>[]
+          }
+          create: {
+            args: Prisma.OfferCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>
+          }
+          createMany: {
+            args: Prisma.OfferCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OfferCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>[]
+          }
+          delete: {
+            args: Prisma.OfferDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>
+          }
+          update: {
+            args: Prisma.OfferUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>
+          }
+          deleteMany: {
+            args: Prisma.OfferDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OfferUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.OfferUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>[]
+          }
+          upsert: {
+            args: Prisma.OfferUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OfferPayload>
+          }
+          aggregate: {
+            args: Prisma.OfferAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOffer>
+          }
+          groupBy: {
+            args: Prisma.OfferGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OfferGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OfferCountArgs<ExtArgs>
+            result: $Utils.Optional<OfferCountAggregateOutputType> | number
+          }
+        }
+      }
+      ChatMessage: {
+        payload: Prisma.$ChatMessagePayload<ExtArgs>
+        fields: Prisma.ChatMessageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChatMessageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChatMessageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>
+          }
+          findFirst: {
+            args: Prisma.ChatMessageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChatMessageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>
+          }
+          findMany: {
+            args: Prisma.ChatMessageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>[]
+          }
+          create: {
+            args: Prisma.ChatMessageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>
+          }
+          createMany: {
+            args: Prisma.ChatMessageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChatMessageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>[]
+          }
+          delete: {
+            args: Prisma.ChatMessageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>
+          }
+          update: {
+            args: Prisma.ChatMessageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>
+          }
+          deleteMany: {
+            args: Prisma.ChatMessageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChatMessageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ChatMessageUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>[]
+          }
+          upsert: {
+            args: Prisma.ChatMessageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagePayload>
+          }
+          aggregate: {
+            args: Prisma.ChatMessageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChatMessage>
+          }
+          groupBy: {
+            args: Prisma.ChatMessageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChatMessageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChatMessageCountArgs<ExtArgs>
+            result: $Utils.Optional<ChatMessageCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1633,6 +1813,8 @@ export namespace Prisma {
     product?: ProductOmit
     specialistLedger?: SpecialistLedgerOmit
     systemSettings?: SystemSettingsOmit
+    offer?: OfferOmit
+    chatMessage?: ChatMessageOmit
   }
 
   /* Types for Logging */
@@ -1719,6 +1901,8 @@ export namespace Prisma {
     tickets: number
     products: number
     ledgers: number
+    offers: number
+    chatMessages: number
   }
 
   export type BranchCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1728,6 +1912,8 @@ export namespace Prisma {
     tickets?: boolean | BranchCountOutputTypeCountTicketsArgs
     products?: boolean | BranchCountOutputTypeCountProductsArgs
     ledgers?: boolean | BranchCountOutputTypeCountLedgersArgs
+    offers?: boolean | BranchCountOutputTypeCountOffersArgs
+    chatMessages?: boolean | BranchCountOutputTypeCountChatMessagesArgs
   }
 
   // Custom InputTypes
@@ -1781,6 +1967,20 @@ export namespace Prisma {
    */
   export type BranchCountOutputTypeCountLedgersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SpecialistLedgerWhereInput
+  }
+
+  /**
+   * BranchCountOutputType without action
+   */
+  export type BranchCountOutputTypeCountOffersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OfferWhereInput
+  }
+
+  /**
+   * BranchCountOutputType without action
+   */
+  export type BranchCountOutputTypeCountChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatMessageWhereInput
   }
 
 
@@ -2079,6 +2279,8 @@ export namespace Prisma {
     tickets?: boolean | Branch$ticketsArgs<ExtArgs>
     products?: boolean | Branch$productsArgs<ExtArgs>
     ledgers?: boolean | Branch$ledgersArgs<ExtArgs>
+    offers?: boolean | Branch$offersArgs<ExtArgs>
+    chatMessages?: boolean | Branch$chatMessagesArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["branch"]>
 
@@ -2126,6 +2328,8 @@ export namespace Prisma {
     tickets?: boolean | Branch$ticketsArgs<ExtArgs>
     products?: boolean | Branch$productsArgs<ExtArgs>
     ledgers?: boolean | Branch$ledgersArgs<ExtArgs>
+    offers?: boolean | Branch$offersArgs<ExtArgs>
+    chatMessages?: boolean | Branch$chatMessagesArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BranchIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2140,6 +2344,8 @@ export namespace Prisma {
       tickets: Prisma.$TicketPayload<ExtArgs>[]
       products: Prisma.$ProductPayload<ExtArgs>[]
       ledgers: Prisma.$SpecialistLedgerPayload<ExtArgs>[]
+      offers: Prisma.$OfferPayload<ExtArgs>[]
+      chatMessages: Prisma.$ChatMessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2551,6 +2757,8 @@ export namespace Prisma {
     tickets<T extends Branch$ticketsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     products<T extends Branch$productsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$productsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ledgers<T extends Branch$ledgersArgs<ExtArgs> = {}>(args?: Subset<T, Branch$ledgersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpecialistLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    offers<T extends Branch$offersArgs<ExtArgs> = {}>(args?: Subset<T, Branch$offersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chatMessages<T extends Branch$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Branch$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3123,6 +3331,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SpecialistLedgerScalarFieldEnum | SpecialistLedgerScalarFieldEnum[]
+  }
+
+  /**
+   * Branch.offers
+   */
+  export type Branch$offersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    where?: OfferWhereInput
+    orderBy?: OfferOrderByWithRelationInput | OfferOrderByWithRelationInput[]
+    cursor?: OfferWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OfferScalarFieldEnum | OfferScalarFieldEnum[]
+  }
+
+  /**
+   * Branch.chatMessages
+   */
+  export type Branch$chatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    where?: ChatMessageWhereInput
+    orderBy?: ChatMessageOrderByWithRelationInput | ChatMessageOrderByWithRelationInput[]
+    cursor?: ChatMessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChatMessageScalarFieldEnum | ChatMessageScalarFieldEnum[]
   }
 
   /**
@@ -14203,6 +14459,2411 @@ export namespace Prisma {
 
 
   /**
+   * Model Offer
+   */
+
+  export type AggregateOffer = {
+    _count: OfferCountAggregateOutputType | null
+    _avg: OfferAvgAggregateOutputType | null
+    _sum: OfferSumAggregateOutputType | null
+    _min: OfferMinAggregateOutputType | null
+    _max: OfferMaxAggregateOutputType | null
+  }
+
+  export type OfferAvgAggregateOutputType = {
+    price: number | null
+    oldPrice: number | null
+    discountPercent: number | null
+    sortOrder: number | null
+  }
+
+  export type OfferSumAggregateOutputType = {
+    price: number | null
+    oldPrice: number | null
+    discountPercent: number | null
+    sortOrder: number | null
+  }
+
+  export type OfferMinAggregateOutputType = {
+    id: string | null
+    titleAr: string | null
+    badge: string | null
+    price: number | null
+    oldPrice: number | null
+    discountPercent: number | null
+    image: string | null
+    description: string | null
+    features: string | null
+    branchId: string | null
+    isActive: boolean | null
+    sortOrder: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OfferMaxAggregateOutputType = {
+    id: string | null
+    titleAr: string | null
+    badge: string | null
+    price: number | null
+    oldPrice: number | null
+    discountPercent: number | null
+    image: string | null
+    description: string | null
+    features: string | null
+    branchId: string | null
+    isActive: boolean | null
+    sortOrder: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OfferCountAggregateOutputType = {
+    id: number
+    titleAr: number
+    badge: number
+    price: number
+    oldPrice: number
+    discountPercent: number
+    image: number
+    description: number
+    features: number
+    branchId: number
+    isActive: number
+    sortOrder: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type OfferAvgAggregateInputType = {
+    price?: true
+    oldPrice?: true
+    discountPercent?: true
+    sortOrder?: true
+  }
+
+  export type OfferSumAggregateInputType = {
+    price?: true
+    oldPrice?: true
+    discountPercent?: true
+    sortOrder?: true
+  }
+
+  export type OfferMinAggregateInputType = {
+    id?: true
+    titleAr?: true
+    badge?: true
+    price?: true
+    oldPrice?: true
+    discountPercent?: true
+    image?: true
+    description?: true
+    features?: true
+    branchId?: true
+    isActive?: true
+    sortOrder?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OfferMaxAggregateInputType = {
+    id?: true
+    titleAr?: true
+    badge?: true
+    price?: true
+    oldPrice?: true
+    discountPercent?: true
+    image?: true
+    description?: true
+    features?: true
+    branchId?: true
+    isActive?: true
+    sortOrder?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OfferCountAggregateInputType = {
+    id?: true
+    titleAr?: true
+    badge?: true
+    price?: true
+    oldPrice?: true
+    discountPercent?: true
+    image?: true
+    description?: true
+    features?: true
+    branchId?: true
+    isActive?: true
+    sortOrder?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type OfferAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Offer to aggregate.
+     */
+    where?: OfferWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Offers to fetch.
+     */
+    orderBy?: OfferOrderByWithRelationInput | OfferOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OfferWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Offers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Offers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Offers
+    **/
+    _count?: true | OfferCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: OfferAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: OfferSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OfferMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OfferMaxAggregateInputType
+  }
+
+  export type GetOfferAggregateType<T extends OfferAggregateArgs> = {
+        [P in keyof T & keyof AggregateOffer]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOffer[P]>
+      : GetScalarType<T[P], AggregateOffer[P]>
+  }
+
+
+
+
+  export type OfferGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OfferWhereInput
+    orderBy?: OfferOrderByWithAggregationInput | OfferOrderByWithAggregationInput[]
+    by: OfferScalarFieldEnum[] | OfferScalarFieldEnum
+    having?: OfferScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OfferCountAggregateInputType | true
+    _avg?: OfferAvgAggregateInputType
+    _sum?: OfferSumAggregateInputType
+    _min?: OfferMinAggregateInputType
+    _max?: OfferMaxAggregateInputType
+  }
+
+  export type OfferGroupByOutputType = {
+    id: string
+    titleAr: string
+    badge: string | null
+    price: number
+    oldPrice: number | null
+    discountPercent: number | null
+    image: string
+    description: string | null
+    features: string
+    branchId: string | null
+    isActive: boolean
+    sortOrder: number
+    createdAt: Date
+    updatedAt: Date
+    _count: OfferCountAggregateOutputType | null
+    _avg: OfferAvgAggregateOutputType | null
+    _sum: OfferSumAggregateOutputType | null
+    _min: OfferMinAggregateOutputType | null
+    _max: OfferMaxAggregateOutputType | null
+  }
+
+  type GetOfferGroupByPayload<T extends OfferGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OfferGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OfferGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OfferGroupByOutputType[P]>
+            : GetScalarType<T[P], OfferGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OfferSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    titleAr?: boolean
+    badge?: boolean
+    price?: boolean
+    oldPrice?: boolean
+    discountPercent?: boolean
+    image?: boolean
+    description?: boolean
+    features?: boolean
+    branchId?: boolean
+    isActive?: boolean
+    sortOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | Offer$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["offer"]>
+
+  export type OfferSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    titleAr?: boolean
+    badge?: boolean
+    price?: boolean
+    oldPrice?: boolean
+    discountPercent?: boolean
+    image?: boolean
+    description?: boolean
+    features?: boolean
+    branchId?: boolean
+    isActive?: boolean
+    sortOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | Offer$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["offer"]>
+
+  export type OfferSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    titleAr?: boolean
+    badge?: boolean
+    price?: boolean
+    oldPrice?: boolean
+    discountPercent?: boolean
+    image?: boolean
+    description?: boolean
+    features?: boolean
+    branchId?: boolean
+    isActive?: boolean
+    sortOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | Offer$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["offer"]>
+
+  export type OfferSelectScalar = {
+    id?: boolean
+    titleAr?: boolean
+    badge?: boolean
+    price?: boolean
+    oldPrice?: boolean
+    discountPercent?: boolean
+    image?: boolean
+    description?: boolean
+    features?: boolean
+    branchId?: boolean
+    isActive?: boolean
+    sortOrder?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type OfferOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "titleAr" | "badge" | "price" | "oldPrice" | "discountPercent" | "image" | "description" | "features" | "branchId" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["offer"]>
+  export type OfferInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Offer$branchArgs<ExtArgs>
+  }
+  export type OfferIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Offer$branchArgs<ExtArgs>
+  }
+  export type OfferIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Offer$branchArgs<ExtArgs>
+  }
+
+  export type $OfferPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Offer"
+    objects: {
+      branch: Prisma.$BranchPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      titleAr: string
+      badge: string | null
+      price: number
+      oldPrice: number | null
+      discountPercent: number | null
+      image: string
+      description: string | null
+      features: string
+      branchId: string | null
+      isActive: boolean
+      sortOrder: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["offer"]>
+    composites: {}
+  }
+
+  type OfferGetPayload<S extends boolean | null | undefined | OfferDefaultArgs> = $Result.GetResult<Prisma.$OfferPayload, S>
+
+  type OfferCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OfferFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OfferCountAggregateInputType | true
+    }
+
+  export interface OfferDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Offer'], meta: { name: 'Offer' } }
+    /**
+     * Find zero or one Offer that matches the filter.
+     * @param {OfferFindUniqueArgs} args - Arguments to find a Offer
+     * @example
+     * // Get one Offer
+     * const offer = await prisma.offer.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OfferFindUniqueArgs>(args: SelectSubset<T, OfferFindUniqueArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Offer that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OfferFindUniqueOrThrowArgs} args - Arguments to find a Offer
+     * @example
+     * // Get one Offer
+     * const offer = await prisma.offer.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OfferFindUniqueOrThrowArgs>(args: SelectSubset<T, OfferFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Offer that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfferFindFirstArgs} args - Arguments to find a Offer
+     * @example
+     * // Get one Offer
+     * const offer = await prisma.offer.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OfferFindFirstArgs>(args?: SelectSubset<T, OfferFindFirstArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Offer that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfferFindFirstOrThrowArgs} args - Arguments to find a Offer
+     * @example
+     * // Get one Offer
+     * const offer = await prisma.offer.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OfferFindFirstOrThrowArgs>(args?: SelectSubset<T, OfferFindFirstOrThrowArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Offers that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfferFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Offers
+     * const offers = await prisma.offer.findMany()
+     * 
+     * // Get first 10 Offers
+     * const offers = await prisma.offer.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const offerWithIdOnly = await prisma.offer.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends OfferFindManyArgs>(args?: SelectSubset<T, OfferFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Offer.
+     * @param {OfferCreateArgs} args - Arguments to create a Offer.
+     * @example
+     * // Create one Offer
+     * const Offer = await prisma.offer.create({
+     *   data: {
+     *     // ... data to create a Offer
+     *   }
+     * })
+     * 
+     */
+    create<T extends OfferCreateArgs>(args: SelectSubset<T, OfferCreateArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Offers.
+     * @param {OfferCreateManyArgs} args - Arguments to create many Offers.
+     * @example
+     * // Create many Offers
+     * const offer = await prisma.offer.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OfferCreateManyArgs>(args?: SelectSubset<T, OfferCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Offers and returns the data saved in the database.
+     * @param {OfferCreateManyAndReturnArgs} args - Arguments to create many Offers.
+     * @example
+     * // Create many Offers
+     * const offer = await prisma.offer.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Offers and only return the `id`
+     * const offerWithIdOnly = await prisma.offer.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OfferCreateManyAndReturnArgs>(args?: SelectSubset<T, OfferCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Offer.
+     * @param {OfferDeleteArgs} args - Arguments to delete one Offer.
+     * @example
+     * // Delete one Offer
+     * const Offer = await prisma.offer.delete({
+     *   where: {
+     *     // ... filter to delete one Offer
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OfferDeleteArgs>(args: SelectSubset<T, OfferDeleteArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Offer.
+     * @param {OfferUpdateArgs} args - Arguments to update one Offer.
+     * @example
+     * // Update one Offer
+     * const offer = await prisma.offer.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OfferUpdateArgs>(args: SelectSubset<T, OfferUpdateArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Offers.
+     * @param {OfferDeleteManyArgs} args - Arguments to filter Offers to delete.
+     * @example
+     * // Delete a few Offers
+     * const { count } = await prisma.offer.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OfferDeleteManyArgs>(args?: SelectSubset<T, OfferDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Offers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfferUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Offers
+     * const offer = await prisma.offer.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OfferUpdateManyArgs>(args: SelectSubset<T, OfferUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Offers and returns the data updated in the database.
+     * @param {OfferUpdateManyAndReturnArgs} args - Arguments to update many Offers.
+     * @example
+     * // Update many Offers
+     * const offer = await prisma.offer.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Offers and only return the `id`
+     * const offerWithIdOnly = await prisma.offer.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends OfferUpdateManyAndReturnArgs>(args: SelectSubset<T, OfferUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Offer.
+     * @param {OfferUpsertArgs} args - Arguments to update or create a Offer.
+     * @example
+     * // Update or create a Offer
+     * const offer = await prisma.offer.upsert({
+     *   create: {
+     *     // ... data to create a Offer
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Offer we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OfferUpsertArgs>(args: SelectSubset<T, OfferUpsertArgs<ExtArgs>>): Prisma__OfferClient<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Offers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfferCountArgs} args - Arguments to filter Offers to count.
+     * @example
+     * // Count the number of Offers
+     * const count = await prisma.offer.count({
+     *   where: {
+     *     // ... the filter for the Offers we want to count
+     *   }
+     * })
+    **/
+    count<T extends OfferCountArgs>(
+      args?: Subset<T, OfferCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OfferCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Offer.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfferAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OfferAggregateArgs>(args: Subset<T, OfferAggregateArgs>): Prisma.PrismaPromise<GetOfferAggregateType<T>>
+
+    /**
+     * Group by Offer.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OfferGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OfferGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OfferGroupByArgs['orderBy'] }
+        : { orderBy?: OfferGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OfferGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOfferGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Offer model
+   */
+  readonly fields: OfferFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Offer.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OfferClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    branch<T extends Offer$branchArgs<ExtArgs> = {}>(args?: Subset<T, Offer$branchArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Offer model
+   */
+  interface OfferFieldRefs {
+    readonly id: FieldRef<"Offer", 'String'>
+    readonly titleAr: FieldRef<"Offer", 'String'>
+    readonly badge: FieldRef<"Offer", 'String'>
+    readonly price: FieldRef<"Offer", 'Float'>
+    readonly oldPrice: FieldRef<"Offer", 'Float'>
+    readonly discountPercent: FieldRef<"Offer", 'Int'>
+    readonly image: FieldRef<"Offer", 'String'>
+    readonly description: FieldRef<"Offer", 'String'>
+    readonly features: FieldRef<"Offer", 'String'>
+    readonly branchId: FieldRef<"Offer", 'String'>
+    readonly isActive: FieldRef<"Offer", 'Boolean'>
+    readonly sortOrder: FieldRef<"Offer", 'Int'>
+    readonly createdAt: FieldRef<"Offer", 'DateTime'>
+    readonly updatedAt: FieldRef<"Offer", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Offer findUnique
+   */
+  export type OfferFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * Filter, which Offer to fetch.
+     */
+    where: OfferWhereUniqueInput
+  }
+
+  /**
+   * Offer findUniqueOrThrow
+   */
+  export type OfferFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * Filter, which Offer to fetch.
+     */
+    where: OfferWhereUniqueInput
+  }
+
+  /**
+   * Offer findFirst
+   */
+  export type OfferFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * Filter, which Offer to fetch.
+     */
+    where?: OfferWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Offers to fetch.
+     */
+    orderBy?: OfferOrderByWithRelationInput | OfferOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Offers.
+     */
+    cursor?: OfferWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Offers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Offers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Offers.
+     */
+    distinct?: OfferScalarFieldEnum | OfferScalarFieldEnum[]
+  }
+
+  /**
+   * Offer findFirstOrThrow
+   */
+  export type OfferFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * Filter, which Offer to fetch.
+     */
+    where?: OfferWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Offers to fetch.
+     */
+    orderBy?: OfferOrderByWithRelationInput | OfferOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Offers.
+     */
+    cursor?: OfferWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Offers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Offers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Offers.
+     */
+    distinct?: OfferScalarFieldEnum | OfferScalarFieldEnum[]
+  }
+
+  /**
+   * Offer findMany
+   */
+  export type OfferFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * Filter, which Offers to fetch.
+     */
+    where?: OfferWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Offers to fetch.
+     */
+    orderBy?: OfferOrderByWithRelationInput | OfferOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Offers.
+     */
+    cursor?: OfferWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Offers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Offers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Offers.
+     */
+    distinct?: OfferScalarFieldEnum | OfferScalarFieldEnum[]
+  }
+
+  /**
+   * Offer create
+   */
+  export type OfferCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Offer.
+     */
+    data: XOR<OfferCreateInput, OfferUncheckedCreateInput>
+  }
+
+  /**
+   * Offer createMany
+   */
+  export type OfferCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Offers.
+     */
+    data: OfferCreateManyInput | OfferCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Offer createManyAndReturn
+   */
+  export type OfferCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * The data used to create many Offers.
+     */
+    data: OfferCreateManyInput | OfferCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Offer update
+   */
+  export type OfferUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Offer.
+     */
+    data: XOR<OfferUpdateInput, OfferUncheckedUpdateInput>
+    /**
+     * Choose, which Offer to update.
+     */
+    where: OfferWhereUniqueInput
+  }
+
+  /**
+   * Offer updateMany
+   */
+  export type OfferUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Offers.
+     */
+    data: XOR<OfferUpdateManyMutationInput, OfferUncheckedUpdateManyInput>
+    /**
+     * Filter which Offers to update
+     */
+    where?: OfferWhereInput
+    /**
+     * Limit how many Offers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Offer updateManyAndReturn
+   */
+  export type OfferUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * The data used to update Offers.
+     */
+    data: XOR<OfferUpdateManyMutationInput, OfferUncheckedUpdateManyInput>
+    /**
+     * Filter which Offers to update
+     */
+    where?: OfferWhereInput
+    /**
+     * Limit how many Offers to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Offer upsert
+   */
+  export type OfferUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Offer to update in case it exists.
+     */
+    where: OfferWhereUniqueInput
+    /**
+     * In case the Offer found by the `where` argument doesn't exist, create a new Offer with this data.
+     */
+    create: XOR<OfferCreateInput, OfferUncheckedCreateInput>
+    /**
+     * In case the Offer was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OfferUpdateInput, OfferUncheckedUpdateInput>
+  }
+
+  /**
+   * Offer delete
+   */
+  export type OfferDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+    /**
+     * Filter which Offer to delete.
+     */
+    where: OfferWhereUniqueInput
+  }
+
+  /**
+   * Offer deleteMany
+   */
+  export type OfferDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Offers to delete
+     */
+    where?: OfferWhereInput
+    /**
+     * Limit how many Offers to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Offer.branch
+   */
+  export type Offer$branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Branch
+     */
+    select?: BranchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Branch
+     */
+    omit?: BranchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchInclude<ExtArgs> | null
+    where?: BranchWhereInput
+  }
+
+  /**
+   * Offer without action
+   */
+  export type OfferDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Offer
+     */
+    select?: OfferSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Offer
+     */
+    omit?: OfferOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OfferInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ChatMessage
+   */
+
+  export type AggregateChatMessage = {
+    _count: ChatMessageCountAggregateOutputType | null
+    _min: ChatMessageMinAggregateOutputType | null
+    _max: ChatMessageMaxAggregateOutputType | null
+  }
+
+  export type ChatMessageMinAggregateOutputType = {
+    id: string | null
+    branchId: string | null
+    customerId: string | null
+    customerName: string | null
+    customerPhone: string | null
+    bookingId: string | null
+    sender: string | null
+    senderName: string | null
+    message: string | null
+    isRead: boolean | null
+    createdAt: Date | null
+  }
+
+  export type ChatMessageMaxAggregateOutputType = {
+    id: string | null
+    branchId: string | null
+    customerId: string | null
+    customerName: string | null
+    customerPhone: string | null
+    bookingId: string | null
+    sender: string | null
+    senderName: string | null
+    message: string | null
+    isRead: boolean | null
+    createdAt: Date | null
+  }
+
+  export type ChatMessageCountAggregateOutputType = {
+    id: number
+    branchId: number
+    customerId: number
+    customerName: number
+    customerPhone: number
+    bookingId: number
+    sender: number
+    senderName: number
+    message: number
+    isRead: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ChatMessageMinAggregateInputType = {
+    id?: true
+    branchId?: true
+    customerId?: true
+    customerName?: true
+    customerPhone?: true
+    bookingId?: true
+    sender?: true
+    senderName?: true
+    message?: true
+    isRead?: true
+    createdAt?: true
+  }
+
+  export type ChatMessageMaxAggregateInputType = {
+    id?: true
+    branchId?: true
+    customerId?: true
+    customerName?: true
+    customerPhone?: true
+    bookingId?: true
+    sender?: true
+    senderName?: true
+    message?: true
+    isRead?: true
+    createdAt?: true
+  }
+
+  export type ChatMessageCountAggregateInputType = {
+    id?: true
+    branchId?: true
+    customerId?: true
+    customerName?: true
+    customerPhone?: true
+    bookingId?: true
+    sender?: true
+    senderName?: true
+    message?: true
+    isRead?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ChatMessageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatMessage to aggregate.
+     */
+    where?: ChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessageOrderByWithRelationInput | ChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ChatMessages
+    **/
+    _count?: true | ChatMessageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChatMessageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChatMessageMaxAggregateInputType
+  }
+
+  export type GetChatMessageAggregateType<T extends ChatMessageAggregateArgs> = {
+        [P in keyof T & keyof AggregateChatMessage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChatMessage[P]>
+      : GetScalarType<T[P], AggregateChatMessage[P]>
+  }
+
+
+
+
+  export type ChatMessageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatMessageWhereInput
+    orderBy?: ChatMessageOrderByWithAggregationInput | ChatMessageOrderByWithAggregationInput[]
+    by: ChatMessageScalarFieldEnum[] | ChatMessageScalarFieldEnum
+    having?: ChatMessageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChatMessageCountAggregateInputType | true
+    _min?: ChatMessageMinAggregateInputType
+    _max?: ChatMessageMaxAggregateInputType
+  }
+
+  export type ChatMessageGroupByOutputType = {
+    id: string
+    branchId: string | null
+    customerId: string | null
+    customerName: string
+    customerPhone: string | null
+    bookingId: string | null
+    sender: string
+    senderName: string
+    message: string
+    isRead: boolean
+    createdAt: Date
+    _count: ChatMessageCountAggregateOutputType | null
+    _min: ChatMessageMinAggregateOutputType | null
+    _max: ChatMessageMaxAggregateOutputType | null
+  }
+
+  type GetChatMessageGroupByPayload<T extends ChatMessageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChatMessageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChatMessageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChatMessageGroupByOutputType[P]>
+            : GetScalarType<T[P], ChatMessageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChatMessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    customerId?: boolean
+    customerName?: boolean
+    customerPhone?: boolean
+    bookingId?: boolean
+    sender?: boolean
+    senderName?: boolean
+    message?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+    branch?: boolean | ChatMessage$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["chatMessage"]>
+
+  export type ChatMessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    customerId?: boolean
+    customerName?: boolean
+    customerPhone?: boolean
+    bookingId?: boolean
+    sender?: boolean
+    senderName?: boolean
+    message?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+    branch?: boolean | ChatMessage$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["chatMessage"]>
+
+  export type ChatMessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    customerId?: boolean
+    customerName?: boolean
+    customerPhone?: boolean
+    bookingId?: boolean
+    sender?: boolean
+    senderName?: boolean
+    message?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+    branch?: boolean | ChatMessage$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["chatMessage"]>
+
+  export type ChatMessageSelectScalar = {
+    id?: boolean
+    branchId?: boolean
+    customerId?: boolean
+    customerName?: boolean
+    customerPhone?: boolean
+    bookingId?: boolean
+    sender?: boolean
+    senderName?: boolean
+    message?: boolean
+    isRead?: boolean
+    createdAt?: boolean
+  }
+
+  export type ChatMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "customerId" | "customerName" | "customerPhone" | "bookingId" | "sender" | "senderName" | "message" | "isRead" | "createdAt", ExtArgs["result"]["chatMessage"]>
+  export type ChatMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | ChatMessage$branchArgs<ExtArgs>
+  }
+  export type ChatMessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | ChatMessage$branchArgs<ExtArgs>
+  }
+  export type ChatMessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | ChatMessage$branchArgs<ExtArgs>
+  }
+
+  export type $ChatMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ChatMessage"
+    objects: {
+      branch: Prisma.$BranchPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      branchId: string | null
+      customerId: string | null
+      customerName: string
+      customerPhone: string | null
+      bookingId: string | null
+      sender: string
+      senderName: string
+      message: string
+      isRead: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["chatMessage"]>
+    composites: {}
+  }
+
+  type ChatMessageGetPayload<S extends boolean | null | undefined | ChatMessageDefaultArgs> = $Result.GetResult<Prisma.$ChatMessagePayload, S>
+
+  type ChatMessageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChatMessageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChatMessageCountAggregateInputType | true
+    }
+
+  export interface ChatMessageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ChatMessage'], meta: { name: 'ChatMessage' } }
+    /**
+     * Find zero or one ChatMessage that matches the filter.
+     * @param {ChatMessageFindUniqueArgs} args - Arguments to find a ChatMessage
+     * @example
+     * // Get one ChatMessage
+     * const chatMessage = await prisma.chatMessage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChatMessageFindUniqueArgs>(args: SelectSubset<T, ChatMessageFindUniqueArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ChatMessage that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChatMessageFindUniqueOrThrowArgs} args - Arguments to find a ChatMessage
+     * @example
+     * // Get one ChatMessage
+     * const chatMessage = await prisma.chatMessage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChatMessageFindUniqueOrThrowArgs>(args: SelectSubset<T, ChatMessageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatMessage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessageFindFirstArgs} args - Arguments to find a ChatMessage
+     * @example
+     * // Get one ChatMessage
+     * const chatMessage = await prisma.chatMessage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChatMessageFindFirstArgs>(args?: SelectSubset<T, ChatMessageFindFirstArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatMessage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessageFindFirstOrThrowArgs} args - Arguments to find a ChatMessage
+     * @example
+     * // Get one ChatMessage
+     * const chatMessage = await prisma.chatMessage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChatMessageFindFirstOrThrowArgs>(args?: SelectSubset<T, ChatMessageFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ChatMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChatMessages
+     * const chatMessages = await prisma.chatMessage.findMany()
+     * 
+     * // Get first 10 ChatMessages
+     * const chatMessages = await prisma.chatMessage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chatMessageWithIdOnly = await prisma.chatMessage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChatMessageFindManyArgs>(args?: SelectSubset<T, ChatMessageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ChatMessage.
+     * @param {ChatMessageCreateArgs} args - Arguments to create a ChatMessage.
+     * @example
+     * // Create one ChatMessage
+     * const ChatMessage = await prisma.chatMessage.create({
+     *   data: {
+     *     // ... data to create a ChatMessage
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChatMessageCreateArgs>(args: SelectSubset<T, ChatMessageCreateArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ChatMessages.
+     * @param {ChatMessageCreateManyArgs} args - Arguments to create many ChatMessages.
+     * @example
+     * // Create many ChatMessages
+     * const chatMessage = await prisma.chatMessage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChatMessageCreateManyArgs>(args?: SelectSubset<T, ChatMessageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ChatMessages and returns the data saved in the database.
+     * @param {ChatMessageCreateManyAndReturnArgs} args - Arguments to create many ChatMessages.
+     * @example
+     * // Create many ChatMessages
+     * const chatMessage = await prisma.chatMessage.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ChatMessages and only return the `id`
+     * const chatMessageWithIdOnly = await prisma.chatMessage.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChatMessageCreateManyAndReturnArgs>(args?: SelectSubset<T, ChatMessageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ChatMessage.
+     * @param {ChatMessageDeleteArgs} args - Arguments to delete one ChatMessage.
+     * @example
+     * // Delete one ChatMessage
+     * const ChatMessage = await prisma.chatMessage.delete({
+     *   where: {
+     *     // ... filter to delete one ChatMessage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChatMessageDeleteArgs>(args: SelectSubset<T, ChatMessageDeleteArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ChatMessage.
+     * @param {ChatMessageUpdateArgs} args - Arguments to update one ChatMessage.
+     * @example
+     * // Update one ChatMessage
+     * const chatMessage = await prisma.chatMessage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChatMessageUpdateArgs>(args: SelectSubset<T, ChatMessageUpdateArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ChatMessages.
+     * @param {ChatMessageDeleteManyArgs} args - Arguments to filter ChatMessages to delete.
+     * @example
+     * // Delete a few ChatMessages
+     * const { count } = await prisma.chatMessage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChatMessageDeleteManyArgs>(args?: SelectSubset<T, ChatMessageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChatMessages
+     * const chatMessage = await prisma.chatMessage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChatMessageUpdateManyArgs>(args: SelectSubset<T, ChatMessageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatMessages and returns the data updated in the database.
+     * @param {ChatMessageUpdateManyAndReturnArgs} args - Arguments to update many ChatMessages.
+     * @example
+     * // Update many ChatMessages
+     * const chatMessage = await prisma.chatMessage.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ChatMessages and only return the `id`
+     * const chatMessageWithIdOnly = await prisma.chatMessage.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ChatMessageUpdateManyAndReturnArgs>(args: SelectSubset<T, ChatMessageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ChatMessage.
+     * @param {ChatMessageUpsertArgs} args - Arguments to update or create a ChatMessage.
+     * @example
+     * // Update or create a ChatMessage
+     * const chatMessage = await prisma.chatMessage.upsert({
+     *   create: {
+     *     // ... data to create a ChatMessage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChatMessage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChatMessageUpsertArgs>(args: SelectSubset<T, ChatMessageUpsertArgs<ExtArgs>>): Prisma__ChatMessageClient<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessageCountArgs} args - Arguments to filter ChatMessages to count.
+     * @example
+     * // Count the number of ChatMessages
+     * const count = await prisma.chatMessage.count({
+     *   where: {
+     *     // ... the filter for the ChatMessages we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChatMessageCountArgs>(
+      args?: Subset<T, ChatMessageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChatMessageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ChatMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChatMessageAggregateArgs>(args: Subset<T, ChatMessageAggregateArgs>): Prisma.PrismaPromise<GetChatMessageAggregateType<T>>
+
+    /**
+     * Group by ChatMessage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChatMessageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChatMessageGroupByArgs['orderBy'] }
+        : { orderBy?: ChatMessageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChatMessageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChatMessageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ChatMessage model
+   */
+  readonly fields: ChatMessageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChatMessage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChatMessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    branch<T extends ChatMessage$branchArgs<ExtArgs> = {}>(args?: Subset<T, ChatMessage$branchArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ChatMessage model
+   */
+  interface ChatMessageFieldRefs {
+    readonly id: FieldRef<"ChatMessage", 'String'>
+    readonly branchId: FieldRef<"ChatMessage", 'String'>
+    readonly customerId: FieldRef<"ChatMessage", 'String'>
+    readonly customerName: FieldRef<"ChatMessage", 'String'>
+    readonly customerPhone: FieldRef<"ChatMessage", 'String'>
+    readonly bookingId: FieldRef<"ChatMessage", 'String'>
+    readonly sender: FieldRef<"ChatMessage", 'String'>
+    readonly senderName: FieldRef<"ChatMessage", 'String'>
+    readonly message: FieldRef<"ChatMessage", 'String'>
+    readonly isRead: FieldRef<"ChatMessage", 'Boolean'>
+    readonly createdAt: FieldRef<"ChatMessage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ChatMessage findUnique
+   */
+  export type ChatMessageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessage to fetch.
+     */
+    where: ChatMessageWhereUniqueInput
+  }
+
+  /**
+   * ChatMessage findUniqueOrThrow
+   */
+  export type ChatMessageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessage to fetch.
+     */
+    where: ChatMessageWhereUniqueInput
+  }
+
+  /**
+   * ChatMessage findFirst
+   */
+  export type ChatMessageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessage to fetch.
+     */
+    where?: ChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessageOrderByWithRelationInput | ChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatMessages.
+     */
+    cursor?: ChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatMessages.
+     */
+    distinct?: ChatMessageScalarFieldEnum | ChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * ChatMessage findFirstOrThrow
+   */
+  export type ChatMessageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessage to fetch.
+     */
+    where?: ChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessageOrderByWithRelationInput | ChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatMessages.
+     */
+    cursor?: ChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatMessages.
+     */
+    distinct?: ChatMessageScalarFieldEnum | ChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * ChatMessage findMany
+   */
+  export type ChatMessageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessages to fetch.
+     */
+    where?: ChatMessageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessageOrderByWithRelationInput | ChatMessageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ChatMessages.
+     */
+    cursor?: ChatMessageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatMessages.
+     */
+    distinct?: ChatMessageScalarFieldEnum | ChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * ChatMessage create
+   */
+  export type ChatMessageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ChatMessage.
+     */
+    data: XOR<ChatMessageCreateInput, ChatMessageUncheckedCreateInput>
+  }
+
+  /**
+   * ChatMessage createMany
+   */
+  export type ChatMessageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ChatMessages.
+     */
+    data: ChatMessageCreateManyInput | ChatMessageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChatMessage createManyAndReturn
+   */
+  export type ChatMessageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * The data used to create many ChatMessages.
+     */
+    data: ChatMessageCreateManyInput | ChatMessageCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ChatMessage update
+   */
+  export type ChatMessageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ChatMessage.
+     */
+    data: XOR<ChatMessageUpdateInput, ChatMessageUncheckedUpdateInput>
+    /**
+     * Choose, which ChatMessage to update.
+     */
+    where: ChatMessageWhereUniqueInput
+  }
+
+  /**
+   * ChatMessage updateMany
+   */
+  export type ChatMessageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ChatMessages.
+     */
+    data: XOR<ChatMessageUpdateManyMutationInput, ChatMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatMessages to update
+     */
+    where?: ChatMessageWhereInput
+    /**
+     * Limit how many ChatMessages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatMessage updateManyAndReturn
+   */
+  export type ChatMessageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * The data used to update ChatMessages.
+     */
+    data: XOR<ChatMessageUpdateManyMutationInput, ChatMessageUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatMessages to update
+     */
+    where?: ChatMessageWhereInput
+    /**
+     * Limit how many ChatMessages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ChatMessage upsert
+   */
+  export type ChatMessageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ChatMessage to update in case it exists.
+     */
+    where: ChatMessageWhereUniqueInput
+    /**
+     * In case the ChatMessage found by the `where` argument doesn't exist, create a new ChatMessage with this data.
+     */
+    create: XOR<ChatMessageCreateInput, ChatMessageUncheckedCreateInput>
+    /**
+     * In case the ChatMessage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChatMessageUpdateInput, ChatMessageUncheckedUpdateInput>
+  }
+
+  /**
+   * ChatMessage delete
+   */
+  export type ChatMessageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+    /**
+     * Filter which ChatMessage to delete.
+     */
+    where: ChatMessageWhereUniqueInput
+  }
+
+  /**
+   * ChatMessage deleteMany
+   */
+  export type ChatMessageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatMessages to delete
+     */
+    where?: ChatMessageWhereInput
+    /**
+     * Limit how many ChatMessages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatMessage.branch
+   */
+  export type ChatMessage$branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Branch
+     */
+    select?: BranchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Branch
+     */
+    omit?: BranchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchInclude<ExtArgs> | null
+    where?: BranchWhereInput
+  }
+
+  /**
+   * ChatMessage without action
+   */
+  export type ChatMessageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessage
+     */
+    select?: ChatMessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessage
+     */
+    omit?: ChatMessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessageInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -14409,6 +17070,43 @@ export namespace Prisma {
   export type SystemSettingsScalarFieldEnum = (typeof SystemSettingsScalarFieldEnum)[keyof typeof SystemSettingsScalarFieldEnum]
 
 
+  export const OfferScalarFieldEnum: {
+    id: 'id',
+    titleAr: 'titleAr',
+    badge: 'badge',
+    price: 'price',
+    oldPrice: 'oldPrice',
+    discountPercent: 'discountPercent',
+    image: 'image',
+    description: 'description',
+    features: 'features',
+    branchId: 'branchId',
+    isActive: 'isActive',
+    sortOrder: 'sortOrder',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type OfferScalarFieldEnum = (typeof OfferScalarFieldEnum)[keyof typeof OfferScalarFieldEnum]
+
+
+  export const ChatMessageScalarFieldEnum: {
+    id: 'id',
+    branchId: 'branchId',
+    customerId: 'customerId',
+    customerName: 'customerName',
+    customerPhone: 'customerPhone',
+    bookingId: 'bookingId',
+    sender: 'sender',
+    senderName: 'senderName',
+    message: 'message',
+    isRead: 'isRead',
+    createdAt: 'createdAt'
+  };
+
+  export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -14523,6 +17221,8 @@ export namespace Prisma {
     tickets?: TicketListRelationFilter
     products?: ProductListRelationFilter
     ledgers?: SpecialistLedgerListRelationFilter
+    offers?: OfferListRelationFilter
+    chatMessages?: ChatMessageListRelationFilter
   }
 
   export type BranchOrderByWithRelationInput = {
@@ -14541,6 +17241,8 @@ export namespace Prisma {
     tickets?: TicketOrderByRelationAggregateInput
     products?: ProductOrderByRelationAggregateInput
     ledgers?: SpecialistLedgerOrderByRelationAggregateInput
+    offers?: OfferOrderByRelationAggregateInput
+    chatMessages?: ChatMessageOrderByRelationAggregateInput
   }
 
   export type BranchWhereUniqueInput = Prisma.AtLeast<{
@@ -14562,6 +17264,8 @@ export namespace Prisma {
     tickets?: TicketListRelationFilter
     products?: ProductListRelationFilter
     ledgers?: SpecialistLedgerListRelationFilter
+    offers?: OfferListRelationFilter
+    chatMessages?: ChatMessageListRelationFilter
   }, "id" | "code">
 
   export type BranchOrderByWithAggregationInput = {
@@ -15525,6 +18229,193 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"SystemSettings"> | Date | string
   }
 
+  export type OfferWhereInput = {
+    AND?: OfferWhereInput | OfferWhereInput[]
+    OR?: OfferWhereInput[]
+    NOT?: OfferWhereInput | OfferWhereInput[]
+    id?: StringFilter<"Offer"> | string
+    titleAr?: StringFilter<"Offer"> | string
+    badge?: StringNullableFilter<"Offer"> | string | null
+    price?: FloatFilter<"Offer"> | number
+    oldPrice?: FloatNullableFilter<"Offer"> | number | null
+    discountPercent?: IntNullableFilter<"Offer"> | number | null
+    image?: StringFilter<"Offer"> | string
+    description?: StringNullableFilter<"Offer"> | string | null
+    features?: StringFilter<"Offer"> | string
+    branchId?: StringNullableFilter<"Offer"> | string | null
+    isActive?: BoolFilter<"Offer"> | boolean
+    sortOrder?: IntFilter<"Offer"> | number
+    createdAt?: DateTimeFilter<"Offer"> | Date | string
+    updatedAt?: DateTimeFilter<"Offer"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }
+
+  export type OfferOrderByWithRelationInput = {
+    id?: SortOrder
+    titleAr?: SortOrder
+    badge?: SortOrderInput | SortOrder
+    price?: SortOrder
+    oldPrice?: SortOrderInput | SortOrder
+    discountPercent?: SortOrderInput | SortOrder
+    image?: SortOrder
+    description?: SortOrderInput | SortOrder
+    features?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    branch?: BranchOrderByWithRelationInput
+  }
+
+  export type OfferWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: OfferWhereInput | OfferWhereInput[]
+    OR?: OfferWhereInput[]
+    NOT?: OfferWhereInput | OfferWhereInput[]
+    titleAr?: StringFilter<"Offer"> | string
+    badge?: StringNullableFilter<"Offer"> | string | null
+    price?: FloatFilter<"Offer"> | number
+    oldPrice?: FloatNullableFilter<"Offer"> | number | null
+    discountPercent?: IntNullableFilter<"Offer"> | number | null
+    image?: StringFilter<"Offer"> | string
+    description?: StringNullableFilter<"Offer"> | string | null
+    features?: StringFilter<"Offer"> | string
+    branchId?: StringNullableFilter<"Offer"> | string | null
+    isActive?: BoolFilter<"Offer"> | boolean
+    sortOrder?: IntFilter<"Offer"> | number
+    createdAt?: DateTimeFilter<"Offer"> | Date | string
+    updatedAt?: DateTimeFilter<"Offer"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }, "id">
+
+  export type OfferOrderByWithAggregationInput = {
+    id?: SortOrder
+    titleAr?: SortOrder
+    badge?: SortOrderInput | SortOrder
+    price?: SortOrder
+    oldPrice?: SortOrderInput | SortOrder
+    discountPercent?: SortOrderInput | SortOrder
+    image?: SortOrder
+    description?: SortOrderInput | SortOrder
+    features?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: OfferCountOrderByAggregateInput
+    _avg?: OfferAvgOrderByAggregateInput
+    _max?: OfferMaxOrderByAggregateInput
+    _min?: OfferMinOrderByAggregateInput
+    _sum?: OfferSumOrderByAggregateInput
+  }
+
+  export type OfferScalarWhereWithAggregatesInput = {
+    AND?: OfferScalarWhereWithAggregatesInput | OfferScalarWhereWithAggregatesInput[]
+    OR?: OfferScalarWhereWithAggregatesInput[]
+    NOT?: OfferScalarWhereWithAggregatesInput | OfferScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Offer"> | string
+    titleAr?: StringWithAggregatesFilter<"Offer"> | string
+    badge?: StringNullableWithAggregatesFilter<"Offer"> | string | null
+    price?: FloatWithAggregatesFilter<"Offer"> | number
+    oldPrice?: FloatNullableWithAggregatesFilter<"Offer"> | number | null
+    discountPercent?: IntNullableWithAggregatesFilter<"Offer"> | number | null
+    image?: StringWithAggregatesFilter<"Offer"> | string
+    description?: StringNullableWithAggregatesFilter<"Offer"> | string | null
+    features?: StringWithAggregatesFilter<"Offer"> | string
+    branchId?: StringNullableWithAggregatesFilter<"Offer"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Offer"> | boolean
+    sortOrder?: IntWithAggregatesFilter<"Offer"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"Offer"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Offer"> | Date | string
+  }
+
+  export type ChatMessageWhereInput = {
+    AND?: ChatMessageWhereInput | ChatMessageWhereInput[]
+    OR?: ChatMessageWhereInput[]
+    NOT?: ChatMessageWhereInput | ChatMessageWhereInput[]
+    id?: StringFilter<"ChatMessage"> | string
+    branchId?: StringNullableFilter<"ChatMessage"> | string | null
+    customerId?: StringNullableFilter<"ChatMessage"> | string | null
+    customerName?: StringFilter<"ChatMessage"> | string
+    customerPhone?: StringNullableFilter<"ChatMessage"> | string | null
+    bookingId?: StringNullableFilter<"ChatMessage"> | string | null
+    sender?: StringFilter<"ChatMessage"> | string
+    senderName?: StringFilter<"ChatMessage"> | string
+    message?: StringFilter<"ChatMessage"> | string
+    isRead?: BoolFilter<"ChatMessage"> | boolean
+    createdAt?: DateTimeFilter<"ChatMessage"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }
+
+  export type ChatMessageOrderByWithRelationInput = {
+    id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    customerId?: SortOrderInput | SortOrder
+    customerName?: SortOrder
+    customerPhone?: SortOrderInput | SortOrder
+    bookingId?: SortOrderInput | SortOrder
+    sender?: SortOrder
+    senderName?: SortOrder
+    message?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+    branch?: BranchOrderByWithRelationInput
+  }
+
+  export type ChatMessageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ChatMessageWhereInput | ChatMessageWhereInput[]
+    OR?: ChatMessageWhereInput[]
+    NOT?: ChatMessageWhereInput | ChatMessageWhereInput[]
+    branchId?: StringNullableFilter<"ChatMessage"> | string | null
+    customerId?: StringNullableFilter<"ChatMessage"> | string | null
+    customerName?: StringFilter<"ChatMessage"> | string
+    customerPhone?: StringNullableFilter<"ChatMessage"> | string | null
+    bookingId?: StringNullableFilter<"ChatMessage"> | string | null
+    sender?: StringFilter<"ChatMessage"> | string
+    senderName?: StringFilter<"ChatMessage"> | string
+    message?: StringFilter<"ChatMessage"> | string
+    isRead?: BoolFilter<"ChatMessage"> | boolean
+    createdAt?: DateTimeFilter<"ChatMessage"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }, "id">
+
+  export type ChatMessageOrderByWithAggregationInput = {
+    id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    customerId?: SortOrderInput | SortOrder
+    customerName?: SortOrder
+    customerPhone?: SortOrderInput | SortOrder
+    bookingId?: SortOrderInput | SortOrder
+    sender?: SortOrder
+    senderName?: SortOrder
+    message?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+    _count?: ChatMessageCountOrderByAggregateInput
+    _max?: ChatMessageMaxOrderByAggregateInput
+    _min?: ChatMessageMinOrderByAggregateInput
+  }
+
+  export type ChatMessageScalarWhereWithAggregatesInput = {
+    AND?: ChatMessageScalarWhereWithAggregatesInput | ChatMessageScalarWhereWithAggregatesInput[]
+    OR?: ChatMessageScalarWhereWithAggregatesInput[]
+    NOT?: ChatMessageScalarWhereWithAggregatesInput | ChatMessageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ChatMessage"> | string
+    branchId?: StringNullableWithAggregatesFilter<"ChatMessage"> | string | null
+    customerId?: StringNullableWithAggregatesFilter<"ChatMessage"> | string | null
+    customerName?: StringWithAggregatesFilter<"ChatMessage"> | string
+    customerPhone?: StringNullableWithAggregatesFilter<"ChatMessage"> | string | null
+    bookingId?: StringNullableWithAggregatesFilter<"ChatMessage"> | string | null
+    sender?: StringWithAggregatesFilter<"ChatMessage"> | string
+    senderName?: StringWithAggregatesFilter<"ChatMessage"> | string
+    message?: StringWithAggregatesFilter<"ChatMessage"> | string
+    isRead?: BoolWithAggregatesFilter<"ChatMessage"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"ChatMessage"> | Date | string
+  }
+
   export type BranchCreateInput = {
     id?: string
     name: string
@@ -15541,6 +18432,8 @@ export namespace Prisma {
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateInput = {
@@ -15559,6 +18452,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUpdateInput = {
@@ -15577,6 +18472,8 @@ export namespace Prisma {
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateInput = {
@@ -15595,6 +18492,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateManyInput = {
@@ -16702,6 +19601,221 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type OfferCreateInput = {
+    id?: string
+    titleAr: string
+    badge?: string | null
+    price: number
+    oldPrice?: number | null
+    discountPercent?: number | null
+    image: string
+    description?: string | null
+    features?: string
+    isActive?: boolean
+    sortOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    branch?: BranchCreateNestedOneWithoutOffersInput
+  }
+
+  export type OfferUncheckedCreateInput = {
+    id?: string
+    titleAr: string
+    badge?: string | null
+    price: number
+    oldPrice?: number | null
+    discountPercent?: number | null
+    image: string
+    description?: string | null
+    features?: string
+    branchId?: string | null
+    isActive?: boolean
+    sortOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OfferUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titleAr?: StringFieldUpdateOperationsInput | string
+    badge?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: FloatFieldUpdateOperationsInput | number
+    oldPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    image?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    features?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    branch?: BranchUpdateOneWithoutOffersNestedInput
+  }
+
+  export type OfferUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titleAr?: StringFieldUpdateOperationsInput | string
+    badge?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: FloatFieldUpdateOperationsInput | number
+    oldPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    image?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    features?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OfferCreateManyInput = {
+    id?: string
+    titleAr: string
+    badge?: string | null
+    price: number
+    oldPrice?: number | null
+    discountPercent?: number | null
+    image: string
+    description?: string | null
+    features?: string
+    branchId?: string | null
+    isActive?: boolean
+    sortOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OfferUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titleAr?: StringFieldUpdateOperationsInput | string
+    badge?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: FloatFieldUpdateOperationsInput | number
+    oldPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    image?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    features?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OfferUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titleAr?: StringFieldUpdateOperationsInput | string
+    badge?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: FloatFieldUpdateOperationsInput | number
+    oldPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    image?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    features?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessageCreateInput = {
+    id?: string
+    customerId?: string | null
+    customerName?: string
+    customerPhone?: string | null
+    bookingId?: string | null
+    sender: string
+    senderName?: string
+    message: string
+    isRead?: boolean
+    createdAt?: Date | string
+    branch?: BranchCreateNestedOneWithoutChatMessagesInput
+  }
+
+  export type ChatMessageUncheckedCreateInput = {
+    id?: string
+    branchId?: string | null
+    customerId?: string | null
+    customerName?: string
+    customerPhone?: string | null
+    bookingId?: string | null
+    sender: string
+    senderName?: string
+    message: string
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ChatMessageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    sender?: StringFieldUpdateOperationsInput | string
+    senderName?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    branch?: BranchUpdateOneWithoutChatMessagesNestedInput
+  }
+
+  export type ChatMessageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    sender?: StringFieldUpdateOperationsInput | string
+    senderName?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessageCreateManyInput = {
+    id?: string
+    branchId?: string | null
+    customerId?: string | null
+    customerName?: string
+    customerPhone?: string | null
+    bookingId?: string | null
+    sender: string
+    senderName?: string
+    message: string
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ChatMessageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    sender?: StringFieldUpdateOperationsInput | string
+    senderName?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    sender?: StringFieldUpdateOperationsInput | string
+    senderName?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -16784,6 +19898,18 @@ export namespace Prisma {
     none?: SpecialistLedgerWhereInput
   }
 
+  export type OfferListRelationFilter = {
+    every?: OfferWhereInput
+    some?: OfferWhereInput
+    none?: OfferWhereInput
+  }
+
+  export type ChatMessageListRelationFilter = {
+    every?: ChatMessageWhereInput
+    some?: ChatMessageWhereInput
+    none?: ChatMessageWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -16810,6 +19936,14 @@ export namespace Prisma {
   }
 
   export type SpecialistLedgerOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type OfferOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ChatMessageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -17587,6 +20721,140 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type OfferCountOrderByAggregateInput = {
+    id?: SortOrder
+    titleAr?: SortOrder
+    badge?: SortOrder
+    price?: SortOrder
+    oldPrice?: SortOrder
+    discountPercent?: SortOrder
+    image?: SortOrder
+    description?: SortOrder
+    features?: SortOrder
+    branchId?: SortOrder
+    isActive?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OfferAvgOrderByAggregateInput = {
+    price?: SortOrder
+    oldPrice?: SortOrder
+    discountPercent?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type OfferMaxOrderByAggregateInput = {
+    id?: SortOrder
+    titleAr?: SortOrder
+    badge?: SortOrder
+    price?: SortOrder
+    oldPrice?: SortOrder
+    discountPercent?: SortOrder
+    image?: SortOrder
+    description?: SortOrder
+    features?: SortOrder
+    branchId?: SortOrder
+    isActive?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OfferMinOrderByAggregateInput = {
+    id?: SortOrder
+    titleAr?: SortOrder
+    badge?: SortOrder
+    price?: SortOrder
+    oldPrice?: SortOrder
+    discountPercent?: SortOrder
+    image?: SortOrder
+    description?: SortOrder
+    features?: SortOrder
+    branchId?: SortOrder
+    isActive?: SortOrder
+    sortOrder?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OfferSumOrderByAggregateInput = {
+    price?: SortOrder
+    oldPrice?: SortOrder
+    discountPercent?: SortOrder
+    sortOrder?: SortOrder
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
+  export type ChatMessageCountOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    customerId?: SortOrder
+    customerName?: SortOrder
+    customerPhone?: SortOrder
+    bookingId?: SortOrder
+    sender?: SortOrder
+    senderName?: SortOrder
+    message?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ChatMessageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    customerId?: SortOrder
+    customerName?: SortOrder
+    customerPhone?: SortOrder
+    bookingId?: SortOrder
+    sender?: SortOrder
+    senderName?: SortOrder
+    message?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ChatMessageMinOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    customerId?: SortOrder
+    customerName?: SortOrder
+    customerPhone?: SortOrder
+    bookingId?: SortOrder
+    sender?: SortOrder
+    senderName?: SortOrder
+    message?: SortOrder
+    isRead?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type UserCreateNestedManyWithoutBranchInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -17629,6 +20897,20 @@ export namespace Prisma {
     connect?: SpecialistLedgerWhereUniqueInput | SpecialistLedgerWhereUniqueInput[]
   }
 
+  export type OfferCreateNestedManyWithoutBranchInput = {
+    create?: XOR<OfferCreateWithoutBranchInput, OfferUncheckedCreateWithoutBranchInput> | OfferCreateWithoutBranchInput[] | OfferUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: OfferCreateOrConnectWithoutBranchInput | OfferCreateOrConnectWithoutBranchInput[]
+    createMany?: OfferCreateManyBranchInputEnvelope
+    connect?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+  }
+
+  export type ChatMessageCreateNestedManyWithoutBranchInput = {
+    create?: XOR<ChatMessageCreateWithoutBranchInput, ChatMessageUncheckedCreateWithoutBranchInput> | ChatMessageCreateWithoutBranchInput[] | ChatMessageUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ChatMessageCreateOrConnectWithoutBranchInput | ChatMessageCreateOrConnectWithoutBranchInput[]
+    createMany?: ChatMessageCreateManyBranchInputEnvelope
+    connect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutBranchInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -17669,6 +20951,20 @@ export namespace Prisma {
     connectOrCreate?: SpecialistLedgerCreateOrConnectWithoutBranchInput | SpecialistLedgerCreateOrConnectWithoutBranchInput[]
     createMany?: SpecialistLedgerCreateManyBranchInputEnvelope
     connect?: SpecialistLedgerWhereUniqueInput | SpecialistLedgerWhereUniqueInput[]
+  }
+
+  export type OfferUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<OfferCreateWithoutBranchInput, OfferUncheckedCreateWithoutBranchInput> | OfferCreateWithoutBranchInput[] | OfferUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: OfferCreateOrConnectWithoutBranchInput | OfferCreateOrConnectWithoutBranchInput[]
+    createMany?: OfferCreateManyBranchInputEnvelope
+    connect?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+  }
+
+  export type ChatMessageUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<ChatMessageCreateWithoutBranchInput, ChatMessageUncheckedCreateWithoutBranchInput> | ChatMessageCreateWithoutBranchInput[] | ChatMessageUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ChatMessageCreateOrConnectWithoutBranchInput | ChatMessageCreateOrConnectWithoutBranchInput[]
+    createMany?: ChatMessageCreateManyBranchInputEnvelope
+    connect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -17771,6 +21067,34 @@ export namespace Prisma {
     deleteMany?: SpecialistLedgerScalarWhereInput | SpecialistLedgerScalarWhereInput[]
   }
 
+  export type OfferUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<OfferCreateWithoutBranchInput, OfferUncheckedCreateWithoutBranchInput> | OfferCreateWithoutBranchInput[] | OfferUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: OfferCreateOrConnectWithoutBranchInput | OfferCreateOrConnectWithoutBranchInput[]
+    upsert?: OfferUpsertWithWhereUniqueWithoutBranchInput | OfferUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: OfferCreateManyBranchInputEnvelope
+    set?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    disconnect?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    delete?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    connect?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    update?: OfferUpdateWithWhereUniqueWithoutBranchInput | OfferUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: OfferUpdateManyWithWhereWithoutBranchInput | OfferUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: OfferScalarWhereInput | OfferScalarWhereInput[]
+  }
+
+  export type ChatMessageUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<ChatMessageCreateWithoutBranchInput, ChatMessageUncheckedCreateWithoutBranchInput> | ChatMessageCreateWithoutBranchInput[] | ChatMessageUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ChatMessageCreateOrConnectWithoutBranchInput | ChatMessageCreateOrConnectWithoutBranchInput[]
+    upsert?: ChatMessageUpsertWithWhereUniqueWithoutBranchInput | ChatMessageUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: ChatMessageCreateManyBranchInputEnvelope
+    set?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    disconnect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    delete?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    connect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    update?: ChatMessageUpdateWithWhereUniqueWithoutBranchInput | ChatMessageUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: ChatMessageUpdateManyWithWhereWithoutBranchInput | ChatMessageUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutBranchNestedInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -17853,6 +21177,34 @@ export namespace Prisma {
     update?: SpecialistLedgerUpdateWithWhereUniqueWithoutBranchInput | SpecialistLedgerUpdateWithWhereUniqueWithoutBranchInput[]
     updateMany?: SpecialistLedgerUpdateManyWithWhereWithoutBranchInput | SpecialistLedgerUpdateManyWithWhereWithoutBranchInput[]
     deleteMany?: SpecialistLedgerScalarWhereInput | SpecialistLedgerScalarWhereInput[]
+  }
+
+  export type OfferUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<OfferCreateWithoutBranchInput, OfferUncheckedCreateWithoutBranchInput> | OfferCreateWithoutBranchInput[] | OfferUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: OfferCreateOrConnectWithoutBranchInput | OfferCreateOrConnectWithoutBranchInput[]
+    upsert?: OfferUpsertWithWhereUniqueWithoutBranchInput | OfferUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: OfferCreateManyBranchInputEnvelope
+    set?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    disconnect?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    delete?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    connect?: OfferWhereUniqueInput | OfferWhereUniqueInput[]
+    update?: OfferUpdateWithWhereUniqueWithoutBranchInput | OfferUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: OfferUpdateManyWithWhereWithoutBranchInput | OfferUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: OfferScalarWhereInput | OfferScalarWhereInput[]
+  }
+
+  export type ChatMessageUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<ChatMessageCreateWithoutBranchInput, ChatMessageUncheckedCreateWithoutBranchInput> | ChatMessageCreateWithoutBranchInput[] | ChatMessageUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ChatMessageCreateOrConnectWithoutBranchInput | ChatMessageCreateOrConnectWithoutBranchInput[]
+    upsert?: ChatMessageUpsertWithWhereUniqueWithoutBranchInput | ChatMessageUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: ChatMessageCreateManyBranchInputEnvelope
+    set?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    disconnect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    delete?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    connect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+    update?: ChatMessageUpdateWithWhereUniqueWithoutBranchInput | ChatMessageUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: ChatMessageUpdateManyWithWhereWithoutBranchInput | ChatMessageUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
   }
 
   export type BranchCreateNestedOneWithoutUsersInput = {
@@ -18303,6 +21655,46 @@ export namespace Prisma {
     update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutLedgersInput, BranchUpdateWithoutLedgersInput>, BranchUncheckedUpdateWithoutLedgersInput>
   }
 
+  export type BranchCreateNestedOneWithoutOffersInput = {
+    create?: XOR<BranchCreateWithoutOffersInput, BranchUncheckedCreateWithoutOffersInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutOffersInput
+    connect?: BranchWhereUniqueInput
+  }
+
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type BranchUpdateOneWithoutOffersNestedInput = {
+    create?: XOR<BranchCreateWithoutOffersInput, BranchUncheckedCreateWithoutOffersInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutOffersInput
+    upsert?: BranchUpsertWithoutOffersInput
+    disconnect?: BranchWhereInput | boolean
+    delete?: BranchWhereInput | boolean
+    connect?: BranchWhereUniqueInput
+    update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutOffersInput, BranchUpdateWithoutOffersInput>, BranchUncheckedUpdateWithoutOffersInput>
+  }
+
+  export type BranchCreateNestedOneWithoutChatMessagesInput = {
+    create?: XOR<BranchCreateWithoutChatMessagesInput, BranchUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutChatMessagesInput
+    connect?: BranchWhereUniqueInput
+  }
+
+  export type BranchUpdateOneWithoutChatMessagesNestedInput = {
+    create?: XOR<BranchCreateWithoutChatMessagesInput, BranchUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutChatMessagesInput
+    upsert?: BranchUpsertWithoutChatMessagesInput
+    disconnect?: BranchWhereInput | boolean
+    delete?: BranchWhereInput | boolean
+    connect?: BranchWhereUniqueInput
+    update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutChatMessagesInput, BranchUpdateWithoutChatMessagesInput>, BranchUncheckedUpdateWithoutChatMessagesInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -18518,6 +21910,22 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type UserCreateWithoutBranchInput = {
@@ -18780,6 +22188,84 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type OfferCreateWithoutBranchInput = {
+    id?: string
+    titleAr: string
+    badge?: string | null
+    price: number
+    oldPrice?: number | null
+    discountPercent?: number | null
+    image: string
+    description?: string | null
+    features?: string
+    isActive?: boolean
+    sortOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OfferUncheckedCreateWithoutBranchInput = {
+    id?: string
+    titleAr: string
+    badge?: string | null
+    price: number
+    oldPrice?: number | null
+    discountPercent?: number | null
+    image: string
+    description?: string | null
+    features?: string
+    isActive?: boolean
+    sortOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OfferCreateOrConnectWithoutBranchInput = {
+    where: OfferWhereUniqueInput
+    create: XOR<OfferCreateWithoutBranchInput, OfferUncheckedCreateWithoutBranchInput>
+  }
+
+  export type OfferCreateManyBranchInputEnvelope = {
+    data: OfferCreateManyBranchInput | OfferCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ChatMessageCreateWithoutBranchInput = {
+    id?: string
+    customerId?: string | null
+    customerName?: string
+    customerPhone?: string | null
+    bookingId?: string | null
+    sender: string
+    senderName?: string
+    message: string
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ChatMessageUncheckedCreateWithoutBranchInput = {
+    id?: string
+    customerId?: string | null
+    customerName?: string
+    customerPhone?: string | null
+    bookingId?: string | null
+    sender: string
+    senderName?: string
+    message: string
+    isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ChatMessageCreateOrConnectWithoutBranchInput = {
+    where: ChatMessageWhereUniqueInput
+    create: XOR<ChatMessageCreateWithoutBranchInput, ChatMessageUncheckedCreateWithoutBranchInput>
+  }
+
+  export type ChatMessageCreateManyBranchInputEnvelope = {
+    data: ChatMessageCreateManyBranchInput | ChatMessageCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithWhereUniqueWithoutBranchInput = {
     where: UserWhereUniqueInput
     update: XOR<UserUpdateWithoutBranchInput, UserUncheckedUpdateWithoutBranchInput>
@@ -18996,6 +22482,75 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"SpecialistLedger"> | Date | string
   }
 
+  export type OfferUpsertWithWhereUniqueWithoutBranchInput = {
+    where: OfferWhereUniqueInput
+    update: XOR<OfferUpdateWithoutBranchInput, OfferUncheckedUpdateWithoutBranchInput>
+    create: XOR<OfferCreateWithoutBranchInput, OfferUncheckedCreateWithoutBranchInput>
+  }
+
+  export type OfferUpdateWithWhereUniqueWithoutBranchInput = {
+    where: OfferWhereUniqueInput
+    data: XOR<OfferUpdateWithoutBranchInput, OfferUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type OfferUpdateManyWithWhereWithoutBranchInput = {
+    where: OfferScalarWhereInput
+    data: XOR<OfferUpdateManyMutationInput, OfferUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type OfferScalarWhereInput = {
+    AND?: OfferScalarWhereInput | OfferScalarWhereInput[]
+    OR?: OfferScalarWhereInput[]
+    NOT?: OfferScalarWhereInput | OfferScalarWhereInput[]
+    id?: StringFilter<"Offer"> | string
+    titleAr?: StringFilter<"Offer"> | string
+    badge?: StringNullableFilter<"Offer"> | string | null
+    price?: FloatFilter<"Offer"> | number
+    oldPrice?: FloatNullableFilter<"Offer"> | number | null
+    discountPercent?: IntNullableFilter<"Offer"> | number | null
+    image?: StringFilter<"Offer"> | string
+    description?: StringNullableFilter<"Offer"> | string | null
+    features?: StringFilter<"Offer"> | string
+    branchId?: StringNullableFilter<"Offer"> | string | null
+    isActive?: BoolFilter<"Offer"> | boolean
+    sortOrder?: IntFilter<"Offer"> | number
+    createdAt?: DateTimeFilter<"Offer"> | Date | string
+    updatedAt?: DateTimeFilter<"Offer"> | Date | string
+  }
+
+  export type ChatMessageUpsertWithWhereUniqueWithoutBranchInput = {
+    where: ChatMessageWhereUniqueInput
+    update: XOR<ChatMessageUpdateWithoutBranchInput, ChatMessageUncheckedUpdateWithoutBranchInput>
+    create: XOR<ChatMessageCreateWithoutBranchInput, ChatMessageUncheckedCreateWithoutBranchInput>
+  }
+
+  export type ChatMessageUpdateWithWhereUniqueWithoutBranchInput = {
+    where: ChatMessageWhereUniqueInput
+    data: XOR<ChatMessageUpdateWithoutBranchInput, ChatMessageUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type ChatMessageUpdateManyWithWhereWithoutBranchInput = {
+    where: ChatMessageScalarWhereInput
+    data: XOR<ChatMessageUpdateManyMutationInput, ChatMessageUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type ChatMessageScalarWhereInput = {
+    AND?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
+    OR?: ChatMessageScalarWhereInput[]
+    NOT?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
+    id?: StringFilter<"ChatMessage"> | string
+    branchId?: StringNullableFilter<"ChatMessage"> | string | null
+    customerId?: StringNullableFilter<"ChatMessage"> | string | null
+    customerName?: StringFilter<"ChatMessage"> | string
+    customerPhone?: StringNullableFilter<"ChatMessage"> | string | null
+    bookingId?: StringNullableFilter<"ChatMessage"> | string | null
+    sender?: StringFilter<"ChatMessage"> | string
+    senderName?: StringFilter<"ChatMessage"> | string
+    message?: StringFilter<"ChatMessage"> | string
+    isRead?: BoolFilter<"ChatMessage"> | boolean
+    createdAt?: DateTimeFilter<"ChatMessage"> | Date | string
+  }
+
   export type BranchCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -19011,6 +22566,8 @@ export namespace Prisma {
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutUsersInput = {
@@ -19028,6 +22585,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutUsersInput = {
@@ -19106,6 +22665,8 @@ export namespace Prisma {
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutUsersInput = {
@@ -19123,6 +22684,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutUserInput = {
@@ -19224,6 +22787,8 @@ export namespace Prisma {
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutSpecialistsInput = {
@@ -19241,6 +22806,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutSpecialistsInput = {
@@ -19447,6 +23014,8 @@ export namespace Prisma {
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutSpecialistsInput = {
@@ -19464,6 +23033,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BookingUpsertWithWhereUniqueWithoutSpecialistInput = {
@@ -19704,6 +23275,8 @@ export namespace Prisma {
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutBookingsInput = {
@@ -19721,6 +23294,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutBookingsInput = {
@@ -19846,6 +23421,8 @@ export namespace Prisma {
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutBookingsInput = {
@@ -19863,6 +23440,8 @@ export namespace Prisma {
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutBookingsInput = {
@@ -19931,6 +23510,8 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutTicketsInput = {
@@ -19948,6 +23529,8 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutTicketsInput = {
@@ -20067,6 +23650,8 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutTicketsInput = {
@@ -20084,6 +23669,8 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutTicketsInput = {
@@ -20199,6 +23786,8 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutProductsInput = {
@@ -20216,6 +23805,8 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutProductsInput = {
@@ -20249,6 +23840,8 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutProductsInput = {
@@ -20266,6 +23859,8 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistCreateWithoutLedgersInput = {
@@ -20328,6 +23923,8 @@ export namespace Prisma {
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutLedgersInput = {
@@ -20345,6 +23942,8 @@ export namespace Prisma {
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutLedgersInput = {
@@ -20429,6 +24028,8 @@ export namespace Prisma {
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutLedgersInput = {
@@ -20446,6 +24047,192 @@ export namespace Prisma {
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchCreateWithoutOffersInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    bookings?: BookingCreateNestedManyWithoutBranchInput
+    tickets?: TicketCreateNestedManyWithoutBranchInput
+    products?: ProductCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchUncheckedCreateWithoutOffersInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
+    products?: ProductUncheckedCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchCreateOrConnectWithoutOffersInput = {
+    where: BranchWhereUniqueInput
+    create: XOR<BranchCreateWithoutOffersInput, BranchUncheckedCreateWithoutOffersInput>
+  }
+
+  export type BranchUpsertWithoutOffersInput = {
+    update: XOR<BranchUpdateWithoutOffersInput, BranchUncheckedUpdateWithoutOffersInput>
+    create: XOR<BranchCreateWithoutOffersInput, BranchUncheckedCreateWithoutOffersInput>
+    where?: BranchWhereInput
+  }
+
+  export type BranchUpdateToOneWithWhereWithoutOffersInput = {
+    where?: BranchWhereInput
+    data: XOR<BranchUpdateWithoutOffersInput, BranchUncheckedUpdateWithoutOffersInput>
+  }
+
+  export type BranchUpdateWithoutOffersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUpdateManyWithoutBranchNestedInput
+    products?: ProductUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchUncheckedUpdateWithoutOffersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
+    products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchCreateWithoutChatMessagesInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    bookings?: BookingCreateNestedManyWithoutBranchInput
+    tickets?: TicketCreateNestedManyWithoutBranchInput
+    products?: ProductCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchUncheckedCreateWithoutChatMessagesInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
+    products?: ProductUncheckedCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchCreateOrConnectWithoutChatMessagesInput = {
+    where: BranchWhereUniqueInput
+    create: XOR<BranchCreateWithoutChatMessagesInput, BranchUncheckedCreateWithoutChatMessagesInput>
+  }
+
+  export type BranchUpsertWithoutChatMessagesInput = {
+    update: XOR<BranchUpdateWithoutChatMessagesInput, BranchUncheckedUpdateWithoutChatMessagesInput>
+    create: XOR<BranchCreateWithoutChatMessagesInput, BranchUncheckedCreateWithoutChatMessagesInput>
+    where?: BranchWhereInput
+  }
+
+  export type BranchUpdateToOneWithWhereWithoutChatMessagesInput = {
+    where?: BranchWhereInput
+    data: XOR<BranchUpdateWithoutChatMessagesInput, BranchUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type BranchUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUpdateManyWithoutBranchNestedInput
+    products?: ProductUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchUncheckedUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
+    products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type UserCreateManyBranchInput = {
@@ -20541,6 +24328,35 @@ export namespace Prisma {
     notes?: string | null
     date?: Date | string
     recordedBy?: string
+    createdAt?: Date | string
+  }
+
+  export type OfferCreateManyBranchInput = {
+    id?: string
+    titleAr: string
+    badge?: string | null
+    price: number
+    oldPrice?: number | null
+    discountPercent?: number | null
+    image: string
+    description?: string | null
+    features?: string
+    isActive?: boolean
+    sortOrder?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatMessageCreateManyBranchInput = {
+    id?: string
+    customerId?: string | null
+    customerName?: string
+    customerPhone?: string | null
+    bookingId?: string | null
+    sender: string
+    senderName?: string
+    message: string
+    isRead?: boolean
     createdAt?: Date | string
   }
 
@@ -20837,6 +24653,93 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     recordedBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OfferUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titleAr?: StringFieldUpdateOperationsInput | string
+    badge?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: FloatFieldUpdateOperationsInput | number
+    oldPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    image?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    features?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OfferUncheckedUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titleAr?: StringFieldUpdateOperationsInput | string
+    badge?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: FloatFieldUpdateOperationsInput | number
+    oldPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    image?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    features?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OfferUncheckedUpdateManyWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    titleAr?: StringFieldUpdateOperationsInput | string
+    badge?: NullableStringFieldUpdateOperationsInput | string | null
+    price?: FloatFieldUpdateOperationsInput | number
+    oldPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    image?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    features?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessageUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    sender?: StringFieldUpdateOperationsInput | string
+    senderName?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessageUncheckedUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    sender?: StringFieldUpdateOperationsInput | string
+    senderName?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessageUncheckedUpdateManyWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    customerId?: NullableStringFieldUpdateOperationsInput | string | null
+    customerName?: StringFieldUpdateOperationsInput | string
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    bookingId?: NullableStringFieldUpdateOperationsInput | string | null
+    sender?: StringFieldUpdateOperationsInput | string
+    senderName?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

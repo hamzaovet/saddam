@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import CardQRModal from "@/components/CardQRModal";
@@ -38,6 +38,16 @@ import {
   Phone,
   Mail,
   Award,
+  Bell,
+  BellRing,
+  Volume2,
+  VolumeX,
+  MessageSquare,
+  Send,
+  CheckCheck,
+  Check,
+  Tag,
+  Eye,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -52,8 +62,10 @@ export default function AdminPage() {
     | "overview"
     | "specialists"
     | "services"
+    | "offers"
     | "inventory"
     | "bookings"
+    | "chat"
     | "customers"
     | "users"
     | "branches"
@@ -65,6 +77,7 @@ export default function AdminPage() {
   const [branches, setBranches] = useState<any[]>([]);
   const [specialists, setSpecialists] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
@@ -72,6 +85,12 @@ export default function AdminPage() {
   const [tickets, setTickets] = useState<any[]>([]);
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Audio Alarm State for Bookings
+  const [alarmBooking, setAlarmBooking] = useState<any>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const alarmIntervalRef = useRef<any>(null);
+  const lastAcknowledgedBookingId = useRef<string | null>(null);
 
   // Modals States
   const [showQrModal, setShowQrModal] = useState(false);
@@ -111,6 +130,23 @@ export default function AdminPage() {
     description: "",
   });
 
+  // Offer Modal (Create/Edit)
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<any>(null);
+  const [offerForm, setOfferForm] = useState({
+    titleAr: "",
+    badge: "خصم 46% 🔥",
+    price: 1000,
+    oldPrice: 1350,
+    discountPercent: 26,
+    image: "/offers/offer-vip-1000.jpg",
+    description: "",
+    features: "قص شعر وتدريج عالمي\nتحديد دقن بالموس والبخار\nسشوار وتصفيف احترافي",
+    branchId: "",
+    isActive: true,
+    sortOrder: 1,
+  });
+
   // Product Modal (Create/Edit)
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -129,12 +165,13 @@ export default function AdminPage() {
     name: "",
     code: "",
     address: "",
-    phone: "",
-    whatsapp: "",
+    phone: "01121537537",
+    whatsapp: "01121537537",
   });
 
-  // User Modal
+  // User Modal (Create & Full Edit)
   const [showUserModal, setShowUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [userForm, setUserForm] = useState({
     name: "",
     username: "",
@@ -143,7 +180,19 @@ export default function AdminPage() {
     role: "cashier",
     branchId: "",
     phone: "",
+    isActive: true,
   });
+
+  // Chat Tab State
+  const [chatConversations, setChatConversations] = useState<any[]>([]);
+  const [activeChatCustomer, setActiveChatCustomer] = useState<any>(null);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatReplyText, setChatReplyText] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const [unreadChatTotal, setUnreadChatTotal] = useState(0);
+
+  // Bookings Filter
+  const [bookingFilterStatus, setBookingFilterStatus] = useState<string>("ALL");
 
   // Check Auth
   useEffect(() => {
@@ -171,6 +220,70 @@ export default function AdminPage() {
     }
   }, [router]);
 
+  // Audio Alarm Logic (Web Audio API Synthesizer - Royal Chime)
+  const startAlarmSound = () => {
+    try {
+      if (alarmIntervalRef.current) clearInterval(alarmIntervalRef.current);
+      const playBeep = () => {
+        try {
+          if (!audioCtxRef.current) {
+            const AC = window.AudioContext || (window as any).webkitAudioContext;
+            if (AC) audioCtxRef.current = new AC();
+          }
+          const ctx = audioCtxRef.current;
+          if (!ctx) return;
+          if (ctx.state === "suspended") ctx.resume();
+
+          const now = ctx.currentTime;
+          // Three royal harmonic chime tones
+          [[880, 0], [1174.66, 0.2], [1760, 0.4]].forEach(([freq, delay]) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.5, now + delay);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.3);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + delay);
+            osc.stop(now + delay + 0.35);
+          });
+        } catch {}
+      };
+
+      playBeep();
+      alarmIntervalRef.current = setInterval(playBeep, 2500);
+    } catch {}
+  };
+
+  const isBookingMuted = (bookingId: string) => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("saddam_muted_bookings") || "[]");
+      return saved.includes(bookingId);
+    } catch {
+      return false;
+    }
+  };
+
+  const stopAlarmSound = (bookingIdToMute?: string) => {
+    const id = bookingIdToMute || alarmBooking?.id;
+    if (id) {
+      try {
+        const saved = JSON.parse(localStorage.getItem("saddam_muted_bookings") || "[]");
+        if (!saved.includes(id)) {
+          saved.push(id);
+          localStorage.setItem("saddam_muted_bookings", JSON.stringify(saved.slice(-50)));
+        }
+      } catch {}
+      lastAcknowledgedBookingId.current = id;
+    }
+    if (alarmIntervalRef.current) {
+      clearInterval(alarmIntervalRef.current);
+      alarmIntervalRef.current = null;
+    }
+    setAlarmBooking(null);
+  };
+
   // Load All Admin Data
   const loadAllData = async () => {
     try {
@@ -180,23 +293,27 @@ export default function AdminPage() {
         resB,
         resSpec,
         resS,
+        resO,
         resP,
         resBk,
         resCust,
         resU,
         resT,
         resL,
+        resChat,
       ] = await Promise.all([
         fetch("/api/settings"),
         fetch("/api/branches"),
         fetch(`/api/specialists?activeOnly=false`),
         fetch("/api/services?activeOnly=false"),
+        fetch("/api/offers?activeOnly=false"),
         fetch("/api/products"),
         fetch("/api/bookings"),
         fetch("/api/customers"),
         fetch("/api/users"),
         fetch("/api/tickets"),
         fetch("/api/ledgers"),
+        fetch("/api/chat?limit=50"),
       ]);
 
       const [
@@ -204,23 +321,27 @@ export default function AdminPage() {
         dataB,
         dataSpec,
         dataS,
+        dataO,
         dataP,
         dataBk,
         dataCust,
         dataU,
         dataT,
         dataL,
+        dataChat,
       ] = await Promise.all([
         resSet.json(),
         resB.json(),
         resSpec.json(),
         resS.json(),
+        resO.json(),
         resP.json(),
         resBk.json(),
         resCust.json(),
         resU.json(),
         resT.json(),
         resL.json(),
+        resChat.json(),
       ]);
 
       if (dataSet.success && dataSet.settings) setSettings(dataSet.settings);
@@ -232,12 +353,42 @@ export default function AdminPage() {
       }
       if (dataSpec.success && dataSpec.specialists) setSpecialists(dataSpec.specialists);
       if (dataS.success && dataS.services) setServices(dataS.services);
+      if (dataO.success && dataO.offers) setOffers(dataO.offers);
       if (dataP.success && dataP.products) setProducts(dataP.products);
-      if (dataBk.success && dataBk.bookings) setBookings(dataBk.bookings);
       if (dataCust.success && dataCust.customers) setCustomers(dataCust.customers);
       if (dataU.success && dataU.users) setUsers(dataU.users);
       if (dataT.success && dataT.tickets) setTickets(dataT.tickets);
       if (dataL.success && dataL.ledgers) setLedgers(dataL.ledgers);
+
+      // Bookings & Audio Alarm Check
+      if (dataBk.success && dataBk.bookings) {
+        setBookings(dataBk.bookings);
+        const pendingBookings = dataBk.bookings.filter(
+          (b: any) =>
+            b.status === "PENDING" &&
+            (selectedBranchId === "ALL" || b.branchId === selectedBranchId)
+        );
+        const newest = pendingBookings[0];
+        if (
+          newest &&
+          newest.id !== lastAcknowledgedBookingId.current &&
+          !isBookingMuted(newest.id) &&
+          !alarmBooking
+        ) {
+          setAlarmBooking(newest);
+          startAlarmSound();
+        }
+      }
+
+      // Chat Data
+      if (dataChat.success) {
+        setChatConversations(dataChat.conversations || []);
+        const totalUnread = (dataChat.conversations || []).reduce(
+          (sum: number, c: any) => sum + (c.unreadCount || 0),
+          0
+        );
+        setUnreadChatTotal(totalUnread);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -248,8 +399,10 @@ export default function AdminPage() {
   useEffect(() => {
     if (currentUser) {
       loadAllData();
+      const interval = setInterval(loadAllData, 4000);
+      return () => clearInterval(interval);
     }
-  }, [currentUser]);
+  }, [currentUser, selectedBranchId]);
 
   // Master Kill Switch Toggle
   const handleToggleKillSwitch = async () => {
@@ -288,62 +441,384 @@ export default function AdminPage() {
     }
   };
 
+  // Booking Actions
+  const handleUpdateBookingStatus = async (bookingId: string, newStatus: string) => {
+    try {
+      if (alarmBooking?.id === bookingId) {
+        stopAlarmSound(bookingId);
+      }
+      const res = await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: bookingId, status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
+        );
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleConfirmAlarmBooking = (bookingId: string) => {
+    handleUpdateBookingStatus(bookingId, "CONFIRMED");
+    stopAlarmSound(bookingId);
+  };
+
+  // Open Chat from Booking
+  const handleOpenChatFromBooking = (bk: any) => {
+    setActiveTab("chat");
+    const conv = {
+      key: bk.customer?.phone || bk.customer?.id,
+      customerId: bk.customerId,
+      customerPhone: bk.customer?.phone,
+      customerName: bk.customer?.name,
+    };
+    handleSelectCustomerChat(conv);
+  };
+
   // Toggle User Active Status
   const handleToggleUserActive = async (userId: string, currentStatus: boolean) => {
     try {
       const res = await fetch("/api/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: userId,
-          isActive: !currentStatus,
-        }),
+        body: JSON.stringify({ id: userId, isActive: !currentStatus }),
       });
-
       const data = await res.json();
       if (data.success) {
         setUsers((prev) =>
           prev.map((u) => (u.id === userId ? { ...u, isActive: !currentStatus } : u))
         );
       } else {
-        alert(data.error || "فشل تغيير حالة المستخدم");
+        alert(data.error || "فشل تعديل حالة الحساب");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Open Edit User Modal
+  const handleOpenEditUser = (u: any) => {
+    setEditingUser(u);
+    setUserForm({
+      name: u.name,
+      username: u.username,
+      password: "",
+      pin: u.pin || "157230",
+      role: u.role,
+      branchId: u.branchId || "",
+      phone: u.phone || "",
+      isActive: u.isActive !== undefined ? u.isActive : true,
+    });
+    setShowUserModal(true);
+  };
+
+  // Open Create User Modal
+  const handleOpenCreateUser = () => {
+    setEditingUser(null);
+    setUserForm({
+      name: "",
+      username: "",
+      password: "",
+      pin: "157230",
+      role: "cashier",
+      branchId: branches[0]?.id || "",
+      phone: "",
+      isActive: true,
+    });
+    setShowUserModal(true);
+  };
+
+  // Save or Update User
+  const handleSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingUser) {
+        const payload: any = {
+          id: editingUser.id,
+          name: userForm.name,
+          username: userForm.username,
+          phone: userForm.phone,
+          role: userForm.role,
+          branchId: userForm.branchId || null,
+          pin: userForm.pin,
+          isActive: userForm.isActive,
+        };
+        if (userForm.password.trim()) {
+          payload.password = userForm.password.trim();
+        }
+
+        const res = await fetch("/api/users", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          const branchObj = branches.find((b) => b.id === userForm.branchId);
+          setUsers((prev) =>
+            prev.map((u) =>
+              u.id === editingUser.id
+                ? {
+                    ...u,
+                    ...data.user,
+                    branchName: branchObj?.name || "إشراف عام على كل الفروع",
+                  }
+                : u
+            )
+          );
+          setShowUserModal(false);
+          setEditingUser(null);
+          alert("تم حفظ وتحديث بيانات المستخدم بنجاح! ✅");
+        } else {
+          alert(data.error || "فشل تعديل المستخدم");
+        }
+      } else {
+        const res = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userForm),
+        });
+        const data = await res.json();
+        if (data.success) {
+          await loadAllData();
+          setShowUserModal(false);
+          alert("تم إضافة المستخدم بنجاح! ✅");
+        } else {
+          alert(data.error || "فشل إضافة المستخدم");
+        }
       }
     } catch {
       alert("تعذر الاتصال بالخادم");
     }
   };
 
-  // Save / Update Specialist
+  // Offers Actions
+  const handleOpenCreateOffer = () => {
+    setEditingOffer(null);
+    setOfferForm({
+      titleAr: "",
+      badge: "خصم 46% 🔥",
+      price: 1000,
+      oldPrice: 1350,
+      discountPercent: 26,
+      image: "/offers/offer-vip-1000.jpg",
+      description: "",
+      features: "قص شعر وتدريج عالمي\nتحديد دقن بالموس والبخار\nسشوار وتصفيف احترافي",
+      branchId: "",
+      isActive: true,
+      sortOrder: (offers.length || 0) + 1,
+    });
+    setShowOfferModal(true);
+  };
+
+  const handleOpenEditOffer = (offer: any) => {
+    setEditingOffer(offer);
+    let featuresStr = "";
+    try {
+      const parsed = JSON.parse(offer.features || "[]");
+      featuresStr = Array.isArray(parsed) ? parsed.join("\n") : "";
+    } catch {
+      featuresStr = offer.features || "";
+    }
+
+    setOfferForm({
+      titleAr: offer.titleAr,
+      badge: offer.badge || "",
+      price: offer.price,
+      oldPrice: offer.oldPrice || "",
+      discountPercent: offer.discountPercent || "",
+      image: offer.image || "/offers/offer-vip-1000.jpg",
+      description: offer.description || "",
+      features: featuresStr,
+      branchId: offer.branchId || "",
+      isActive: offer.isActive,
+      sortOrder: offer.sortOrder || 1,
+    });
+    setShowOfferModal(true);
+  };
+
+  const handleSaveOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const featuresArr = offerForm.features
+        .split("\n")
+        .map((f) => f.trim())
+        .filter(Boolean);
+
+      const payload = {
+        titleAr: offerForm.titleAr,
+        badge: offerForm.badge,
+        price: Number(offerForm.price),
+        oldPrice: offerForm.oldPrice ? Number(offerForm.oldPrice) : null,
+        discountPercent: offerForm.discountPercent ? Number(offerForm.discountPercent) : null,
+        image: offerForm.image,
+        description: offerForm.description,
+        features: featuresArr,
+        branchId: offerForm.branchId || null,
+        isActive: offerForm.isActive,
+        sortOrder: Number(offerForm.sortOrder),
+      };
+
+      if (editingOffer) {
+        const res = await fetch("/api/offers", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingOffer.id, ...payload }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setOffers((prev) =>
+            prev.map((o) => (o.id === editingOffer.id ? { ...o, ...data.offer } : o))
+          );
+          setShowOfferModal(false);
+          setEditingOffer(null);
+          alert("تم تعديل العرض الملكي بنجاح! 👑");
+        } else {
+          alert(data.error || "فشل تعديل العرض");
+        }
+      } else {
+        const res = await fetch("/api/offers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setOffers((prev) => [...prev, data.offer]);
+          setShowOfferModal(false);
+          alert("تم إضافة العرض الملكي الجديد بنجاح! 👑");
+        } else {
+          alert(data.error || "فشل إضافة العرض");
+        }
+      }
+    } catch {
+      alert("تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleDeleteOffer = async (id: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا العرض الملكي نهائياً؟")) return;
+    try {
+      const res = await fetch(`/api/offers?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setOffers((prev) => prev.filter((o) => o.id !== id));
+      } else {
+        alert(data.error || "فشل الحذف");
+      }
+    } catch {
+      alert("تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleToggleOfferActive = async (offer: any) => {
+    try {
+      const res = await fetch("/api/offers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: offer.id, isActive: !offer.isActive }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOffers((prev) =>
+          prev.map((o) => (o.id === offer.id ? { ...o, isActive: !offer.isActive } : o))
+        );
+      }
+    } catch {}
+  };
+
+  // Chat Tab Actions
+  const handleSelectCustomerChat = async (conv: any) => {
+    setActiveChatCustomer(conv);
+    try {
+      const res = await fetch(
+        `/api/chat?customerPhone=${encodeURIComponent(
+          conv.customerPhone || ""
+        )}&customerId=${encodeURIComponent(conv.customerId || "")}`
+      );
+      const data = await res.json();
+      if (data.success) {
+        setChatMessages(data.messages || []);
+        // Mark read
+        await fetch("/api/chat", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerPhone: conv.customerPhone,
+            customerId: conv.customerId,
+          }),
+        });
+        setChatConversations((prev) =>
+          prev.map((c) => (c.key === conv.key ? { ...c, unreadCount: 0 } : c))
+        );
+      }
+    } catch {}
+  };
+
+  const handleSendAdminReply = async (textToSend?: string) => {
+    const text = (textToSend || chatReplyText).trim();
+    if (!text || !activeChatCustomer) return;
+    try {
+      setChatSending(true);
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sender: "SALON",
+          senderName: `${currentUser?.name || "إدارة صالون صدام"} 👑`,
+          message: text,
+          customerPhone: activeChatCustomer.customerPhone,
+          customerId: activeChatCustomer.customerId,
+          customerName: activeChatCustomer.customerName,
+          branchId: selectedBranchId !== "ALL" ? selectedBranchId : null,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setChatMessages((prev) => [...prev, data.chatMessage]);
+        setChatReplyText("");
+      }
+    } catch {
+      alert("فشل إرسال الرد");
+    } finally {
+      setChatSending(false);
+    }
+  };
+
+  // Specialist Actions
   const handleSaveSpecialist = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const url = "/api/specialists";
       const method = editingSpecialist ? "PATCH" : "POST";
-      const bodyPayload = editingSpecialist
+      const body = editingSpecialist
         ? { id: editingSpecialist.id, ...specForm }
         : specForm;
 
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyPayload),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
       if (data.success) {
-        alert("تم حفظ بيانات المتخصص بنجاح!");
+        await loadAllData();
         setShowSpecialistModal(false);
         setEditingSpecialist(null);
-        loadAllData();
       } else {
-        alert(data.error || "فشل حفظ المتخصص");
+        alert(data.error || "فشل حفظ بيانات المتخصص");
       }
     } catch {
-      alert("حدث خطأ أثناء الحفظ");
+      alert("تعذر الاتصال بالخادم");
     }
   };
 
-  // Record Specialist Payout / Advance
   const handleRecordPayout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payoutSpecialist) return;
@@ -356,7 +831,7 @@ export default function AdminPage() {
           specialistId: payoutSpecialist.id,
           branchId: payoutSpecialist.branchId,
           type: payoutType,
-          amount: payoutAmount,
+          amount: Number(payoutAmount),
           notes: payoutNotes,
           recordedBy: currentUser?.name || "المالك (Maestro)",
         }),
@@ -364,84 +839,45 @@ export default function AdminPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert("تم تسجيل الحركة المالية بنجاح وتحديث رصيد المتخصص!");
+        await loadAllData();
         setShowPayoutModal(false);
-        setPayoutSpecialist(null);
-        setPayoutNotes("");
-        loadAllData();
+        alert("تم تسجيل المعاملة المالية في سجل المتخصص بنجاح! 💵");
       } else {
-        alert(data.error || "فشل تسجيل الحركة");
+        alert(data.error || "فشل تسجيل الحركة المالية");
       }
     } catch {
       alert("تعذر الاتصال بالخادم");
     }
   };
 
-  // Save / Update Service
+  // Service Actions
   const handleSaveService = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const url = "/api/services";
       const method = editingService ? "PATCH" : "POST";
-      const bodyPayload = editingService
-        ? { id: editingService.id, ...serviceForm }
-        : serviceForm;
+      const body = editingService ? { id: editingService.id, ...serviceForm } : serviceForm;
 
-      const res = await fetch("/api/services", {
+      const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyPayload),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
       if (data.success) {
+        await loadAllData();
         setShowServiceModal(false);
         setEditingService(null);
-        loadAllData();
       } else {
         alert(data.error || "فشل حفظ الخدمة");
       }
     } catch {
-      alert("تعذر حفظ الخدمة");
+      alert("تعذر الاتصال بالخادم");
     }
   };
 
-  // Delete Service
-  const handleDeleteService = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذه الخدمة نهائياً من القائمة؟")) return;
-    try {
-      const res = await fetch(`/api/services?id=${id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (data.success) {
-        loadAllData();
-      }
-    } catch {}
-  };
-
-  // Save Product
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const method = editingProduct ? "PATCH" : "POST";
-      const bodyPayload = editingProduct
-        ? { id: editingProduct.id, ...productForm }
-        : productForm;
-
-      const res = await fetch("/api/products", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyPayload),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setShowProductModal(false);
-        setEditingProduct(null);
-        loadAllData();
-      }
-    } catch {}
-  };
-
-  // Save Branch
+  // Branch Actions
   const handleSaveBranch = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -452,39 +888,21 @@ export default function AdminPage() {
       });
       const data = await res.json();
       if (data.success) {
+        await loadAllData();
         setShowBranchModal(false);
-        setBranchForm({ name: "", code: "", address: "", phone: "", whatsapp: "" });
-        loadAllData();
-      }
-    } catch {}
-  };
-
-  // Save User
-  const handleSaveUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userForm),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setShowUserModal(false);
-        setUserForm({
+        setBranchForm({
           name: "",
-          username: "",
-          password: "",
-          pin: "157230",
-          role: "cashier",
-          branchId: "",
-          phone: "",
+          code: "",
+          address: "",
+          phone: "01121537537",
+          whatsapp: "01121537537",
         });
-        loadAllData();
       } else {
-        alert(data.error || "فشل إضافة المستخدم");
+        alert(data.error || "فشل إضافة الفرع");
       }
-    } catch {}
+    } catch {
+      alert("تعذر الاتصال بالخادم");
+    }
   };
 
   const handleLogout = () => {
@@ -492,42 +910,80 @@ export default function AdminPage() {
     router.push("/login");
   };
 
-  // Compute Overall KPI Metrics
-  const filteredTickets = tickets.filter(
-    (t) => selectedBranchId === "ALL" || t.branchId === selectedBranchId
-  );
-  const totalRevenue = filteredTickets
-    .filter((t) => t.status === "COMPLETED")
+  // Filter Bookings by Tab / Status / Branch
+  const filteredBookings = bookings.filter((bk) => {
+    const matchBranch = selectedBranchId === "ALL" || bk.branchId === selectedBranchId;
+    const matchStatus =
+      bookingFilterStatus === "ALL" || bk.status === bookingFilterStatus;
+    return matchBranch && matchStatus;
+  });
+
+  // Calculate Metrics
+  const totalRevenue = tickets
+    .filter((t) => selectedBranchId === "ALL" || t.branchId === selectedBranchId)
     .reduce((sum, t) => sum + (t.finalAmount || 0), 0);
-  const totalServicesRev = filteredTickets
-    .filter((t) => t.status === "COMPLETED")
-    .reduce((sum, t) => sum + (t.servicesTotal || 0), 0);
-  const totalRetailRev = filteredTickets
-    .filter((t) => t.status === "COMPLETED")
+
+  const totalClientsServed = tickets.filter(
+    (t) => selectedBranchId === "ALL" || t.branchId === selectedBranchId
+  ).length;
+
+  const totalRetailSales = tickets
+    .filter((t) => selectedBranchId === "ALL" || t.branchId === selectedBranchId)
     .reduce((sum, t) => sum + (t.retailTotal || 0), 0);
-  const totalClientsServed = filteredTickets.filter((t) => t.status === "COMPLETED").length;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0e] text-slate-100 flex flex-col font-sans" dir="rtl">
+    <div className="min-h-screen bg-[#07070b] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black" dir="rtl">
       {/* ─────────────────────────────────────────────────────────────
-          1. TOP ADMIN HEADER
+          1. AUDIO ALARM BANNER (NEW PENDING BOOKINGS)
          ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#0f0f15]/95 backdrop-blur-md border-b border-amber-500/25 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-lg">
+      {alarmBooking && (
+        <div className="bg-gradient-to-r from-rose-600 via-amber-600 to-rose-600 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 animate-pulse shadow-2xl z-50 border-b-2 border-amber-300">
+          <div className="flex items-center gap-2.5 font-black text-xs sm:text-sm">
+            <BellRing className="w-5 h-5 animate-bounce text-amber-200 shrink-0" />
+            <span>
+              🔔 جرس تنبيه عاجل: حجز موعد جديد بانتظار التأكيد! رقم #{alarmBooking.bookingNumber} للعميل (
+              {alarmBooking.customer?.name || "عميل VIP"}) بمبلغ {alarmBooking.totalAmount} ج.م (
+              {alarmBooking.branch?.name})
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => handleConfirmAlarmBooking(alarmBooking.id)}
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition shadow-lg flex items-center gap-1.5"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>عرض وتأكيد الموعد ✅</span>
+            </button>
+            <button
+              onClick={() => stopAlarmSound(alarmBooking.id)}
+              className="px-3.5 py-2 rounded-xl bg-black/60 hover:bg-black/80 text-white border border-white/20 font-bold text-xs transition flex items-center gap-1"
+            >
+              <VolumeX className="w-4 h-4 text-amber-300" />
+              <span>كتم التنبيه 🔇</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. TOP HEADER
+         ───────────────────────────────────────────────────────────── */}
+      <header className="bg-[#0f0f16] border-b border-amber-500/30 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
+          <div className="w-10 h-10 rounded-2xl overflow-hidden border border-amber-400 shadow-md bg-black">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-black text-amber-400">
-                لوحة إدارة صالون صدام الملكي
+              <h2 className="text-sm sm:text-base font-black text-amber-400">
+                لوحة إدارة صالون صدام VIP
               </h2>
-              <span className="py-0.5 px-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black">
-                {currentUser?.role === "owner" ? "المالك (Maestro) 👑" : "المدير العام"}
+              <span className="py-0.5 px-2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-black border border-amber-500/40">
+                {currentUser?.role === "owner" ? "المالك (Maestro) 👑" : currentUser?.role}
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-bold">
+            <p className="text-[11px] text-slate-400 font-bold">
               مرحباً بك، أ / {currentUser?.name}
             </p>
           </div>
@@ -610,16 +1066,18 @@ export default function AdminPage() {
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. NAVIGATION TABS
+          3. NAVIGATION TABS
          ───────────────────────────────────────────────────────────── */}
-      <div className="bg-[#0e0e14] border-b border-amber-500/20 px-4 sm:px-8 py-2 overflow-x-auto text-xs">
+      <div className="bg-[#0e0e14] border-b border-amber-500/20 px-4 sm:px-8 py-2 overflow-x-auto text-xs scrollbar-none">
         <div className="flex items-center gap-1.5 min-w-max">
           {[
             { id: "overview", label: "نظرة عامة وإحصاءات 📊", icon: LayoutDashboard },
+            { id: "bookings", label: `الحجوزات والمواعيد 📅 ${bookings.filter(b => b.status === "PENDING").length > 0 ? `(${bookings.filter(b => b.status === "PENDING").length})` : ""}`, icon: Calendar },
+            { id: "offers", label: "العروض والباكدجات الملكية 👑", icon: Sparkles },
+            { id: "chat", label: `شات العملاء 💬 ${unreadChatTotal > 0 ? `(${unreadChatTotal})` : ""}`, icon: MessageSquare },
             { id: "specialists", label: "المتخصصين والأجور والعمولات ✂️", icon: Scissors },
             { id: "services", label: "الخدمات والأسعار 💈", icon: Award },
             { id: "inventory", label: "بضاعة التجميل والمخزن 🛍️", icon: ShoppingBag },
-            { id: "bookings", label: "الحجوزات والمواعيد 📅", icon: Calendar },
             { id: "customers", label: "قاعدة العملاء والدعاية 👥", icon: Users },
             { id: "users", label: "طاقم العمل والصلاحيات 🔒", icon: ShieldCheck },
             { id: "branches", label: "الفروع والتوسعات 📍", icon: MapPin },
@@ -646,7 +1104,7 @@ export default function AdminPage() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. MAIN TAB CONTENT AREA
+          4. MAIN CONTENT AREA
          ───────────────────────────────────────────────────────────── */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* ========================================================
@@ -654,212 +1112,224 @@ export default function AdminPage() {
            ======================================================== */}
         {activeTab === "overview" && (
           <div className="space-y-6 animate-fade-in">
-            {/* KPI Cards Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
                 <span className="text-xs text-slate-400 font-bold block">إجمالي الإيرادات</span>
-                <strong className="text-2xl font-mono text-amber-400 font-black">
-                  {totalRevenue} ج.م
-                </strong>
-                <span className="text-[10px] text-emerald-400 font-bold block">
-                  مبيعات خدمات وبضاعة تجميل
-                </span>
+                <p className="text-2xl font-black text-amber-400 font-mono">
+                  {totalRevenue.toLocaleString()} ج.م
+                </p>
+                <span className="text-[10px] text-emerald-400 font-bold">شامل الخدمات والمبيعات</span>
               </div>
 
-              <div className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-2">
-                <span className="text-xs text-slate-400 font-bold block">إيراد خدمات الحلاقة</span>
-                <strong className="text-2xl font-mono text-white font-black">
-                  {totalServicesRev} ج.م
-                </strong>
-                <span className="text-[10px] text-slate-400 font-bold block">
-                  شعر، دقن، بخار، بروتين
-                </span>
-              </div>
-
-              <div className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-2">
-                <span className="text-xs text-slate-400 font-bold block">مبيعات مستحضرات التجميل</span>
-                <strong className="text-2xl font-mono text-white font-black">
-                  {totalRetailRev} ج.م
-                </strong>
-                <span className="text-[10px] text-slate-400 font-bold block">
-                  كريمات، شمع، عطور، سيروم
-                </span>
-              </div>
-
-              <div className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-2">
+              <div className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
                 <span className="text-xs text-slate-400 font-bold block">العملاء المخدومين</span>
-                <strong className="text-2xl font-mono text-amber-400 font-black">
-                  {totalClientsServed}
-                </strong>
-                <span className="text-[10px] text-slate-400 font-bold block">
-                  تذكرة منتهية ومحصلة
+                <p className="text-2xl font-black text-white font-mono">{totalClientsServed}</p>
+                <span className="text-[10px] text-amber-300 font-bold">تذاكر حلاقة مكتملة</span>
+              </div>
+
+              <div className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
+                <span className="text-xs text-slate-400 font-bold block">مبيعات مستحضرات التجميل</span>
+                <p className="text-2xl font-black text-emerald-400 font-mono">
+                  {totalRetailSales.toLocaleString()} ج.م
+                </p>
+                <span className="text-[10px] text-slate-400 font-bold">منتجات العناية بالكرسي والكاشير</span>
+              </div>
+
+              <div className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
+                <span className="text-xs text-slate-400 font-bold block">الحجوزات القادمة</span>
+                <p className="text-2xl font-black text-amber-300 font-mono">{bookings.length}</p>
+                <span className="text-[10px] text-rose-400 font-bold">
+                  {bookings.filter((b) => b.status === "PENDING").length} بانتظار التأكيد
                 </span>
               </div>
             </div>
 
-            {/* Live Chairs Quick Monitor */}
-            <div className="p-5 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4">
-              <h3 className="text-sm font-black text-white flex items-center gap-2">
-                <Scissors className="w-4 h-4 text-amber-400" />
-                <span>حالة كراسي الحلاقة الآن في الفروع</span>
-              </h3>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {specialists.map((s) => (
-                  <div
-                    key={s.id}
-                    className="p-3.5 rounded-2xl bg-black/50 border border-white/5 space-y-1.5 text-center"
-                  >
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-amber-400/40 mx-auto">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={s.photo || "/logo.jpg"} alt={s.name} className="w-full h-full object-cover" />
+            {/* Quick Links & Shortcuts */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-5 rounded-3xl bg-[#12121a] border border-white/5 space-y-3">
+                <h4 className="font-black text-sm text-amber-400">📍 فروع صدام المفعّلة:</h4>
+                <div className="space-y-2 text-xs">
+                  {branches.map((b) => (
+                    <div key={b.id} className="p-2.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
+                      <strong className="text-white block">{b.name}</strong>
+                      <p className="text-slate-400 text-[11px]">{b.address}</p>
+                      <p className="font-mono text-amber-300 text-[11px]">هاتف: {b.phone}</p>
                     </div>
-                    <h5 className="font-black text-xs text-white truncate">{s.name}</h5>
-                    <p className="text-[10px] text-slate-400">كرسي #{s.chairNumber} • {s.branchName}</p>
-                    <span
-                      className={`inline-block py-0.5 px-2 rounded-full text-[9px] font-black ${
-                        s.status === "WITH_CLIENT"
-                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                          : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                      }`}
-                    >
-                      {s.status === "WITH_CLIENT" ? "على الكرسي 💺" : "متاح 🟢"}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-5 rounded-3xl bg-[#12121a] border border-white/5 space-y-3">
+                <h4 className="font-black text-sm text-amber-400">👑 العروض الملكية النشطة:</h4>
+                <p className="text-xs text-slate-300 font-bold">
+                  يوجد حالياً <strong className="text-amber-300 font-mono">{offers.length}</strong> عروض وباكدجات
+                  مفعّلة على صفحة الحجز، بما فيها باكدجات العرسان والاسترخاء بخصومات تصل إلى 46%.
+                </p>
+                <button
+                  onClick={() => setActiveTab("offers")}
+                  className="py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+                >
+                  إدارة العروض والباكدجات 👑
+                </button>
+              </div>
+
+              <div className="p-5 rounded-3xl bg-[#12121a] border border-white/5 space-y-3">
+                <h4 className="font-black text-sm text-amber-400">💬 الشات المباشر مع العملاء:</h4>
+                <p className="text-xs text-slate-300">
+                  تواصل فوري ولحظي مع الزبائن للرد على استفسارات المواعيد، عروض العرسان وتعديل الحجوزات.
+                </p>
+                <button
+                  onClick={() => setActiveTab("chat")}
+                  className="py-2 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition flex items-center gap-1.5"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                  <span>فتح نافذة المحادثات 💬</span>
+                </button>
               </div>
             </div>
           </div>
         )}
 
         {/* ========================================================
-            TAB 2: SPECIALISTS, COMPENSATION & PERFORMANCE LEDGER
+            TAB 2: BOOKINGS & APPOINTMENTS (WITH DIRECT ACTIONS & CONFIRMATION)
            ======================================================== */}
-        {activeTab === "specialists" && (
+        {activeTab === "bookings" && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-base font-black text-white flex items-center gap-2">
-                  <Scissors className="w-4 h-4 text-amber-400" />
-                  <span>جدول حسابات وأجور وتقييم أداء المتخصصين</span>
-                </h3>
+                <h3 className="text-base font-black text-white">جدول الحجوزات والمواعيد</h3>
                 <p className="text-xs text-slate-400">
-                  حسابات دقيقة: نظام الحساب (راتب، عمولة، سلف) + (كام، خد كام، وباقيله كام) + متوسط وقت العميل ⏱️
+                  تأكيد مواعيد الحجز الجديدة، بدء الجلسة على الكرسي، أو التواصل المباشر مع العميل 📅
                 </p>
               </div>
 
-              <button
-                onClick={() => {
-                  setEditingSpecialist(null);
-                  setShowSpecialistModal(true);
-                }}
-                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>إضافة متخصص / حلاق جديد ✂️</span>
-              </button>
+              {/* Status Filter */}
+              <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
+                {["ALL", "PENDING", "CONFIRMED", "IN_CHAIR", "COMPLETED", "CANCELLED"].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setBookingFilterStatus(st)}
+                    className={`py-1.5 px-3 rounded-xl font-bold transition whitespace-nowrap ${
+                      bookingFilterStatus === st
+                        ? "bg-amber-500 text-slate-950 font-black"
+                        : "bg-white/5 hover:bg-white/10 text-slate-400"
+                    }`}
+                  >
+                    {st === "ALL" && "الكل"}
+                    {st === "PENDING" && "بانتظار التأكيد 🔔"}
+                    {st === "CONFIRMED" && "مؤكد ✅"}
+                    {st === "IN_CHAIR" && "على الكرسي 💺"}
+                    {st === "COMPLETED" && "مكتمل 🏆"}
+                    {st === "CANCELLED" && "ملغي ❌"}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Specialists Table */}
             <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#14141e]">
               <table className="w-full text-right text-xs">
                 <thead>
                   <tr className="border-b border-white/10 bg-black/40 text-slate-400 font-bold">
-                    <th className="p-3.5">المتخصص والكرسي</th>
-                    <th className="p-3.5">نظام الحساب</th>
-                    <th className="p-3.5">إجمالي الاستحقاق</th>
-                    <th className="p-3.5">المدفوع / السلف</th>
-                    <th className="p-3.5">المتبقي له</th>
-                    <th className="p-3.5">تقييم الأداء</th>
-                    <th className="p-3.5 text-center">الإجراءات</th>
+                    <th className="p-3.5">رقم الحجز</th>
+                    <th className="p-3.5">العميل</th>
+                    <th className="p-3.5">الفرع</th>
+                    <th className="p-3.5">المتخصص</th>
+                    <th className="p-3.5">التاريخ والوقت</th>
+                    <th className="p-3.5">المبلغ</th>
+                    <th className="p-3.5">الحالة</th>
+                    <th className="p-3.5 text-center">الإجراءات والتحكم</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {specialists.map((spec) => (
-                    <tr key={spec.id} className="hover:bg-white/5 transition">
-                      {/* Name & Photo */}
+                  {filteredBookings.map((bk) => (
+                    <tr key={bk.id} className="hover:bg-white/5 transition">
+                      <td className="p-3.5 font-mono font-black text-amber-400">
+                        #{bk.bookingNumber}
+                      </td>
+                      <td className="p-3.5 font-bold text-white">
+                        {bk.customer?.name}
+                        <span className="block text-[10px] text-slate-400 font-mono">
+                          {bk.customer?.phone}
+                        </span>
+                      </td>
+                      <td className="p-3.5">{bk.branch?.name}</td>
+                      <td className="p-3.5 text-amber-300 font-bold">
+                        {bk.specialist?.name || "أي متخصص متاح"}
+                      </td>
+                      <td className="p-3.5 font-mono">
+                        {bk.bookingDate} • {bk.timeSlot}
+                      </td>
+                      <td className="p-3.5 font-mono font-bold text-white">{bk.totalAmount} ج</td>
                       <td className="p-3.5">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-400 bg-black shrink-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={spec.photo || "/logo.jpg"} alt={spec.name} className="w-full h-full object-cover" />
-                          </div>
-                          <div>
-                            <strong className="text-white block font-black">{spec.name}</strong>
-                            <span className="text-[10px] text-amber-300 font-mono">
-                              كرسي #{spec.chairNumber} • {spec.branchName}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Pay Type */}
-                      <td className="p-3.5 font-bold">
-                        <span className="py-1 px-2.5 rounded-xl bg-white/5 border border-white/10 text-[11px] block w-fit">
-                          {spec.payType === "DAILY" && `يومي (${spec.baseSalary} ج)`}
-                          {spec.payType === "WEEKLY" && `أسبوعي (${spec.baseSalary} ج)`}
-                          {spec.payType === "MONTHLY" && `شهري (${spec.baseSalary} ج)`}
-                          {spec.payType === "COMMISSION_ONLY" && `عمولة فقط (${spec.commissionRate}%)`}
-                          {spec.payType === "SALARY_PLUS_COMMISSION" && `راتب + عمولة (${spec.commissionRate}%)`}
+                        <span
+                          className={`py-0.5 px-2.5 rounded-full text-[10px] font-black border ${
+                            bk.status === "PENDING"
+                              ? "bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse"
+                              : bk.status === "CONFIRMED"
+                              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                              : bk.status === "IN_CHAIR"
+                              ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                              : bk.status === "COMPLETED"
+                              ? "bg-blue-500/20 text-blue-300 border-blue-500/40"
+                              : "bg-slate-500/20 text-slate-400 border-slate-500/40"
+                          }`}
+                        >
+                          {bk.status === "PENDING" && "بانتظار التأكيد 🔔"}
+                          {bk.status === "CONFIRMED" && "مؤكد ✅"}
+                          {bk.status === "IN_CHAIR" && "على الكرسي 💺"}
+                          {bk.status === "COMPLETED" && "مكتمل 🏆"}
+                          {bk.status === "CANCELLED" && "ملغي ❌"}
                         </span>
                       </td>
+                      <td className="p-3.5">
+                        <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                          {bk.status === "PENDING" && (
+                            <button
+                              onClick={() => handleUpdateBookingStatus(bk.id, "CONFIRMED")}
+                              className="py-1 px-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] transition flex items-center gap-1"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>تأكيد الموعد ✅</span>
+                            </button>
+                          )}
 
-                      {/* Total Earned */}
-                      <td className="p-3.5 font-mono font-bold text-white">
-                        {spec.financials?.totalEarned || 0} ج.م
-                        <span className="block text-[10px] text-slate-400">
-                          (عمولات: {spec.financials?.commissionEarned || 0} ج)
-                        </span>
-                      </td>
+                          {bk.status === "CONFIRMED" && (
+                            <button
+                              onClick={() => handleUpdateBookingStatus(bk.id, "IN_CHAIR")}
+                              className="py-1 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] transition flex items-center gap-1"
+                            >
+                              <Scissors className="w-3 h-3" />
+                              <span>بدء بالكرسي 💺</span>
+                            </button>
+                          )}
 
-                      {/* Paid / Withdrawn */}
-                      <td className="p-3.5 font-mono font-bold text-rose-400">
-                        {spec.financials?.totalPaidOrWithdrawn || 0} ج.م
-                      </td>
-
-                      {/* Remaining Balance (باقيله كام) */}
-                      <td className="p-3.5 font-mono font-black text-amber-400 text-sm">
-                        {spec.financials?.remainingBalance || 0} ج.م
-                      </td>
-
-                      {/* Performance KPIs */}
-                      <td className="p-3.5 text-[11px] space-y-0.5">
-                        <div className="flex items-center gap-1 text-slate-300">
-                          <span>زبائن:</span>
-                          <strong className="text-white font-mono">{spec.totalClientsServed}</strong>
-                        </div>
-                        <div className="flex items-center gap-1 text-slate-300">
-                          <span>متوسط الوقت:</span>
-                          <strong className="text-amber-300 font-mono">{spec.avgDurationMinutes} دقيقة</strong>
-                        </div>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="p-3.5 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            onClick={() => {
-                              setPayoutSpecialist(spec);
-                              setPayoutType("ADVANCE_WITHDRAWAL");
-                              setShowPayoutModal(true);
-                            }}
-                            className="py-1 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-bold transition"
-                            title="تسجيل سلفة"
-                          >
-                            سلفة 💸
-                          </button>
+                          {bk.status === "IN_CHAIR" && (
+                            <button
+                              onClick={() => handleUpdateBookingStatus(bk.id, "COMPLETED")}
+                              className="py-1 px-2.5 rounded-lg bg-blue-500 hover:bg-blue-400 text-white font-black text-[10px] transition"
+                            >
+                              اكتمل 🏆
+                            </button>
+                          )}
 
                           <button
-                            onClick={() => {
-                              setPayoutSpecialist(spec);
-                              setPayoutType("SALARY_PAYOUT");
-                              setShowPayoutModal(true);
-                            }}
-                            className="py-1 px-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold transition"
-                            title="صرف راتب أو دفعة"
+                            onClick={() => handleOpenChatFromBooking(bk)}
+                            className="py-1 px-2 rounded-lg bg-white/5 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-[10px] font-bold transition flex items-center gap-1"
+                            title="محادثة العميل"
                           >
-                            صرف 💰
+                            <MessageSquare className="w-3 h-3" />
+                            <span>شات 💬</span>
                           </button>
+
+                          {bk.status !== "CANCELLED" && bk.status !== "COMPLETED" && (
+                            <button
+                              onClick={() => handleUpdateBookingStatus(bk.id, "CANCELLED")}
+                              className="py-1 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-[10px] font-bold transition"
+                              title="إلغاء الموعد"
+                            >
+                              إلغاء ❌
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -871,16 +1341,454 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 3: DYNAMIC SERVICES CATALOG
+            TAB 3: ROYAL OFFERS & PACKAGES (DYNAMIC FLYERS MANAGEMENT)
+           ======================================================== */}
+        {activeTab === "offers" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-black text-white">
+                  العروض والباكدجات الملكية الحصرية (VIP Offers)
+                </h3>
+                <p className="text-xs text-slate-400">
+                  إدارة العروض المعلنة على صفحة الحجز، التحكم في الفروع المتاحة، والخصومات والأسعار 👑
+                </p>
+              </div>
+
+              <button
+                onClick={handleOpenCreateOffer}
+                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إضافة عرض جديد 👑</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {offers.map((offer) => {
+                let featuresList: string[] = [];
+                try {
+                  featuresList = JSON.parse(offer.features || "[]");
+                } catch {
+                  featuresList = [];
+                }
+
+                return (
+                  <div
+                    key={offer.id}
+                    className="rounded-3xl bg-[#14141e] border-2 border-amber-500/30 overflow-hidden flex flex-col shadow-xl group hover:border-amber-400 transition"
+                  >
+                    {/* Flyer Banner Preview */}
+                    <div className="relative h-48 w-full bg-black overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={offer.image || "/offers/offer-vip-1000.jpg"}
+                        alt={offer.titleAr}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+
+                      {offer.badge && (
+                        <span className="absolute top-3 right-3 py-1 px-3 rounded-full bg-amber-500 text-slate-950 font-black text-[11px] shadow-lg">
+                          {offer.badge}
+                        </span>
+                      )}
+
+                      <span
+                        className={`absolute top-3 left-3 py-1 px-2.5 rounded-full text-[10px] font-black ${
+                          offer.isActive
+                            ? "bg-emerald-500/90 text-slate-950"
+                            : "bg-rose-500/90 text-white"
+                        }`}
+                      >
+                        {offer.isActive ? "نشط ومتاح 🟢" : "معطل 🔴"}
+                      </span>
+
+                      <div className="absolute bottom-3 right-3 left-3 flex items-end justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold text-amber-300 block">
+                            {offer.branch?.name || "متاح في جميع الفروع 📍"}
+                          </span>
+                          <h4 className="font-black text-sm text-white drop-shadow-md">
+                            {offer.titleAr}
+                          </h4>
+                        </div>
+                        <div className="text-left font-mono">
+                          {offer.oldPrice && (
+                            <span className="text-xs text-rose-400 line-through block">
+                              {offer.oldPrice} ج
+                            </span>
+                          )}
+                          <span className="text-base font-black text-amber-400">
+                            {offer.price} ج.م
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Features & Description */}
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                      {offer.description && (
+                        <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                          {offer.description}
+                        </p>
+                      )}
+
+                      {featuresList.length > 0 && (
+                        <ul className="space-y-1 text-[11px] text-slate-300 border-t border-white/5 pt-2">
+                          {featuresList.slice(0, 4).map((f, i) => (
+                            <li key={i} className="flex items-center gap-1.5">
+                              <span className="text-amber-400 font-bold">✓</span>
+                              <span className="truncate">{f}</span>
+                            </li>
+                          ))}
+                          {featuresList.length > 4 && (
+                            <li className="text-[10px] text-amber-400 font-bold">
+                              + {featuresList.length - 4} مميزات ملكية أخرى...
+                            </li>
+                          )}
+                        </ul>
+                      )}
+
+                      {/* Control Buttons */}
+                      <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-3">
+                        <button
+                          onClick={() => handleToggleOfferActive(offer)}
+                          className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition border ${
+                            offer.isActive
+                              ? "bg-rose-500/10 text-rose-300 border-rose-500/20 hover:bg-rose-500/20"
+                              : "bg-emerald-500/10 text-emerald-300 border-emerald-500/20 hover:bg-emerald-500/20"
+                          }`}
+                        >
+                          {offer.isActive ? "تعطيل 🚫" : "تفعيل 🟢"}
+                        </button>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleOpenEditOffer(offer)}
+                            className="p-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition text-xs font-bold flex items-center gap-1"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                            <span>تعديل</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteOffer(offer.id)}
+                            className="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 4: IN-APP LIVE CHAT WITH CUSTOMERS
+           ======================================================== */}
+        {activeTab === "chat" && (
+          <div className="space-y-4 animate-fade-in">
+            <div>
+              <h3 className="text-base font-black text-white">
+                الشات المباشر وتواصل العملاء اللحظي 💬
+              </h3>
+              <p className="text-xs text-slate-400">
+                متابعة استفسارات الزبائن، تأكيد المواعيد، وتنسيق باكدجات العرسان لحظة بلحظة 📱
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px] rounded-3xl border border-amber-500/30 overflow-hidden bg-[#12121a]">
+              {/* Left Column: Conversations List */}
+              <div className="border-l border-white/10 flex flex-col overflow-hidden bg-[#0e0e14]">
+                <div className="p-3.5 border-b border-white/10 bg-black/40">
+                  <span className="text-xs font-black text-amber-400">المحادثات النشطة</span>
+                </div>
+
+                <div className="flex-1 overflow-y-auto divide-y divide-white/5">
+                  {chatConversations.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-slate-500">
+                      لا توجد محادثات واردة حتى الآن
+                    </div>
+                  ) : (
+                    chatConversations.map((conv) => {
+                      const isSelected = activeChatCustomer?.key === conv.key;
+                      return (
+                        <div
+                          key={conv.key}
+                          onClick={() => handleSelectCustomerChat(conv)}
+                          className={`p-3.5 cursor-pointer transition flex items-start justify-between gap-2 ${
+                            isSelected
+                              ? "bg-amber-500/15 border-r-4 border-amber-400"
+                              : "hover:bg-white/5"
+                          }`}
+                        >
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <h5 className="font-black text-xs text-white truncate">
+                                {conv.customerName || "عميل VIP"}
+                              </h5>
+                              {conv.unreadCount > 0 && (
+                                <span className="w-4 h-4 rounded-full bg-rose-600 text-white font-mono text-[9px] font-bold flex items-center justify-center animate-pulse">
+                                  {conv.unreadCount}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-amber-300 font-mono font-bold">
+                              {conv.customerPhone || "بدون هاتف"}
+                            </p>
+                            <p className="text-[11px] text-slate-400 truncate max-w-[180px]">
+                              {conv.lastMessage}
+                            </p>
+                          </div>
+                          <span className="text-[9px] text-slate-500 font-mono shrink-0">
+                            {new Date(conv.lastTime).toLocaleTimeString("ar-EG", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Active Conversation */}
+              <div className="md:col-span-2 flex flex-col h-full bg-[#101018]">
+                {activeChatCustomer ? (
+                  <>
+                    {/* Chat Header */}
+                    <div className="p-3.5 border-b border-amber-500/30 bg-black/40 flex items-center justify-between">
+                      <div>
+                        <h4 className="font-black text-sm text-amber-400">
+                          {activeChatCustomer.customerName || "عميل VIP"}
+                        </h4>
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          {activeChatCustomer.customerPhone}
+                        </p>
+                      </div>
+
+                      {/* Quick Reply Chips */}
+                      <div className="hidden sm:flex items-center gap-1.5 text-[10px]">
+                        <button
+                          onClick={() =>
+                            handleSendAdminReply(
+                              "أهلاً بك يا فندم! تم تأكيد موعدك ونحن بانتظارك في الصالون لتقديم أرقى تجربة ملكية 👑"
+                            )
+                          }
+                          className="py-1 px-2.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition"
+                        >
+                          تأكيد الموعد ✅
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleSendAdminReply(
+                              "فرع مدينة نصر: 28 شارع مصطفى حمام، متفرع من عباس العقاد، أمام أبو العز السوري مباشرة 📍"
+                            )
+                          }
+                          className="py-1 px-2.5 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition"
+                        >
+                          عنوان مدينة نصر 📍
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Chat Messages Body */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#0a0a0f]">
+                      {chatMessages.map((m) => {
+                        const isSalon = m.sender === "SALON";
+                        return (
+                          <div
+                            key={m.id}
+                            className={`flex gap-2 ${isSalon ? "justify-end" : "justify-start"}`}
+                          >
+                            <div
+                              className={`max-w-[75%] rounded-2xl p-3 text-xs space-y-1 shadow-md ${
+                                isSalon
+                                  ? "bg-amber-500 text-slate-950 font-bold rounded-tl-none"
+                                  : "bg-[#181826] border border-amber-500/30 text-slate-200 rounded-tr-none"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2 text-[10px]">
+                                <span className={isSalon ? "text-slate-900 font-black" : "text-amber-400 font-bold"}>
+                                  {m.senderName}
+                                </span>
+                                <span className="opacity-70 font-mono text-[9px]">
+                                  {new Date(m.createdAt).toLocaleTimeString("ar-EG", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </div>
+                              <p className="leading-relaxed whitespace-pre-wrap">{m.message}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Chat Input */}
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSendAdminReply();
+                      }}
+                      className="p-3 bg-[#12121a] border-t border-amber-500/30 flex items-center gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={chatReplyText}
+                        onChange={(e) => setChatReplyText(e.target.value)}
+                        placeholder="اكتب رد الصالون المباشر للعميل..."
+                        className="flex-1 py-2.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/30 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                      />
+                      <button
+                        type="submit"
+                        disabled={chatSending || !chatReplyText.trim()}
+                        className="py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 disabled:opacity-40"
+                      >
+                        <Send className="w-3.5 h-3.5 rotate-180" />
+                        <span>إرسال</span>
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-2 text-slate-500">
+                    <MessageSquare className="w-12 h-12 text-slate-700" />
+                    <p className="text-sm font-bold text-slate-400">
+                      اختر محادثة من القائمة للرد على العميل
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 5: SPECIALISTS & PAYROLL
+           ======================================================== */}
+        {activeTab === "specialists" && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-black text-white">طاقم المتخصصين والحلاقين وكراسي العمل</h3>
+                <p className="text-xs text-slate-400">
+                  إدارة المتخصصين، حساب الأجور، السلف، ونسب العمولات على الخدمات ✂️
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setEditingSpecialist(null);
+                  setSpecForm({
+                    name: "",
+                    phone: "",
+                    title: "خبير حلاقة وتصفيف",
+                    branchId: branches[0]?.id || "",
+                    chairNumber: 1,
+                    payType: "SALARY_PLUS_COMMISSION",
+                    baseSalary: 6000,
+                    commissionRate: 20,
+                    photo: "",
+                    username: "",
+                    password: "",
+                  });
+                  setShowSpecialistModal(true);
+                }}
+                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إضافة متخصص جديد ✂️</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {specialists.map((spec) => (
+                <div key={spec.id} className="p-5 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={spec.photo || "/logo.jpg"} alt={spec.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-sm text-white">{spec.name}</h4>
+                      <p className="text-[11px] text-slate-400">{spec.title}</p>
+                      <span className="text-[10px] text-amber-300 font-bold block pt-0.5">
+                        {spec.branch?.name} • كرسي {spec.chairNumber}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">نظام الأجر:</span>
+                      <span className="font-bold text-amber-300">{spec.payType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">الراتب الأساسي:</span>
+                      <span className="font-mono text-white">{spec.baseSalary} ج.م</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">نسبة العمولة:</span>
+                      <span className="font-mono text-amber-400 font-bold">{spec.commissionRate}%</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setPayoutSpecialist(spec);
+                        setPayoutAmount(500);
+                        setShowPayoutModal(true);
+                      }}
+                      className="flex-1 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold text-xs transition"
+                    >
+                      صرف سلفة / أجر 💵
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingSpecialist(spec);
+                        setSpecForm({
+                          name: spec.name,
+                          phone: spec.phone || "",
+                          title: spec.title,
+                          branchId: spec.branchId,
+                          chairNumber: spec.chairNumber,
+                          payType: spec.payType,
+                          baseSalary: spec.baseSalary,
+                          commissionRate: spec.commissionRate,
+                          photo: spec.photo || "",
+                          username: "",
+                          password: "",
+                        });
+                        setShowSpecialistModal(true);
+                      }}
+                      className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-amber-300 border border-white/10 transition"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 6: SERVICES CATALOG
            ======================================================== */}
         {activeTab === "services" && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-base font-black text-white">الخدمات التجميلية والحلاقة</h3>
-                <p className="text-xs text-slate-400">
-                  قائمة خدمات الصالون ديناميكية وقابلة للتعديل وتحديث الأسعار فورياً 💈
-                </p>
+                <h3 className="text-base font-black text-white">قائمة الخدمات التجميلية وأسعار الحلاقة</h3>
+                <p className="text-xs text-slate-400">إضافة وتعديل الخدمات والأسعار والمدد الزمنية 💈</p>
               </div>
 
               <button
@@ -898,67 +1806,21 @@ export default function AdminPage() {
                 className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
               >
                 <Plus className="w-4 h-4" />
-                <span>إضافة خدمة جديدة ➕</span>
+                <span>إضافة خدمة جديدة 💈</span>
               </button>
             </div>
 
-            {/* Services Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {services.map((srv) => (
-                <div
-                  key={srv.id}
-                  className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-3 flex flex-col justify-between"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="py-0.5 px-2 rounded-lg bg-white/5 text-[10px] font-bold text-amber-300">
-                        {srv.category}
-                      </span>
-                      <span className="font-mono text-base font-black text-amber-400">
-                        {srv.price} ج.م
-                      </span>
-                    </div>
-
-                    <h4 className="font-black text-sm text-white pt-1">{srv.nameAr}</h4>
-                    {srv.description && (
-                      <p className="text-xs text-slate-400 leading-relaxed">{srv.description}</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-white/5 pt-2 text-xs">
-                    <span className="text-slate-400 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-amber-500" />
-                      <span>{srv.durationMinutes} دقيقة</span>
+                <div key={srv.id} className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] py-0.5 px-2 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 font-bold">
+                      {srv.category}
                     </span>
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => {
-                          setEditingService(srv);
-                          setServiceForm({
-                            nameAr: srv.nameAr,
-                            category: srv.category,
-                            price: srv.price,
-                            durationMinutes: srv.durationMinutes,
-                            description: srv.description || "",
-                          });
-                          setShowServiceModal(true);
-                        }}
-                        className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition"
-                        title="تعديل"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        onClick={() => handleDeleteService(srv.id)}
-                        className="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition"
-                        title="حذف"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <span className="font-mono text-xs font-black text-amber-400">{srv.price} ج.م</span>
                   </div>
+                  <h4 className="font-black text-sm text-white">{srv.nameAr}</h4>
+                  <p className="text-xs text-slate-400 line-clamp-2">{srv.description}</p>
                 </div>
               ))}
             </div>
@@ -966,67 +1828,20 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 4: RETAIL BEAUTY PRODUCTS & INVENTORY
+            TAB 7: RETAIL BEAUTY PRODUCTS
            ======================================================== */}
         {activeTab === "inventory" && (
           <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-black text-white">بضاعة التجميل ومستحضرات العناية</h3>
-                <p className="text-xs text-slate-400">
-                  مخزون الصالون من كريمات، شمع، عطور، وزيوت لحية مع تنبيهات النواقص 🛍️
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setEditingProduct(null);
-                  setProductForm({
-                    nameAr: "",
-                    category: "STYLING",
-                    price: 180,
-                    costPrice: 100,
-                    stockQty: 50,
-                    branchId: "",
-                  });
-                  setShowProductModal(true);
-                }}
-                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>إضافة صنف تجميل جديد 🧴</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <h3 className="text-base font-black text-white">مستحضرات التجميل والعناية (المخزن والكرسي)</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {products.map((prod) => (
-                <div
-                  key={prod.id}
-                  className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-3 flex flex-col justify-between"
-                >
+                <div key={prod.id} className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="py-0.5 px-2 rounded-lg bg-white/5 text-[10px] font-bold text-amber-300">
-                      {prod.category}
-                    </span>
-                    <span
-                      className={`text-[10px] font-black py-0.5 px-2 rounded-full ${
-                        prod.stockQty <= (prod.minStockAlert || 10)
-                          ? "bg-rose-500/20 text-rose-300 border border-rose-500/40"
-                          : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                      }`}
-                    >
-                      متبقي: {prod.stockQty} قطعة
-                    </span>
+                    <span className="text-[10px] text-amber-300 font-bold">{prod.category}</span>
+                    <span className="text-xs font-mono font-black text-amber-400">{prod.price} ج.م</span>
                   </div>
-
-                  <div>
-                    <h4 className="font-black text-sm text-white">{prod.nameAr}</h4>
-                    <div className="flex items-center gap-2 pt-1 font-mono text-xs">
-                      <span className="text-amber-400 font-bold">سعر البيع: {prod.price} ج</span>
-                      <span className="text-slate-500">•</span>
-                      <span className="text-slate-400">التكلفة: {prod.costPrice} ج</span>
-                    </div>
-                  </div>
+                  <h4 className="font-black text-sm text-white">{prod.nameAr}</h4>
+                  <p className="text-xs text-slate-400 font-mono">المتاح بالمخزن: {prod.stockQty} عبوة</p>
                 </div>
               ))}
             </div>
@@ -1034,58 +1849,7 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 5: BOOKINGS & APPOINTMENTS
-           ======================================================== */}
-        {activeTab === "bookings" && (
-          <div className="space-y-6 animate-fade-in">
-            <h3 className="text-base font-black text-white">جدول الحجوزات والمواعيد المؤكدة</h3>
-
-            <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#14141e]">
-              <table className="w-full text-right text-xs">
-                <thead>
-                  <tr className="border-b border-white/10 bg-black/40 text-slate-400 font-bold">
-                    <th className="p-3.5">رقم الحجز</th>
-                    <th className="p-3.5">العميل</th>
-                    <th className="p-3.5">الفرع</th>
-                    <th className="p-3.5">المتخصص</th>
-                    <th className="p-3.5">التاريخ والوقت</th>
-                    <th className="p-3.5">الإجمالي</th>
-                    <th className="p-3.5">الحالة</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {bookings.map((bk) => (
-                    <tr key={bk.id} className="hover:bg-white/5 transition">
-                      <td className="p-3.5 font-mono font-black text-amber-400">#{bk.bookingNumber}</td>
-                      <td className="p-3.5 font-bold text-white">
-                        {bk.customer?.name}
-                        <span className="block text-[10px] text-slate-400 font-mono">
-                          {bk.customer?.phone}
-                        </span>
-                      </td>
-                      <td className="p-3.5">{bk.branch?.name}</td>
-                      <td className="p-3.5 text-amber-300 font-bold">
-                        {bk.specialist?.name || "أي متخصص متاح"}
-                      </td>
-                      <td className="p-3.5 font-mono">
-                        {bk.bookingDate} • {bk.timeSlot}
-                      </td>
-                      <td className="p-3.5 font-mono font-bold text-white">{bk.totalAmount} ج</td>
-                      <td className="p-3.5">
-                        <span className="py-0.5 px-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black">
-                          {bk.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================
-            TAB 6: CUSTOMERS CRM & MARKETING
+            TAB 8: CUSTOMERS CRM & MARKETING
            ======================================================== */}
         {activeTab === "customers" && (
           <div className="space-y-6 animate-fade-in">
@@ -1130,7 +1894,7 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 7: USERS & RBAC ACCESS CONTROL
+            TAB 9: USERS & RBAC ACCESS CONTROL (FULL EDITING ADDED)
            ======================================================== */}
         {activeTab === "users" && (
           <div className="space-y-6 animate-fade-in">
@@ -1138,12 +1902,12 @@ export default function AdminPage() {
               <div>
                 <h3 className="text-base font-black text-white">طاقم العمل والمستخدمين والصلاحيات</h3>
                 <p className="text-xs text-slate-400">
-                  إدارة حسابات المديرين، الكاشير، المتخصصين والعمال مع إمكانية التعطيل الفوري 🔒
+                  إدارة وتعديل حسابات المديرين، الكاشير، المتخصصين والعمال مع إمكانية التعديل الشامل والتعطيل الفوري 🔒
                 </p>
               </div>
 
               <button
-                onClick={() => setShowUserModal(true)}
+                onClick={handleOpenCreateUser}
                 className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
               >
                 <Plus className="w-4 h-4" />
@@ -1159,8 +1923,9 @@ export default function AdminPage() {
                     <th className="p-3.5">اسم الدخول</th>
                     <th className="p-3.5">الدور والصلاحية</th>
                     <th className="p-3.5">الفرع</th>
+                    <th className="p-3.5">PIN السري</th>
                     <th className="p-3.5">الحالة</th>
-                    <th className="p-3.5 text-center">التحكم والتعطيل</th>
+                    <th className="p-3.5 text-center">التحكم والتعديل</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -1174,6 +1939,7 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className="p-3.5 text-slate-400">{u.branchName}</td>
+                      <td className="p-3.5 font-mono text-slate-400 font-bold">••••••</td>
                       <td className="p-3.5">
                         <span
                           className={`py-0.5 px-2 rounded-full text-[10px] font-black ${
@@ -1186,18 +1952,28 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className="p-3.5 text-center">
-                        {u.username !== "maestro" && (
+                        <div className="flex items-center justify-center gap-1.5">
                           <button
-                            onClick={() => handleToggleUserActive(u.id, u.isActive)}
-                            className={`py-1 px-3 rounded-xl text-[11px] font-bold transition border ${
-                              u.isActive
-                                ? "bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/30"
-                                : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                            }`}
+                            onClick={() => handleOpenEditUser(u)}
+                            className="py-1 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition flex items-center gap-1"
                           >
-                            {u.isActive ? "تعطيل الحساب 🚫" : "إعادة تفعيل 🟢"}
+                            <Edit className="w-3 h-3" />
+                            <span>تعديل ✏️</span>
                           </button>
-                        )}
+
+                          {u.username !== "maestro" && (
+                            <button
+                              onClick={() => handleToggleUserActive(u.id, u.isActive)}
+                              className={`py-1 px-2.5 rounded-xl text-[11px] font-bold transition border ${
+                                u.isActive
+                                  ? "bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border-rose-500/30"
+                                  : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                              }`}
+                            >
+                              {u.isActive ? "تعطيل 🚫" : "تفعيل 🟢"}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1208,7 +1984,7 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 8: MULTI-BRANCH SYSTEM
+            TAB 10: MULTI-BRANCH SYSTEM
            ======================================================== */}
         {activeTab === "branches" && (
           <div className="space-y-6 animate-fade-in">
@@ -1237,7 +2013,7 @@ export default function AdminPage() {
                     <span className="font-mono text-xs font-bold text-slate-400">{b.code}</span>
                   </div>
                   <p className="text-xs text-slate-300">{b.address}</p>
-                  <p className="text-xs font-mono text-slate-400">الهاتف: {b.phone}</p>
+                  <p className="text-xs font-mono text-amber-300 font-bold">الهاتف والواتساب: {b.phone}</p>
                 </div>
               ))}
             </div>
@@ -1245,24 +2021,23 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 9: SYSTEM SETTINGS
+            TAB 11: SYSTEM SETTINGS
            ======================================================== */}
         {activeTab === "settings" && (
-          <div className="max-w-xl mx-auto p-6 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4 animate-fade-in">
+          <div className="max-w-xl mx-auto p-6 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4 animate-fade-in text-xs">
             <h3 className="text-base font-black text-amber-400">إعدادات المنظومة العامة</h3>
-            <div className="text-xs text-slate-300 space-y-2">
-              <p>اسم الصالون: {settings?.salonNameAr}</p>
-              <p>الخط الساخن: {settings?.hotline}</p>
-              <p>فرع حدائق القبة: {settings?.hadayekPhone}</p>
-              <p>فرع مدينة نصر: {settings?.nasrCityPhone}</p>
-              <p>ساعات العمل: من {settings?.defaultOpenHour} حتى {settings?.defaultCloseHour}</p>
+            <div className="space-y-2 text-slate-300">
+              <p>اسم الصالون: <strong className="text-white">{settings?.salonNameAr}</strong></p>
+              <p>الهاتف والواتساب الموحد: <strong className="text-amber-300 font-mono">{settings?.hadayekPhone || "01121537537"}</strong></p>
+              <p>صفحة الفيسبوك الرسمية: <a href={settings?.facebookUrl || "https://www.facebook.com/SaddamSalon/"} target="_blank" rel="noreferrer" className="text-amber-400 underline">{settings?.facebookUrl || "https://www.facebook.com/SaddamSalon/"}</a></p>
+              <p>مواعيد العمل: يومياً من {settings?.defaultOpenHour} حتى {settings?.defaultCloseHour}</p>
             </div>
           </div>
         )}
       </main>
 
       {/* ─────────────────────────────────────────────────────────────
-          MODALS
+          5. MODALS
          ───────────────────────────────────────────────────────────── */}
       {/* 1. SPECIALIST MODAL */}
       {showSpecialistModal && (
@@ -1362,7 +2137,259 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 2. PAYOUT / ADVANCE MODAL */}
+      {/* 2. USER MODAL (CREATE & FULL EDIT) */}
+      {showUserModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
+          <div className="relative w-full max-w-md bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-sm font-black text-white">
+                {editingUser ? `تعديل المستخدم (${editingUser.name})` : "إضافة مستخدم جديد للطاقم"}
+              </h3>
+              <button onClick={() => setShowUserModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <form onSubmit={handleSaveUser} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">الاسم بالكامل:</label>
+                <input
+                  type="text"
+                  required
+                  value={userForm.name}
+                  onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                  placeholder="مثال: أحمد عبد الرحمن"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">اسم الدخول (Username):</label>
+                  <input
+                    type="text"
+                    required
+                    value={userForm.username}
+                    onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
+                    placeholder="cashier-nasr"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">رمز PIN السري (6 أرقام):</label>
+                  <input
+                    type="password"
+                    maxLength={6}
+                    value={userForm.pin}
+                    onChange={(e) => setUserForm({ ...userForm, pin: e.target.value })}
+                    placeholder="157230"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono text-center tracking-widest focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  {editingUser ? "كلمة المرور (اتركها فارغة للاحتفاظ بالحالية):" : "كلمة المرور:"}
+                </label>
+                <input
+                  type="password"
+                  required={!editingUser}
+                  value={userForm.password}
+                  onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                  placeholder={editingUser ? "••••••••" : "كلمة المرور"}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">الدور والصلاحية:</label>
+                  <select
+                    value={userForm.role}
+                    onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                  >
+                    <option value="owner">المالك (Maestro)</option>
+                    <option value="general_manager">المدير العام</option>
+                    <option value="manager">مدير فرع</option>
+                    <option value="cashier">كاشير نقطة البيع POS</option>
+                    <option value="specialist">متخصص حلاقة (كرسي)</option>
+                    <option value="worker">عامل صالون وضيافة</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">الفرع التابع له:</label>
+                  <select
+                    value={userForm.branchId}
+                    onChange={(e) => setUserForm({ ...userForm, branchId: e.target.value })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                  >
+                    <option value="">إشراف عام على كل الفروع</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">رقم الهاتف:</label>
+                <input
+                  type="tel"
+                  value={userForm.phone}
+                  onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
+                  placeholder="01121537537"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition mt-2 shadow-lg shadow-amber-500/20"
+              >
+                {editingUser ? "حفظ التعديلات على المستخدم 💾" : "إضافة المستخدم الآن 👤"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 3. OFFER MODAL (CREATE & FULL EDIT) */}
+      {showOfferModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
+          <div className="relative w-full max-w-lg bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-sm font-black text-white">
+                {editingOffer ? `تعديل العرض الملكي (${editingOffer.titleAr})` : "إضافة عرض ملكي جديد 👑"}
+              </h3>
+              <button onClick={() => setShowOfferModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <form onSubmit={handleSaveOffer} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">عنوان العرض / الباكدج:</label>
+                <input
+                  type="text"
+                  required
+                  value={offerForm.titleAr}
+                  onChange={(e) => setOfferForm({ ...offerForm, titleAr: e.target.value })}
+                  placeholder="مثال: عرض العريس الملكي المتكامل"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">السعر الحالي (ج.م):</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={offerForm.price}
+                    onChange={(e) => setOfferForm({ ...offerForm, price: Number(e.target.value) })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-amber-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">السعر الأصلي (ج.م):</label>
+                  <input
+                    type="number"
+                    value={offerForm.oldPrice}
+                    onChange={(e) => setOfferForm({ ...offerForm, oldPrice: e.target.value as any })}
+                    placeholder="4000"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">الشارة الترويجية (Badge):</label>
+                  <input
+                    type="text"
+                    value={offerForm.badge}
+                    onChange={(e) => setOfferForm({ ...offerForm, badge: e.target.value })}
+                    placeholder="خصم 46% 🔥"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">رابط أو مسار الصورة الإعلانية (Flyer):</label>
+                <input
+                  type="text"
+                  required
+                  value={offerForm.image}
+                  onChange={(e) => setOfferForm({ ...offerForm, image: e.target.value })}
+                  placeholder="/offers/offer-vip-1000.jpg"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">الفرع المتاح به العرض:</label>
+                  <select
+                    value={offerForm.branchId}
+                    onChange={(e) => setOfferForm({ ...offerForm, branchId: e.target.value })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                  >
+                    <option value="">متاح في جميع الفروع 📍</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">ترتيب الظهور:</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={offerForm.sortOrder}
+                    onChange={(e) => setOfferForm({ ...offerForm, sortOrder: Number(e.target.value) })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">وصف العرض المختصر:</label>
+                <input
+                  type="text"
+                  value={offerForm.description}
+                  onChange={(e) => setOfferForm({ ...offerForm, description: e.target.value })}
+                  placeholder="تجربة متكاملة تخليك في أفضل لوك قبل أهم يوم في حياتك"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  المميزات والمراحل (اكتب كل ميزة في سطر منفصل):
+                </label>
+                <textarea
+                  rows={4}
+                  value={offerForm.features}
+                  onChange={(e) => setOfferForm({ ...offerForm, features: e.target.value })}
+                  placeholder="قص شعر وتدريج ملكي احترافي&#10;تحديد ورسم الذقن بالبخار&#10;تنظيف بشرة هيدروفيشيل 11 مرحلة&#10;مساج كامل للجسم"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition mt-2 shadow-lg shadow-amber-500/20"
+              >
+                {editingOffer ? "حفظ تعديلات العرض الملكي 👑" : "نشر العرض الملكي الآن 👑"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. PAYOUT / ADVANCE MODAL */}
       {showPayoutModal && payoutSpecialist && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
           <div className="relative w-full max-w-sm bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
@@ -1423,7 +2450,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 3. SERVICE MODAL */}
+      {/* 5. SERVICE MODAL */}
       {showServiceModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
           <div className="relative w-full max-w-sm bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
@@ -1496,13 +2523,82 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 4. CARD 2 QR MODAL */}
+      {/* 6. BRANCH MODAL */}
+      {showBranchModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
+          <div className="relative w-full max-w-sm bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-sm font-black text-white">إضافة فرع جديد لصالون صدام</h3>
+              <button onClick={() => setShowBranchModal(false)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <form onSubmit={handleSaveBranch} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">اسم الفرع:</label>
+                <input
+                  type="text"
+                  required
+                  value={branchForm.name}
+                  onChange={(e) => setBranchForm({ ...branchForm, name: e.target.value })}
+                  placeholder="مثال: فرع المهندسين"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">كود الفرع:</label>
+                <input
+                  type="text"
+                  required
+                  value={branchForm.code}
+                  onChange={(e) => setBranchForm({ ...branchForm, code: e.target.value })}
+                  placeholder="BR-MOHANDESSIN"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">العنوان التفصيلي:</label>
+                <input
+                  type="text"
+                  required
+                  value={branchForm.address}
+                  onChange={(e) => setBranchForm({ ...branchForm, address: e.target.value })}
+                  placeholder="شارع جامعة الدول العربية"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">رقم الهاتف والواتساب:</label>
+                <input
+                  type="tel"
+                  required
+                  value={branchForm.phone}
+                  onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value, whatsapp: e.target.value })}
+                  placeholder="01121537537"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+              >
+                حفظ وإضافة الفرع 📍
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. CARD 2 QR MODAL */}
       <CardQRModal
         isOpen={showQrModal}
         onClose={() => setShowQrModal(false)}
-        hadayekPhone={settings?.hadayekPhone || "01018671000"}
-        nasrCityPhone={settings?.nasrCityPhone || "01118400150"}
-        hotline={settings?.hotline || "19888"}
+        hadayekPhone={settings?.hadayekPhone || "01121537537"}
+        nasrCityPhone={settings?.nasrCityPhone || "01121537537"}
+        hotline={settings?.hotline || "01121537537"}
       />
     </div>
   );

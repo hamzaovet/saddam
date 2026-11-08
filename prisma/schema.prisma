@@ -26,6 +26,8 @@ model Branch {
   tickets         Ticket[]
   products        Product[]
   ledgers         SpecialistLedger[]
+  offers          Offer[]
+  chatMessages    ChatMessage[]
 }
 
 // ----------------------------------------------------
@@ -232,3 +234,43 @@ model SystemSettings {
   defaultCloseHour String            @default("02:00 AM")
   updatedAt       DateTime           @updatedAt
 }
+
+// ----------------------------------------------------
+// 11. DYNAMIC ROYAL OFFERS & PACKAGES (العروض الملكية والباكدجات)
+// ----------------------------------------------------
+model Offer {
+  id              String             @id @default(cuid())
+  titleAr         String             // e.g. "عرض العريس الملكي"
+  badge           String?            // "خصم 46%", "VIP", "لفترة محدودة"
+  price           Float              // 3500
+  oldPrice        Float?             // 4000
+  discountPercent Int?               // 15
+  image           String             // "/offers/offer-groom-3500.jpg"
+  description     String?
+  features        String             @default("[]") // JSON array of bullet points
+  branchId        String?            // null = متاح في كل الفروع
+  branch          Branch?            @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  isActive        Boolean            @default(true)
+  sortOrder       Int                @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+// ----------------------------------------------------
+// 12. IN-APP LIVE CHAT (شات مباشر وتواصل فوري بين الصالون والعملاء)
+// ----------------------------------------------------
+model ChatMessage {
+  id              String             @id @default(cuid())
+  branchId        String?
+  branch          Branch?            @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  customerId      String?
+  customerName    String             @default("عميل VIP")
+  customerPhone   String?
+  bookingId       String?
+  sender          String             // "CUSTOMER" or "SALON"
+  senderName      String             @default("خدمة عملاء صدام")
+  message         String
+  isRead          Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+}
+

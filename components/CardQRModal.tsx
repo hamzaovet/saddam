@@ -15,9 +15,9 @@ interface CardQRModalProps {
 export default function CardQRModal({
   isOpen,
   onClose,
-  hadayekPhone = "01018671000",
-  nasrCityPhone = "01118400150",
-  hotline = "19888",
+  hadayekPhone = "01121537537",
+  nasrCityPhone = "01121537537",
+  hotline = "01121537537",
 }: CardQRModalProps) {
   const [webQr, setWebQr] = useState<string>("");
   const [appQr, setAppQr] = useState<string>("");
@@ -157,13 +157,13 @@ export default function CardQRModal({
 
           {/* BRANCHES & CONTACT INFO BAR */}
           <div className="pt-3 border-t border-amber-500/20 text-xs text-slate-300 space-y-1.5">
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 font-bold">
-              <span>📍 فرع حدائق القبة: {hadayekPhone}</span>
-              <span>•</span>
-              <span>📍 فرع مدينة نصر: {nasrCityPhone}</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 font-bold text-center">
+              <span>📍 فرع مدينة نصر: عباس العقاد (أمام أبو العز السوري)</span>
+              <span className="hidden sm:inline">•</span>
+              <span>📍 فرع حدائق القبة: 87 شارع مصر والسودان</span>
             </div>
-            <p className="text-[11px] text-amber-400 font-mono font-bold">
-              الخط الساخن للحجز والاستفسار: {hotline}
+            <p className="text-xs text-amber-400 font-mono font-black">
+              الهاتف والواتساب الموحد: {hotline}
             </p>
           </div>
         </div>

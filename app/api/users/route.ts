@@ -86,7 +86,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, name, password, pin, role, branchId, phone, isActive } = body;
+    const { id, name, username, password, pin, role, branchId, phone, isActive } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "معرف المستخدم مطلوب" }, { status: 400 });
@@ -101,10 +101,23 @@ export async function PATCH(req: Request) {
       );
     }
 
+    if (username && username.trim().toLowerCase() !== targetUser?.username) {
+      const exists = await prisma.user.findUnique({
+        where: { username: username.trim().toLowerCase() },
+      });
+      if (exists) {
+        return NextResponse.json(
+          { success: false, error: "اسم المستخدم مأخوذ بالفعل" },
+          { status: 400 }
+        );
+      }
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: {
         ...(name && { name: name.trim() }),
+        ...(username && { username: username.trim().toLowerCase() }),
         ...(password && { passwordHash: password.trim() }),
         ...(pin && { pin: pin.trim() }),
         ...(role && { role }),

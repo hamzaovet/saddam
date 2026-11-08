@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CardQRModal from "@/components/CardQRModal";
+import CustomerChatWidget from "@/components/CustomerChatWidget";
 import {
   Scissors,
   Sparkles,
@@ -29,6 +30,7 @@ import {
   Heart,
   Coffee,
   Sparkle,
+  Tag,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -37,6 +39,7 @@ export default function HomePage() {
   const [branches, setBranches] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [specialists, setSpecialists] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Selected Booking Details
@@ -97,18 +100,20 @@ export default function HomePage() {
     async function loadData() {
       try {
         setLoading(true);
-        const [resSet, resB, resS, resSpec] = await Promise.all([
+        const [resSet, resB, resS, resSpec, resO] = await Promise.all([
           fetch("/api/settings"),
           fetch("/api/branches"),
           fetch("/api/services"),
           fetch("/api/specialists"),
+          fetch("/api/offers?activeOnly=true"),
         ]);
 
-        const [dataSet, dataB, dataS, dataSpec] = await Promise.all([
+        const [dataSet, dataB, dataS, dataSpec, dataO] = await Promise.all([
           resSet.json(),
           resB.json(),
           resS.json(),
           resSpec.json(),
+          resO.json(),
         ]);
 
         if (dataSet.success && dataSet.settings) setSettings(dataSet.settings);
@@ -120,6 +125,7 @@ export default function HomePage() {
         }
         if (dataS.success && dataS.services) setServices(dataS.services);
         if (dataSpec.success && dataSpec.specialists) setSpecialists(dataSpec.specialists);
+        if (dataO.success && dataO.offers) setOffers(dataO.offers);
       } catch (e) {
         console.error("Failed to load initial data:", e);
       } finally {
@@ -133,6 +139,36 @@ export default function HomePage() {
   const filteredSpecialists = specialists.filter(
     (s) => !selectedBranchId || s.branchId === selectedBranchId
   );
+
+  // Filter Offers by Branch
+  const filteredOffers = offers.filter(
+    (o) => !selectedBranchId || !o.branchId || o.branchId === selectedBranchId
+  );
+
+  // Quick Select an Offer / Package
+  const handleSelectOffer = (offer: any) => {
+    const offerItem = {
+      id: `offer-${offer.id}`,
+      nameAr: `${offer.titleAr} (${offer.badge || "عرض خاص"})`,
+      price: offer.price,
+      durationMinutes: 60,
+      image: offer.image,
+    };
+    setSelectedServices((prev) => {
+      const exists = prev.some((s) => s.id === offerItem.id);
+      if (exists) return prev;
+      return [...prev, offerItem];
+    });
+
+    if (offer.branchId) {
+      setSelectedBranchId(offer.branchId);
+    }
+
+    const stepEl = document.getElementById("step-specialists");
+    if (stepEl) {
+      stepEl.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   // Filter Services by Category
   const filteredServices = services.filter((s) => {
@@ -362,12 +398,12 @@ export default function HomePage() {
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. GRAND VISUAL HERO SECTION (VIP SALON EXPERIENCE)
+          2. GRAND VISUAL HERO SECTION (ROYAL SADDAM BARBER EXPERIENCE)
          ───────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden py-14 px-4 sm:px-8 border-b border-amber-500/20">
+      <section className="relative overflow-hidden py-12 px-4 sm:px-8 border-b border-amber-500/20">
         {/* Background Visual Image with Dark Gold Gradient Overlay */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-25 scale-105 pointer-events-none filter blur-xs"
+          className="absolute inset-0 bg-cover bg-center opacity-20 scale-105 pointer-events-none filter blur-xs"
           style={{
             backgroundImage:
               "url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1600&auto=format&fit=crop&q=80')",
@@ -376,65 +412,210 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#07070a]/90 via-[#0a0a0f]/95 to-[#07070a] pointer-events-none" />
 
         <div className="relative max-w-4xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs font-black shadow-lg">
-            <span>👑 الفخامة والأناقة في مكان واحد • صالون حلاقة صدام VIP</span>
+          {/* Centered Royal Logo Emblem */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden border-2 border-amber-400 bg-black mx-auto shadow-2xl shadow-amber-500/30 p-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.jpg" alt="صالون حلاقة صدام" className="w-full h-full object-cover rounded-2xl" />
           </div>
 
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
-            ليس مجرد صالون، <br className="hidden sm:inline" />
-            <span className="gold-gradient-text">بل تجربة ملوك متكاملة</span>
-          </h2>
+          {/* Royal Slogan */}
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs font-black shadow-lg">
+              <span>👑 SADDAM BARBER SHOP • VIP MEN EXPERIENCE 👑</span>
+            </div>
 
-          <p className="text-sm sm:text-base text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
-            استمتع بأحدث صيحات قص الشعر العالمية وتحديد اللحية بالبخار والموس الإيطالي، مع جلسات العناية الملكية بالبشرة
-            وفرود البروتين الأصلية على يد نخبة من أمهر المصففين في فرعي{" "}
-            <strong className="text-amber-400">حدائق القبة</strong> و{" "}
-            <strong className="text-amber-400">مدينة نصر</strong>.
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
+              مش مجرد حلاقة ... <br className="hidden sm:inline" />
+              <span className="gold-gradient-text">دي تجربة صدام</span>
+            </h2>
+          </div>
+
+          <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xl mx-auto leading-relaxed">
+            الوجهة الأولى للرجل الباحث عن الأناقة الملكية والتميز بفرعي{" "}
+            <strong className="text-amber-400">مدينة نصر (عباس العقاد)</strong> و{" "}
+            <strong className="text-amber-400">حدائق القبة</strong>.
           </p>
 
           {/* Quick Features Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 max-w-3xl mx-auto text-xs">
-            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 max-w-3xl mx-auto text-xs">
+            <div className="p-2.5 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
               <Award className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="font-bold text-white">خامات إيطالية أصلية 100%</span>
+              <span className="font-bold text-white">خامات إيطالية أصلية</span>
             </div>
-            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+            <div className="p-2.5 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
               <span className="font-bold text-white">تعقيم طبي متكامل</span>
             </div>
-            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+            <div className="p-2.5 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-amber-400 shrink-0" />
               <span className="font-bold text-white">دقة تامة في المواعيد</span>
             </div>
-            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+            <div className="p-2.5 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
               <Coffee className="w-4 h-4 text-amber-400 shrink-0" />
               <span className="font-bold text-white">ضيافة VIP ملكية</span>
             </div>
           </div>
 
-          {/* Live Branches Switcher Pills */}
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
-            <span className="text-xs font-bold text-slate-400">اختر الفرع الأقرب لك:</span>
-            {branches.map((b) => {
-              const isSelected = selectedBranchId === b.id;
-              return (
-                <button
-                  key={b.id}
-                  onClick={() => setSelectedBranchId(b.id)}
-                  className={`py-2.5 px-5 rounded-2xl text-xs font-black transition flex items-center gap-2 ${
-                    isSelected
-                      ? "bg-amber-500 text-slate-950 shadow-xl shadow-amber-500/20 ring-2 ring-amber-400 scale-105"
-                      : "bg-[#14141e] hover:bg-[#1a1a28] text-slate-300 border border-amber-500/30"
-                  }`}
-                >
-                  <MapPin className="w-4 h-4 text-amber-400" />
-                  <span>{b.name}</span>
-                </button>
-              );
-            })}
+          {/* Live Branches Switcher Pills with Addresses */}
+          <div className="pt-2 flex flex-col items-center justify-center gap-3">
+            <span className="text-xs font-bold text-slate-400">اختر الفرع الأقرب لك لحجز الموعد أو العرض:</span>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {branches.map((b) => {
+                const isSelected = selectedBranchId === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => setSelectedBranchId(b.id)}
+                    className={`py-2.5 px-5 rounded-2xl text-xs font-black transition flex items-center gap-2 ${
+                      isSelected
+                        ? "bg-amber-500 text-slate-950 shadow-xl shadow-amber-500/20 ring-2 ring-amber-400 scale-105"
+                        : "bg-[#14141e] hover:bg-[#1a1a28] text-slate-300 border border-amber-500/30"
+                    }`}
+                  >
+                    <MapPin className="w-4 h-4 text-amber-400" />
+                    <span>{b.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          2.5 DYNAMIC ROYAL OFFERS & PACKAGES (FROM OFFICIAL FLYERS)
+         ───────────────────────────────────────────────────────────── */}
+      {filteredOffers.length > 0 && (
+        <section className="max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/20 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center font-black text-base shadow-md shadow-amber-500/20">
+                👑
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-black text-white">
+                  باكدجات وعروض صدام الملكية الحصرية (VIP Packages)
+                </h3>
+                <p className="text-xs text-slate-400">
+                  خصومات فورية تصل إلى 46% على باكدجات العرسان والاسترخاء والعناية المتكاملة 💈
+                </p>
+              </div>
+            </div>
+
+            <span className="text-xs text-amber-400 font-bold bg-amber-500/10 py-1.5 px-3.5 rounded-full border border-amber-500/30 self-start sm:self-auto">
+              {filteredOffers.length} عروض متاحة الآن
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredOffers.map((offer) => {
+              const isSelected = selectedServices.some((s) => s.id === `offer-${offer.id}`);
+              let featuresList: string[] = [];
+              try {
+                featuresList = JSON.parse(offer.features || "[]");
+              } catch {
+                featuresList = [];
+              }
+
+              return (
+                <div
+                  key={offer.id}
+                  className={`rounded-3xl bg-[#12121a] border-2 transition overflow-hidden flex flex-col shadow-2xl group ${
+                    isSelected
+                      ? "border-amber-400 ring-2 ring-amber-400 shadow-amber-500/20 scale-[1.02]"
+                      : "border-amber-500/30 hover:border-amber-400/80"
+                  }`}
+                >
+                  {/* Flyer Image Header */}
+                  <div className="relative h-60 w-full bg-black overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={offer.image}
+                      alt={offer.titleAr}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+                    {offer.badge && (
+                      <span className="absolute top-3.5 right-3.5 py-1 px-3.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-black text-xs shadow-xl">
+                        {offer.badge}
+                      </span>
+                    )}
+
+                    <span className="absolute top-3.5 left-3.5 py-1 px-3 rounded-full bg-black/70 border border-white/20 text-amber-300 font-bold text-[10px]">
+                      {offer.branch?.name || "متاح بجميع الفروع 📍"}
+                    </span>
+
+                    <div className="absolute bottom-3.5 right-3.5 left-3.5 flex items-end justify-between">
+                      <div className="max-w-[65%]">
+                        <h4 className="font-black text-sm sm:text-base text-white drop-shadow-lg leading-tight">
+                          {offer.titleAr}
+                        </h4>
+                      </div>
+                      <div className="text-left font-mono">
+                        {offer.oldPrice && (
+                          <span className="text-xs text-rose-400 line-through block font-bold">
+                            {offer.oldPrice} ج
+                          </span>
+                        )}
+                        <span className="text-lg sm:text-xl font-black text-amber-400">
+                          {offer.price} ج.م
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Body Content & Features */}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    {offer.description && (
+                      <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                        {offer.description}
+                      </p>
+                    )}
+
+                    {featuresList.length > 0 && (
+                      <ul className="space-y-1.5 text-xs text-slate-200 border-t border-white/5 pt-3">
+                        {featuresList.slice(0, 5).map((f, i) => (
+                          <li key={i} className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-amber-400 shrink-0 font-bold" />
+                            <span className="truncate">{f}</span>
+                          </li>
+                        ))}
+                        {featuresList.length > 5 && (
+                          <li className="text-[11px] text-amber-300 font-bold">
+                            + {featuresList.length - 5} خدمات ومراحل إضافية مشمولة بالعرض...
+                          </li>
+                        )}
+                      </ul>
+                    )}
+
+                    <button
+                      onClick={() => handleSelectOffer(offer)}
+                      className={`w-full py-3 rounded-2xl font-black text-xs transition flex items-center justify-center gap-2 shadow-xl ${
+                        isSelected
+                          ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950"
+                          : "bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20"
+                      }`}
+                    >
+                      {isSelected ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>تم اختيار هذا الباكدج الملكي ✅</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>حجز هذا الباكدج الملكي الآن 👑</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* ─────────────────────────────────────────────────────────────
           CONFIRMED BOOKING SUCCESS CARD (IF ANY)
@@ -448,7 +629,7 @@ export default function HomePage() {
 
             <div>
               <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
-                تم تأكيد حجزك بنجاح! 🎉
+                تم استلام وتأكيد طلب حجزك بنجاح! 🎉
               </span>
               <h3 className="text-2xl font-black text-white mt-1">
                 رقم الحجز: #{confirmedBooking.bookingNumber}
@@ -497,7 +678,7 @@ export default function HomePage() {
       {/* ─────────────────────────────────────────────────────────────
           3. MAIN BOOKING WORKFLOW (SPECIALISTS & VISUAL SERVICES)
          ───────────────────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 space-y-12">
+      <main id="step-specialists" className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 space-y-12">
         {/* STEP 1: CHOOSE SPECIALIST */}
         <section className="space-y-5">
           <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
@@ -974,7 +1155,7 @@ export default function HomePage() {
 
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-amber-400">
               <Phone className="w-4 h-4" />
-              <span>الخط الساخن: {settings?.hotline || "19888"}</span>
+              <span>الهاتف والواتساب الموحد: {settings?.hotline || "01121537537"}</span>
             </div>
           </div>
 
@@ -986,15 +1167,15 @@ export default function HomePage() {
             </h4>
 
             <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
-              <strong className="text-amber-300 block font-black">📍 فرع حدائق القبة (الرئيسي):</strong>
-              <p className="text-slate-400">17 شارع مصر والسودان، بجوار دير الملاك</p>
-              <p className="font-mono text-slate-400">هاتف: {settings?.hadayekPhone || "01018671000"}</p>
+              <strong className="text-amber-300 block font-black">📍 فرع مدينة نصر (VIP):</strong>
+              <p className="text-slate-400">28 شارع مصطفى حمام، متفرع من عباس العقاد، أمام أبو العز السوري</p>
+              <p className="font-mono text-amber-300 font-bold">هاتف وواتساب: 01121537537</p>
             </div>
 
             <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
-              <strong className="text-amber-300 block font-black">📍 فرع مدينة نصر (VIP):</strong>
-              <p className="text-slate-400">تقاطع مكرم عبيد مع عباس العقاد</p>
-              <p className="font-mono text-slate-400">هاتف: {settings?.nasrCityPhone || "01118400150"}</p>
+              <strong className="text-amber-300 block font-black">📍 فرع حدائق القبة:</strong>
+              <p className="text-slate-400">87 شارع مصر والسودان، حدائق القبة، القاهرة</p>
+              <p className="font-mono text-amber-300 font-bold">هاتف وواتساب: 01121537537</p>
             </div>
 
             <p className="text-[11px] text-amber-200/80 pt-1">
@@ -1061,9 +1242,18 @@ export default function HomePage() {
       <CardQRModal
         isOpen={showQrModal}
         onClose={() => setShowQrModal(false)}
-        hadayekPhone={settings?.hadayekPhone || "01018671000"}
-        nasrCityPhone={settings?.nasrCityPhone || "01118400150"}
-        hotline={settings?.hotline || "19888"}
+        hadayekPhone={settings?.hadayekPhone || "01121537537"}
+        nasrCityPhone={settings?.nasrCityPhone || "01121537537"}
+        hotline={settings?.hotline || "01121537537"}
+      />
+
+      {/* ─────────────────────────────────────────────────────────────
+          8. IN-APP DIRECT LIVE CHAT WIDGET
+         ───────────────────────────────────────────────────────────── */}
+      <CustomerChatWidget
+        customer={customer}
+        branches={branches}
+        selectedBranchId={selectedBranchId}
       />
     </div>
   );
