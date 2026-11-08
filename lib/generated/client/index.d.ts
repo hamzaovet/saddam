@@ -73,6 +73,16 @@ export type Offer = $Result.DefaultSelection<Prisma.$OfferPayload>
  * 
  */
 export type ChatMessage = $Result.DefaultSelection<Prisma.$ChatMessagePayload>
+/**
+ * Model CashShift
+ * 
+ */
+export type CashShift = $Result.DefaultSelection<Prisma.$CashShiftPayload>
+/**
+ * Model TreasuryExpense
+ * 
+ */
+export type TreasuryExpense = $Result.DefaultSelection<Prisma.$TreasuryExpensePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -314,6 +324,26 @@ export class PrismaClient<
     * ```
     */
   get chatMessage(): Prisma.ChatMessageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.cashShift`: Exposes CRUD operations for the **CashShift** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CashShifts
+    * const cashShifts = await prisma.cashShift.findMany()
+    * ```
+    */
+  get cashShift(): Prisma.CashShiftDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.treasuryExpense`: Exposes CRUD operations for the **TreasuryExpense** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TreasuryExpenses
+    * const treasuryExpenses = await prisma.treasuryExpense.findMany()
+    * ```
+    */
+  get treasuryExpense(): Prisma.TreasuryExpenseDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -772,7 +802,9 @@ export namespace Prisma {
     SpecialistLedger: 'SpecialistLedger',
     SystemSettings: 'SystemSettings',
     Offer: 'Offer',
-    ChatMessage: 'ChatMessage'
+    ChatMessage: 'ChatMessage',
+    CashShift: 'CashShift',
+    TreasuryExpense: 'TreasuryExpense'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -788,7 +820,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "branch" | "user" | "specialist" | "service" | "customer" | "booking" | "ticket" | "product" | "specialistLedger" | "systemSettings" | "offer" | "chatMessage"
+      modelProps: "branch" | "user" | "specialist" | "service" | "customer" | "booking" | "ticket" | "product" | "specialistLedger" | "systemSettings" | "offer" | "chatMessage" | "cashShift" | "treasuryExpense"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1680,6 +1712,154 @@ export namespace Prisma {
           }
         }
       }
+      CashShift: {
+        payload: Prisma.$CashShiftPayload<ExtArgs>
+        fields: Prisma.CashShiftFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CashShiftFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CashShiftFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>
+          }
+          findFirst: {
+            args: Prisma.CashShiftFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CashShiftFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>
+          }
+          findMany: {
+            args: Prisma.CashShiftFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>[]
+          }
+          create: {
+            args: Prisma.CashShiftCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>
+          }
+          createMany: {
+            args: Prisma.CashShiftCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CashShiftCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>[]
+          }
+          delete: {
+            args: Prisma.CashShiftDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>
+          }
+          update: {
+            args: Prisma.CashShiftUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>
+          }
+          deleteMany: {
+            args: Prisma.CashShiftDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CashShiftUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CashShiftUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>[]
+          }
+          upsert: {
+            args: Prisma.CashShiftUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CashShiftPayload>
+          }
+          aggregate: {
+            args: Prisma.CashShiftAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCashShift>
+          }
+          groupBy: {
+            args: Prisma.CashShiftGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CashShiftGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CashShiftCountArgs<ExtArgs>
+            result: $Utils.Optional<CashShiftCountAggregateOutputType> | number
+          }
+        }
+      }
+      TreasuryExpense: {
+        payload: Prisma.$TreasuryExpensePayload<ExtArgs>
+        fields: Prisma.TreasuryExpenseFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TreasuryExpenseFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TreasuryExpenseFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>
+          }
+          findFirst: {
+            args: Prisma.TreasuryExpenseFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TreasuryExpenseFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>
+          }
+          findMany: {
+            args: Prisma.TreasuryExpenseFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>[]
+          }
+          create: {
+            args: Prisma.TreasuryExpenseCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>
+          }
+          createMany: {
+            args: Prisma.TreasuryExpenseCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TreasuryExpenseCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>[]
+          }
+          delete: {
+            args: Prisma.TreasuryExpenseDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>
+          }
+          update: {
+            args: Prisma.TreasuryExpenseUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>
+          }
+          deleteMany: {
+            args: Prisma.TreasuryExpenseDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TreasuryExpenseUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TreasuryExpenseUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>[]
+          }
+          upsert: {
+            args: Prisma.TreasuryExpenseUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TreasuryExpensePayload>
+          }
+          aggregate: {
+            args: Prisma.TreasuryExpenseAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTreasuryExpense>
+          }
+          groupBy: {
+            args: Prisma.TreasuryExpenseGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TreasuryExpenseGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TreasuryExpenseCountArgs<ExtArgs>
+            result: $Utils.Optional<TreasuryExpenseCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1815,6 +1995,8 @@ export namespace Prisma {
     systemSettings?: SystemSettingsOmit
     offer?: OfferOmit
     chatMessage?: ChatMessageOmit
+    cashShift?: CashShiftOmit
+    treasuryExpense?: TreasuryExpenseOmit
   }
 
   /* Types for Logging */
@@ -1903,6 +2085,8 @@ export namespace Prisma {
     ledgers: number
     offers: number
     chatMessages: number
+    shifts: number
+    expenses: number
   }
 
   export type BranchCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1914,6 +2098,8 @@ export namespace Prisma {
     ledgers?: boolean | BranchCountOutputTypeCountLedgersArgs
     offers?: boolean | BranchCountOutputTypeCountOffersArgs
     chatMessages?: boolean | BranchCountOutputTypeCountChatMessagesArgs
+    shifts?: boolean | BranchCountOutputTypeCountShiftsArgs
+    expenses?: boolean | BranchCountOutputTypeCountExpensesArgs
   }
 
   // Custom InputTypes
@@ -1981,6 +2167,20 @@ export namespace Prisma {
    */
   export type BranchCountOutputTypeCountChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChatMessageWhereInput
+  }
+
+  /**
+   * BranchCountOutputType without action
+   */
+  export type BranchCountOutputTypeCountShiftsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CashShiftWhereInput
+  }
+
+  /**
+   * BranchCountOutputType without action
+   */
+  export type BranchCountOutputTypeCountExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TreasuryExpenseWhereInput
   }
 
 
@@ -2281,6 +2481,8 @@ export namespace Prisma {
     ledgers?: boolean | Branch$ledgersArgs<ExtArgs>
     offers?: boolean | Branch$offersArgs<ExtArgs>
     chatMessages?: boolean | Branch$chatMessagesArgs<ExtArgs>
+    shifts?: boolean | Branch$shiftsArgs<ExtArgs>
+    expenses?: boolean | Branch$expensesArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["branch"]>
 
@@ -2330,6 +2532,8 @@ export namespace Prisma {
     ledgers?: boolean | Branch$ledgersArgs<ExtArgs>
     offers?: boolean | Branch$offersArgs<ExtArgs>
     chatMessages?: boolean | Branch$chatMessagesArgs<ExtArgs>
+    shifts?: boolean | Branch$shiftsArgs<ExtArgs>
+    expenses?: boolean | Branch$expensesArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BranchIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2346,6 +2550,8 @@ export namespace Prisma {
       ledgers: Prisma.$SpecialistLedgerPayload<ExtArgs>[]
       offers: Prisma.$OfferPayload<ExtArgs>[]
       chatMessages: Prisma.$ChatMessagePayload<ExtArgs>[]
+      shifts: Prisma.$CashShiftPayload<ExtArgs>[]
+      expenses: Prisma.$TreasuryExpensePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2759,6 +2965,8 @@ export namespace Prisma {
     ledgers<T extends Branch$ledgersArgs<ExtArgs> = {}>(args?: Subset<T, Branch$ledgersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpecialistLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     offers<T extends Branch$offersArgs<ExtArgs> = {}>(args?: Subset<T, Branch$offersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OfferPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chatMessages<T extends Branch$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Branch$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    shifts<T extends Branch$shiftsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$shiftsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    expenses<T extends Branch$expensesArgs<ExtArgs> = {}>(args?: Subset<T, Branch$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3379,6 +3587,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ChatMessageScalarFieldEnum | ChatMessageScalarFieldEnum[]
+  }
+
+  /**
+   * Branch.shifts
+   */
+  export type Branch$shiftsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    where?: CashShiftWhereInput
+    orderBy?: CashShiftOrderByWithRelationInput | CashShiftOrderByWithRelationInput[]
+    cursor?: CashShiftWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CashShiftScalarFieldEnum | CashShiftScalarFieldEnum[]
+  }
+
+  /**
+   * Branch.expenses
+   */
+  export type Branch$expensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    where?: TreasuryExpenseWhereInput
+    orderBy?: TreasuryExpenseOrderByWithRelationInput | TreasuryExpenseOrderByWithRelationInput[]
+    cursor?: TreasuryExpenseWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TreasuryExpenseScalarFieldEnum | TreasuryExpenseScalarFieldEnum[]
   }
 
   /**
@@ -16877,6 +17133,2562 @@ export namespace Prisma {
 
 
   /**
+   * Model CashShift
+   */
+
+  export type AggregateCashShift = {
+    _count: CashShiftCountAggregateOutputType | null
+    _avg: CashShiftAvgAggregateOutputType | null
+    _sum: CashShiftSumAggregateOutputType | null
+    _min: CashShiftMinAggregateOutputType | null
+    _max: CashShiftMaxAggregateOutputType | null
+  }
+
+  export type CashShiftAvgAggregateOutputType = {
+    ticketsCount: number | null
+    servicesTotal: number | null
+    retailTotal: number | null
+    cashCollected: number | null
+    visaCollected: number | null
+    instapayCollected: number | null
+    vodafoneCollected: number | null
+    advancesPayouts: number | null
+    expensesTotal: number | null
+    expectedCash: number | null
+    actualCash: number | null
+    difference: number | null
+  }
+
+  export type CashShiftSumAggregateOutputType = {
+    ticketsCount: number | null
+    servicesTotal: number | null
+    retailTotal: number | null
+    cashCollected: number | null
+    visaCollected: number | null
+    instapayCollected: number | null
+    vodafoneCollected: number | null
+    advancesPayouts: number | null
+    expensesTotal: number | null
+    expectedCash: number | null
+    actualCash: number | null
+    difference: number | null
+  }
+
+  export type CashShiftMinAggregateOutputType = {
+    id: string | null
+    shiftNumber: string | null
+    branchId: string | null
+    cashierName: string | null
+    openedAt: Date | null
+    closedAt: Date | null
+    status: string | null
+    ticketsCount: number | null
+    servicesTotal: number | null
+    retailTotal: number | null
+    cashCollected: number | null
+    visaCollected: number | null
+    instapayCollected: number | null
+    vodafoneCollected: number | null
+    advancesPayouts: number | null
+    expensesTotal: number | null
+    expectedCash: number | null
+    actualCash: number | null
+    difference: number | null
+    handedTo: string | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CashShiftMaxAggregateOutputType = {
+    id: string | null
+    shiftNumber: string | null
+    branchId: string | null
+    cashierName: string | null
+    openedAt: Date | null
+    closedAt: Date | null
+    status: string | null
+    ticketsCount: number | null
+    servicesTotal: number | null
+    retailTotal: number | null
+    cashCollected: number | null
+    visaCollected: number | null
+    instapayCollected: number | null
+    vodafoneCollected: number | null
+    advancesPayouts: number | null
+    expensesTotal: number | null
+    expectedCash: number | null
+    actualCash: number | null
+    difference: number | null
+    handedTo: string | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CashShiftCountAggregateOutputType = {
+    id: number
+    shiftNumber: number
+    branchId: number
+    cashierName: number
+    openedAt: number
+    closedAt: number
+    status: number
+    ticketsCount: number
+    servicesTotal: number
+    retailTotal: number
+    cashCollected: number
+    visaCollected: number
+    instapayCollected: number
+    vodafoneCollected: number
+    advancesPayouts: number
+    expensesTotal: number
+    expectedCash: number
+    actualCash: number
+    difference: number
+    handedTo: number
+    notes: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type CashShiftAvgAggregateInputType = {
+    ticketsCount?: true
+    servicesTotal?: true
+    retailTotal?: true
+    cashCollected?: true
+    visaCollected?: true
+    instapayCollected?: true
+    vodafoneCollected?: true
+    advancesPayouts?: true
+    expensesTotal?: true
+    expectedCash?: true
+    actualCash?: true
+    difference?: true
+  }
+
+  export type CashShiftSumAggregateInputType = {
+    ticketsCount?: true
+    servicesTotal?: true
+    retailTotal?: true
+    cashCollected?: true
+    visaCollected?: true
+    instapayCollected?: true
+    vodafoneCollected?: true
+    advancesPayouts?: true
+    expensesTotal?: true
+    expectedCash?: true
+    actualCash?: true
+    difference?: true
+  }
+
+  export type CashShiftMinAggregateInputType = {
+    id?: true
+    shiftNumber?: true
+    branchId?: true
+    cashierName?: true
+    openedAt?: true
+    closedAt?: true
+    status?: true
+    ticketsCount?: true
+    servicesTotal?: true
+    retailTotal?: true
+    cashCollected?: true
+    visaCollected?: true
+    instapayCollected?: true
+    vodafoneCollected?: true
+    advancesPayouts?: true
+    expensesTotal?: true
+    expectedCash?: true
+    actualCash?: true
+    difference?: true
+    handedTo?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CashShiftMaxAggregateInputType = {
+    id?: true
+    shiftNumber?: true
+    branchId?: true
+    cashierName?: true
+    openedAt?: true
+    closedAt?: true
+    status?: true
+    ticketsCount?: true
+    servicesTotal?: true
+    retailTotal?: true
+    cashCollected?: true
+    visaCollected?: true
+    instapayCollected?: true
+    vodafoneCollected?: true
+    advancesPayouts?: true
+    expensesTotal?: true
+    expectedCash?: true
+    actualCash?: true
+    difference?: true
+    handedTo?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CashShiftCountAggregateInputType = {
+    id?: true
+    shiftNumber?: true
+    branchId?: true
+    cashierName?: true
+    openedAt?: true
+    closedAt?: true
+    status?: true
+    ticketsCount?: true
+    servicesTotal?: true
+    retailTotal?: true
+    cashCollected?: true
+    visaCollected?: true
+    instapayCollected?: true
+    vodafoneCollected?: true
+    advancesPayouts?: true
+    expensesTotal?: true
+    expectedCash?: true
+    actualCash?: true
+    difference?: true
+    handedTo?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type CashShiftAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CashShift to aggregate.
+     */
+    where?: CashShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CashShifts to fetch.
+     */
+    orderBy?: CashShiftOrderByWithRelationInput | CashShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CashShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CashShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CashShifts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CashShifts
+    **/
+    _count?: true | CashShiftCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CashShiftAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CashShiftSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CashShiftMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CashShiftMaxAggregateInputType
+  }
+
+  export type GetCashShiftAggregateType<T extends CashShiftAggregateArgs> = {
+        [P in keyof T & keyof AggregateCashShift]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCashShift[P]>
+      : GetScalarType<T[P], AggregateCashShift[P]>
+  }
+
+
+
+
+  export type CashShiftGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CashShiftWhereInput
+    orderBy?: CashShiftOrderByWithAggregationInput | CashShiftOrderByWithAggregationInput[]
+    by: CashShiftScalarFieldEnum[] | CashShiftScalarFieldEnum
+    having?: CashShiftScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CashShiftCountAggregateInputType | true
+    _avg?: CashShiftAvgAggregateInputType
+    _sum?: CashShiftSumAggregateInputType
+    _min?: CashShiftMinAggregateInputType
+    _max?: CashShiftMaxAggregateInputType
+  }
+
+  export type CashShiftGroupByOutputType = {
+    id: string
+    shiftNumber: string
+    branchId: string
+    cashierName: string
+    openedAt: Date
+    closedAt: Date | null
+    status: string
+    ticketsCount: number
+    servicesTotal: number
+    retailTotal: number
+    cashCollected: number
+    visaCollected: number
+    instapayCollected: number
+    vodafoneCollected: number
+    advancesPayouts: number
+    expensesTotal: number
+    expectedCash: number
+    actualCash: number
+    difference: number
+    handedTo: string
+    notes: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: CashShiftCountAggregateOutputType | null
+    _avg: CashShiftAvgAggregateOutputType | null
+    _sum: CashShiftSumAggregateOutputType | null
+    _min: CashShiftMinAggregateOutputType | null
+    _max: CashShiftMaxAggregateOutputType | null
+  }
+
+  type GetCashShiftGroupByPayload<T extends CashShiftGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CashShiftGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CashShiftGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CashShiftGroupByOutputType[P]>
+            : GetScalarType<T[P], CashShiftGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CashShiftSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    shiftNumber?: boolean
+    branchId?: boolean
+    cashierName?: boolean
+    openedAt?: boolean
+    closedAt?: boolean
+    status?: boolean
+    ticketsCount?: boolean
+    servicesTotal?: boolean
+    retailTotal?: boolean
+    cashCollected?: boolean
+    visaCollected?: boolean
+    instapayCollected?: boolean
+    vodafoneCollected?: boolean
+    advancesPayouts?: boolean
+    expensesTotal?: boolean
+    expectedCash?: boolean
+    actualCash?: boolean
+    difference?: boolean
+    handedTo?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | BranchDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cashShift"]>
+
+  export type CashShiftSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    shiftNumber?: boolean
+    branchId?: boolean
+    cashierName?: boolean
+    openedAt?: boolean
+    closedAt?: boolean
+    status?: boolean
+    ticketsCount?: boolean
+    servicesTotal?: boolean
+    retailTotal?: boolean
+    cashCollected?: boolean
+    visaCollected?: boolean
+    instapayCollected?: boolean
+    vodafoneCollected?: boolean
+    advancesPayouts?: boolean
+    expensesTotal?: boolean
+    expectedCash?: boolean
+    actualCash?: boolean
+    difference?: boolean
+    handedTo?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | BranchDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cashShift"]>
+
+  export type CashShiftSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    shiftNumber?: boolean
+    branchId?: boolean
+    cashierName?: boolean
+    openedAt?: boolean
+    closedAt?: boolean
+    status?: boolean
+    ticketsCount?: boolean
+    servicesTotal?: boolean
+    retailTotal?: boolean
+    cashCollected?: boolean
+    visaCollected?: boolean
+    instapayCollected?: boolean
+    vodafoneCollected?: boolean
+    advancesPayouts?: boolean
+    expensesTotal?: boolean
+    expectedCash?: boolean
+    actualCash?: boolean
+    difference?: boolean
+    handedTo?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    branch?: boolean | BranchDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cashShift"]>
+
+  export type CashShiftSelectScalar = {
+    id?: boolean
+    shiftNumber?: boolean
+    branchId?: boolean
+    cashierName?: boolean
+    openedAt?: boolean
+    closedAt?: boolean
+    status?: boolean
+    ticketsCount?: boolean
+    servicesTotal?: boolean
+    retailTotal?: boolean
+    cashCollected?: boolean
+    visaCollected?: boolean
+    instapayCollected?: boolean
+    vodafoneCollected?: boolean
+    advancesPayouts?: boolean
+    expensesTotal?: boolean
+    expectedCash?: boolean
+    actualCash?: boolean
+    difference?: boolean
+    handedTo?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type CashShiftOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "shiftNumber" | "branchId" | "cashierName" | "openedAt" | "closedAt" | "status" | "ticketsCount" | "servicesTotal" | "retailTotal" | "cashCollected" | "visaCollected" | "instapayCollected" | "vodafoneCollected" | "advancesPayouts" | "expensesTotal" | "expectedCash" | "actualCash" | "difference" | "handedTo" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["cashShift"]>
+  export type CashShiftInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | BranchDefaultArgs<ExtArgs>
+  }
+  export type CashShiftIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | BranchDefaultArgs<ExtArgs>
+  }
+  export type CashShiftIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | BranchDefaultArgs<ExtArgs>
+  }
+
+  export type $CashShiftPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CashShift"
+    objects: {
+      branch: Prisma.$BranchPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      shiftNumber: string
+      branchId: string
+      cashierName: string
+      openedAt: Date
+      closedAt: Date | null
+      status: string
+      ticketsCount: number
+      servicesTotal: number
+      retailTotal: number
+      cashCollected: number
+      visaCollected: number
+      instapayCollected: number
+      vodafoneCollected: number
+      advancesPayouts: number
+      expensesTotal: number
+      expectedCash: number
+      actualCash: number
+      difference: number
+      handedTo: string
+      notes: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["cashShift"]>
+    composites: {}
+  }
+
+  type CashShiftGetPayload<S extends boolean | null | undefined | CashShiftDefaultArgs> = $Result.GetResult<Prisma.$CashShiftPayload, S>
+
+  type CashShiftCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CashShiftFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CashShiftCountAggregateInputType | true
+    }
+
+  export interface CashShiftDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CashShift'], meta: { name: 'CashShift' } }
+    /**
+     * Find zero or one CashShift that matches the filter.
+     * @param {CashShiftFindUniqueArgs} args - Arguments to find a CashShift
+     * @example
+     * // Get one CashShift
+     * const cashShift = await prisma.cashShift.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CashShiftFindUniqueArgs>(args: SelectSubset<T, CashShiftFindUniqueArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CashShift that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CashShiftFindUniqueOrThrowArgs} args - Arguments to find a CashShift
+     * @example
+     * // Get one CashShift
+     * const cashShift = await prisma.cashShift.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CashShiftFindUniqueOrThrowArgs>(args: SelectSubset<T, CashShiftFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CashShift that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CashShiftFindFirstArgs} args - Arguments to find a CashShift
+     * @example
+     * // Get one CashShift
+     * const cashShift = await prisma.cashShift.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CashShiftFindFirstArgs>(args?: SelectSubset<T, CashShiftFindFirstArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CashShift that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CashShiftFindFirstOrThrowArgs} args - Arguments to find a CashShift
+     * @example
+     * // Get one CashShift
+     * const cashShift = await prisma.cashShift.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CashShiftFindFirstOrThrowArgs>(args?: SelectSubset<T, CashShiftFindFirstOrThrowArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CashShifts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CashShiftFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CashShifts
+     * const cashShifts = await prisma.cashShift.findMany()
+     * 
+     * // Get first 10 CashShifts
+     * const cashShifts = await prisma.cashShift.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const cashShiftWithIdOnly = await prisma.cashShift.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CashShiftFindManyArgs>(args?: SelectSubset<T, CashShiftFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CashShift.
+     * @param {CashShiftCreateArgs} args - Arguments to create a CashShift.
+     * @example
+     * // Create one CashShift
+     * const CashShift = await prisma.cashShift.create({
+     *   data: {
+     *     // ... data to create a CashShift
+     *   }
+     * })
+     * 
+     */
+    create<T extends CashShiftCreateArgs>(args: SelectSubset<T, CashShiftCreateArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CashShifts.
+     * @param {CashShiftCreateManyArgs} args - Arguments to create many CashShifts.
+     * @example
+     * // Create many CashShifts
+     * const cashShift = await prisma.cashShift.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CashShiftCreateManyArgs>(args?: SelectSubset<T, CashShiftCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CashShifts and returns the data saved in the database.
+     * @param {CashShiftCreateManyAndReturnArgs} args - Arguments to create many CashShifts.
+     * @example
+     * // Create many CashShifts
+     * const cashShift = await prisma.cashShift.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CashShifts and only return the `id`
+     * const cashShiftWithIdOnly = await prisma.cashShift.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CashShiftCreateManyAndReturnArgs>(args?: SelectSubset<T, CashShiftCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CashShift.
+     * @param {CashShiftDeleteArgs} args - Arguments to delete one CashShift.
+     * @example
+     * // Delete one CashShift
+     * const CashShift = await prisma.cashShift.delete({
+     *   where: {
+     *     // ... filter to delete one CashShift
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CashShiftDeleteArgs>(args: SelectSubset<T, CashShiftDeleteArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CashShift.
+     * @param {CashShiftUpdateArgs} args - Arguments to update one CashShift.
+     * @example
+     * // Update one CashShift
+     * const cashShift = await prisma.cashShift.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CashShiftUpdateArgs>(args: SelectSubset<T, CashShiftUpdateArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CashShifts.
+     * @param {CashShiftDeleteManyArgs} args - Arguments to filter CashShifts to delete.
+     * @example
+     * // Delete a few CashShifts
+     * const { count } = await prisma.cashShift.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CashShiftDeleteManyArgs>(args?: SelectSubset<T, CashShiftDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CashShifts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CashShiftUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CashShifts
+     * const cashShift = await prisma.cashShift.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CashShiftUpdateManyArgs>(args: SelectSubset<T, CashShiftUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CashShifts and returns the data updated in the database.
+     * @param {CashShiftUpdateManyAndReturnArgs} args - Arguments to update many CashShifts.
+     * @example
+     * // Update many CashShifts
+     * const cashShift = await prisma.cashShift.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CashShifts and only return the `id`
+     * const cashShiftWithIdOnly = await prisma.cashShift.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CashShiftUpdateManyAndReturnArgs>(args: SelectSubset<T, CashShiftUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CashShift.
+     * @param {CashShiftUpsertArgs} args - Arguments to update or create a CashShift.
+     * @example
+     * // Update or create a CashShift
+     * const cashShift = await prisma.cashShift.upsert({
+     *   create: {
+     *     // ... data to create a CashShift
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CashShift we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CashShiftUpsertArgs>(args: SelectSubset<T, CashShiftUpsertArgs<ExtArgs>>): Prisma__CashShiftClient<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CashShifts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CashShiftCountArgs} args - Arguments to filter CashShifts to count.
+     * @example
+     * // Count the number of CashShifts
+     * const count = await prisma.cashShift.count({
+     *   where: {
+     *     // ... the filter for the CashShifts we want to count
+     *   }
+     * })
+    **/
+    count<T extends CashShiftCountArgs>(
+      args?: Subset<T, CashShiftCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CashShiftCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CashShift.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CashShiftAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CashShiftAggregateArgs>(args: Subset<T, CashShiftAggregateArgs>): Prisma.PrismaPromise<GetCashShiftAggregateType<T>>
+
+    /**
+     * Group by CashShift.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CashShiftGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CashShiftGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CashShiftGroupByArgs['orderBy'] }
+        : { orderBy?: CashShiftGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CashShiftGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCashShiftGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CashShift model
+   */
+  readonly fields: CashShiftFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CashShift.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CashShiftClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    branch<T extends BranchDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BranchDefaultArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CashShift model
+   */
+  interface CashShiftFieldRefs {
+    readonly id: FieldRef<"CashShift", 'String'>
+    readonly shiftNumber: FieldRef<"CashShift", 'String'>
+    readonly branchId: FieldRef<"CashShift", 'String'>
+    readonly cashierName: FieldRef<"CashShift", 'String'>
+    readonly openedAt: FieldRef<"CashShift", 'DateTime'>
+    readonly closedAt: FieldRef<"CashShift", 'DateTime'>
+    readonly status: FieldRef<"CashShift", 'String'>
+    readonly ticketsCount: FieldRef<"CashShift", 'Int'>
+    readonly servicesTotal: FieldRef<"CashShift", 'Float'>
+    readonly retailTotal: FieldRef<"CashShift", 'Float'>
+    readonly cashCollected: FieldRef<"CashShift", 'Float'>
+    readonly visaCollected: FieldRef<"CashShift", 'Float'>
+    readonly instapayCollected: FieldRef<"CashShift", 'Float'>
+    readonly vodafoneCollected: FieldRef<"CashShift", 'Float'>
+    readonly advancesPayouts: FieldRef<"CashShift", 'Float'>
+    readonly expensesTotal: FieldRef<"CashShift", 'Float'>
+    readonly expectedCash: FieldRef<"CashShift", 'Float'>
+    readonly actualCash: FieldRef<"CashShift", 'Float'>
+    readonly difference: FieldRef<"CashShift", 'Float'>
+    readonly handedTo: FieldRef<"CashShift", 'String'>
+    readonly notes: FieldRef<"CashShift", 'String'>
+    readonly createdAt: FieldRef<"CashShift", 'DateTime'>
+    readonly updatedAt: FieldRef<"CashShift", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CashShift findUnique
+   */
+  export type CashShiftFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which CashShift to fetch.
+     */
+    where: CashShiftWhereUniqueInput
+  }
+
+  /**
+   * CashShift findUniqueOrThrow
+   */
+  export type CashShiftFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which CashShift to fetch.
+     */
+    where: CashShiftWhereUniqueInput
+  }
+
+  /**
+   * CashShift findFirst
+   */
+  export type CashShiftFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which CashShift to fetch.
+     */
+    where?: CashShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CashShifts to fetch.
+     */
+    orderBy?: CashShiftOrderByWithRelationInput | CashShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CashShifts.
+     */
+    cursor?: CashShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CashShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CashShifts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CashShifts.
+     */
+    distinct?: CashShiftScalarFieldEnum | CashShiftScalarFieldEnum[]
+  }
+
+  /**
+   * CashShift findFirstOrThrow
+   */
+  export type CashShiftFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which CashShift to fetch.
+     */
+    where?: CashShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CashShifts to fetch.
+     */
+    orderBy?: CashShiftOrderByWithRelationInput | CashShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CashShifts.
+     */
+    cursor?: CashShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CashShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CashShifts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CashShifts.
+     */
+    distinct?: CashShiftScalarFieldEnum | CashShiftScalarFieldEnum[]
+  }
+
+  /**
+   * CashShift findMany
+   */
+  export type CashShiftFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * Filter, which CashShifts to fetch.
+     */
+    where?: CashShiftWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CashShifts to fetch.
+     */
+    orderBy?: CashShiftOrderByWithRelationInput | CashShiftOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CashShifts.
+     */
+    cursor?: CashShiftWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CashShifts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CashShifts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CashShifts.
+     */
+    distinct?: CashShiftScalarFieldEnum | CashShiftScalarFieldEnum[]
+  }
+
+  /**
+   * CashShift create
+   */
+  export type CashShiftCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CashShift.
+     */
+    data: XOR<CashShiftCreateInput, CashShiftUncheckedCreateInput>
+  }
+
+  /**
+   * CashShift createMany
+   */
+  export type CashShiftCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CashShifts.
+     */
+    data: CashShiftCreateManyInput | CashShiftCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CashShift createManyAndReturn
+   */
+  export type CashShiftCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * The data used to create many CashShifts.
+     */
+    data: CashShiftCreateManyInput | CashShiftCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CashShift update
+   */
+  export type CashShiftUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CashShift.
+     */
+    data: XOR<CashShiftUpdateInput, CashShiftUncheckedUpdateInput>
+    /**
+     * Choose, which CashShift to update.
+     */
+    where: CashShiftWhereUniqueInput
+  }
+
+  /**
+   * CashShift updateMany
+   */
+  export type CashShiftUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CashShifts.
+     */
+    data: XOR<CashShiftUpdateManyMutationInput, CashShiftUncheckedUpdateManyInput>
+    /**
+     * Filter which CashShifts to update
+     */
+    where?: CashShiftWhereInput
+    /**
+     * Limit how many CashShifts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CashShift updateManyAndReturn
+   */
+  export type CashShiftUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * The data used to update CashShifts.
+     */
+    data: XOR<CashShiftUpdateManyMutationInput, CashShiftUncheckedUpdateManyInput>
+    /**
+     * Filter which CashShifts to update
+     */
+    where?: CashShiftWhereInput
+    /**
+     * Limit how many CashShifts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CashShift upsert
+   */
+  export type CashShiftUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CashShift to update in case it exists.
+     */
+    where: CashShiftWhereUniqueInput
+    /**
+     * In case the CashShift found by the `where` argument doesn't exist, create a new CashShift with this data.
+     */
+    create: XOR<CashShiftCreateInput, CashShiftUncheckedCreateInput>
+    /**
+     * In case the CashShift was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CashShiftUpdateInput, CashShiftUncheckedUpdateInput>
+  }
+
+  /**
+   * CashShift delete
+   */
+  export type CashShiftDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+    /**
+     * Filter which CashShift to delete.
+     */
+    where: CashShiftWhereUniqueInput
+  }
+
+  /**
+   * CashShift deleteMany
+   */
+  export type CashShiftDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CashShifts to delete
+     */
+    where?: CashShiftWhereInput
+    /**
+     * Limit how many CashShifts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CashShift without action
+   */
+  export type CashShiftDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CashShift
+     */
+    select?: CashShiftSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CashShift
+     */
+    omit?: CashShiftOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CashShiftInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TreasuryExpense
+   */
+
+  export type AggregateTreasuryExpense = {
+    _count: TreasuryExpenseCountAggregateOutputType | null
+    _avg: TreasuryExpenseAvgAggregateOutputType | null
+    _sum: TreasuryExpenseSumAggregateOutputType | null
+    _min: TreasuryExpenseMinAggregateOutputType | null
+    _max: TreasuryExpenseMaxAggregateOutputType | null
+  }
+
+  export type TreasuryExpenseAvgAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type TreasuryExpenseSumAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type TreasuryExpenseMinAggregateOutputType = {
+    id: string | null
+    branchId: string | null
+    category: string | null
+    amount: number | null
+    paymentMethod: string | null
+    description: string | null
+    recipientName: string | null
+    recordedBy: string | null
+    date: Date | null
+    createdAt: Date | null
+  }
+
+  export type TreasuryExpenseMaxAggregateOutputType = {
+    id: string | null
+    branchId: string | null
+    category: string | null
+    amount: number | null
+    paymentMethod: string | null
+    description: string | null
+    recipientName: string | null
+    recordedBy: string | null
+    date: Date | null
+    createdAt: Date | null
+  }
+
+  export type TreasuryExpenseCountAggregateOutputType = {
+    id: number
+    branchId: number
+    category: number
+    amount: number
+    paymentMethod: number
+    description: number
+    recipientName: number
+    recordedBy: number
+    date: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type TreasuryExpenseAvgAggregateInputType = {
+    amount?: true
+  }
+
+  export type TreasuryExpenseSumAggregateInputType = {
+    amount?: true
+  }
+
+  export type TreasuryExpenseMinAggregateInputType = {
+    id?: true
+    branchId?: true
+    category?: true
+    amount?: true
+    paymentMethod?: true
+    description?: true
+    recipientName?: true
+    recordedBy?: true
+    date?: true
+    createdAt?: true
+  }
+
+  export type TreasuryExpenseMaxAggregateInputType = {
+    id?: true
+    branchId?: true
+    category?: true
+    amount?: true
+    paymentMethod?: true
+    description?: true
+    recipientName?: true
+    recordedBy?: true
+    date?: true
+    createdAt?: true
+  }
+
+  export type TreasuryExpenseCountAggregateInputType = {
+    id?: true
+    branchId?: true
+    category?: true
+    amount?: true
+    paymentMethod?: true
+    description?: true
+    recipientName?: true
+    recordedBy?: true
+    date?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type TreasuryExpenseAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TreasuryExpense to aggregate.
+     */
+    where?: TreasuryExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TreasuryExpenses to fetch.
+     */
+    orderBy?: TreasuryExpenseOrderByWithRelationInput | TreasuryExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TreasuryExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TreasuryExpenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TreasuryExpenses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TreasuryExpenses
+    **/
+    _count?: true | TreasuryExpenseCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TreasuryExpenseAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TreasuryExpenseSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TreasuryExpenseMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TreasuryExpenseMaxAggregateInputType
+  }
+
+  export type GetTreasuryExpenseAggregateType<T extends TreasuryExpenseAggregateArgs> = {
+        [P in keyof T & keyof AggregateTreasuryExpense]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTreasuryExpense[P]>
+      : GetScalarType<T[P], AggregateTreasuryExpense[P]>
+  }
+
+
+
+
+  export type TreasuryExpenseGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TreasuryExpenseWhereInput
+    orderBy?: TreasuryExpenseOrderByWithAggregationInput | TreasuryExpenseOrderByWithAggregationInput[]
+    by: TreasuryExpenseScalarFieldEnum[] | TreasuryExpenseScalarFieldEnum
+    having?: TreasuryExpenseScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TreasuryExpenseCountAggregateInputType | true
+    _avg?: TreasuryExpenseAvgAggregateInputType
+    _sum?: TreasuryExpenseSumAggregateInputType
+    _min?: TreasuryExpenseMinAggregateInputType
+    _max?: TreasuryExpenseMaxAggregateInputType
+  }
+
+  export type TreasuryExpenseGroupByOutputType = {
+    id: string
+    branchId: string | null
+    category: string
+    amount: number
+    paymentMethod: string
+    description: string
+    recipientName: string | null
+    recordedBy: string
+    date: Date
+    createdAt: Date
+    _count: TreasuryExpenseCountAggregateOutputType | null
+    _avg: TreasuryExpenseAvgAggregateOutputType | null
+    _sum: TreasuryExpenseSumAggregateOutputType | null
+    _min: TreasuryExpenseMinAggregateOutputType | null
+    _max: TreasuryExpenseMaxAggregateOutputType | null
+  }
+
+  type GetTreasuryExpenseGroupByPayload<T extends TreasuryExpenseGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TreasuryExpenseGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TreasuryExpenseGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TreasuryExpenseGroupByOutputType[P]>
+            : GetScalarType<T[P], TreasuryExpenseGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TreasuryExpenseSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    category?: boolean
+    amount?: boolean
+    paymentMethod?: boolean
+    description?: boolean
+    recipientName?: boolean
+    recordedBy?: boolean
+    date?: boolean
+    createdAt?: boolean
+    branch?: boolean | TreasuryExpense$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["treasuryExpense"]>
+
+  export type TreasuryExpenseSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    category?: boolean
+    amount?: boolean
+    paymentMethod?: boolean
+    description?: boolean
+    recipientName?: boolean
+    recordedBy?: boolean
+    date?: boolean
+    createdAt?: boolean
+    branch?: boolean | TreasuryExpense$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["treasuryExpense"]>
+
+  export type TreasuryExpenseSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    branchId?: boolean
+    category?: boolean
+    amount?: boolean
+    paymentMethod?: boolean
+    description?: boolean
+    recipientName?: boolean
+    recordedBy?: boolean
+    date?: boolean
+    createdAt?: boolean
+    branch?: boolean | TreasuryExpense$branchArgs<ExtArgs>
+  }, ExtArgs["result"]["treasuryExpense"]>
+
+  export type TreasuryExpenseSelectScalar = {
+    id?: boolean
+    branchId?: boolean
+    category?: boolean
+    amount?: boolean
+    paymentMethod?: boolean
+    description?: boolean
+    recipientName?: boolean
+    recordedBy?: boolean
+    date?: boolean
+    createdAt?: boolean
+  }
+
+  export type TreasuryExpenseOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "category" | "amount" | "paymentMethod" | "description" | "recipientName" | "recordedBy" | "date" | "createdAt", ExtArgs["result"]["treasuryExpense"]>
+  export type TreasuryExpenseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | TreasuryExpense$branchArgs<ExtArgs>
+  }
+  export type TreasuryExpenseIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | TreasuryExpense$branchArgs<ExtArgs>
+  }
+  export type TreasuryExpenseIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | TreasuryExpense$branchArgs<ExtArgs>
+  }
+
+  export type $TreasuryExpensePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TreasuryExpense"
+    objects: {
+      branch: Prisma.$BranchPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      branchId: string | null
+      category: string
+      amount: number
+      paymentMethod: string
+      description: string
+      recipientName: string | null
+      recordedBy: string
+      date: Date
+      createdAt: Date
+    }, ExtArgs["result"]["treasuryExpense"]>
+    composites: {}
+  }
+
+  type TreasuryExpenseGetPayload<S extends boolean | null | undefined | TreasuryExpenseDefaultArgs> = $Result.GetResult<Prisma.$TreasuryExpensePayload, S>
+
+  type TreasuryExpenseCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TreasuryExpenseFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TreasuryExpenseCountAggregateInputType | true
+    }
+
+  export interface TreasuryExpenseDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TreasuryExpense'], meta: { name: 'TreasuryExpense' } }
+    /**
+     * Find zero or one TreasuryExpense that matches the filter.
+     * @param {TreasuryExpenseFindUniqueArgs} args - Arguments to find a TreasuryExpense
+     * @example
+     * // Get one TreasuryExpense
+     * const treasuryExpense = await prisma.treasuryExpense.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TreasuryExpenseFindUniqueArgs>(args: SelectSubset<T, TreasuryExpenseFindUniqueArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TreasuryExpense that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TreasuryExpenseFindUniqueOrThrowArgs} args - Arguments to find a TreasuryExpense
+     * @example
+     * // Get one TreasuryExpense
+     * const treasuryExpense = await prisma.treasuryExpense.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TreasuryExpenseFindUniqueOrThrowArgs>(args: SelectSubset<T, TreasuryExpenseFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TreasuryExpense that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TreasuryExpenseFindFirstArgs} args - Arguments to find a TreasuryExpense
+     * @example
+     * // Get one TreasuryExpense
+     * const treasuryExpense = await prisma.treasuryExpense.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TreasuryExpenseFindFirstArgs>(args?: SelectSubset<T, TreasuryExpenseFindFirstArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TreasuryExpense that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TreasuryExpenseFindFirstOrThrowArgs} args - Arguments to find a TreasuryExpense
+     * @example
+     * // Get one TreasuryExpense
+     * const treasuryExpense = await prisma.treasuryExpense.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TreasuryExpenseFindFirstOrThrowArgs>(args?: SelectSubset<T, TreasuryExpenseFindFirstOrThrowArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TreasuryExpenses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TreasuryExpenseFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TreasuryExpenses
+     * const treasuryExpenses = await prisma.treasuryExpense.findMany()
+     * 
+     * // Get first 10 TreasuryExpenses
+     * const treasuryExpenses = await prisma.treasuryExpense.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const treasuryExpenseWithIdOnly = await prisma.treasuryExpense.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TreasuryExpenseFindManyArgs>(args?: SelectSubset<T, TreasuryExpenseFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TreasuryExpense.
+     * @param {TreasuryExpenseCreateArgs} args - Arguments to create a TreasuryExpense.
+     * @example
+     * // Create one TreasuryExpense
+     * const TreasuryExpense = await prisma.treasuryExpense.create({
+     *   data: {
+     *     // ... data to create a TreasuryExpense
+     *   }
+     * })
+     * 
+     */
+    create<T extends TreasuryExpenseCreateArgs>(args: SelectSubset<T, TreasuryExpenseCreateArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TreasuryExpenses.
+     * @param {TreasuryExpenseCreateManyArgs} args - Arguments to create many TreasuryExpenses.
+     * @example
+     * // Create many TreasuryExpenses
+     * const treasuryExpense = await prisma.treasuryExpense.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TreasuryExpenseCreateManyArgs>(args?: SelectSubset<T, TreasuryExpenseCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TreasuryExpenses and returns the data saved in the database.
+     * @param {TreasuryExpenseCreateManyAndReturnArgs} args - Arguments to create many TreasuryExpenses.
+     * @example
+     * // Create many TreasuryExpenses
+     * const treasuryExpense = await prisma.treasuryExpense.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TreasuryExpenses and only return the `id`
+     * const treasuryExpenseWithIdOnly = await prisma.treasuryExpense.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TreasuryExpenseCreateManyAndReturnArgs>(args?: SelectSubset<T, TreasuryExpenseCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a TreasuryExpense.
+     * @param {TreasuryExpenseDeleteArgs} args - Arguments to delete one TreasuryExpense.
+     * @example
+     * // Delete one TreasuryExpense
+     * const TreasuryExpense = await prisma.treasuryExpense.delete({
+     *   where: {
+     *     // ... filter to delete one TreasuryExpense
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TreasuryExpenseDeleteArgs>(args: SelectSubset<T, TreasuryExpenseDeleteArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TreasuryExpense.
+     * @param {TreasuryExpenseUpdateArgs} args - Arguments to update one TreasuryExpense.
+     * @example
+     * // Update one TreasuryExpense
+     * const treasuryExpense = await prisma.treasuryExpense.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TreasuryExpenseUpdateArgs>(args: SelectSubset<T, TreasuryExpenseUpdateArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TreasuryExpenses.
+     * @param {TreasuryExpenseDeleteManyArgs} args - Arguments to filter TreasuryExpenses to delete.
+     * @example
+     * // Delete a few TreasuryExpenses
+     * const { count } = await prisma.treasuryExpense.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TreasuryExpenseDeleteManyArgs>(args?: SelectSubset<T, TreasuryExpenseDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TreasuryExpenses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TreasuryExpenseUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TreasuryExpenses
+     * const treasuryExpense = await prisma.treasuryExpense.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TreasuryExpenseUpdateManyArgs>(args: SelectSubset<T, TreasuryExpenseUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TreasuryExpenses and returns the data updated in the database.
+     * @param {TreasuryExpenseUpdateManyAndReturnArgs} args - Arguments to update many TreasuryExpenses.
+     * @example
+     * // Update many TreasuryExpenses
+     * const treasuryExpense = await prisma.treasuryExpense.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more TreasuryExpenses and only return the `id`
+     * const treasuryExpenseWithIdOnly = await prisma.treasuryExpense.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TreasuryExpenseUpdateManyAndReturnArgs>(args: SelectSubset<T, TreasuryExpenseUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one TreasuryExpense.
+     * @param {TreasuryExpenseUpsertArgs} args - Arguments to update or create a TreasuryExpense.
+     * @example
+     * // Update or create a TreasuryExpense
+     * const treasuryExpense = await prisma.treasuryExpense.upsert({
+     *   create: {
+     *     // ... data to create a TreasuryExpense
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TreasuryExpense we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TreasuryExpenseUpsertArgs>(args: SelectSubset<T, TreasuryExpenseUpsertArgs<ExtArgs>>): Prisma__TreasuryExpenseClient<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TreasuryExpenses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TreasuryExpenseCountArgs} args - Arguments to filter TreasuryExpenses to count.
+     * @example
+     * // Count the number of TreasuryExpenses
+     * const count = await prisma.treasuryExpense.count({
+     *   where: {
+     *     // ... the filter for the TreasuryExpenses we want to count
+     *   }
+     * })
+    **/
+    count<T extends TreasuryExpenseCountArgs>(
+      args?: Subset<T, TreasuryExpenseCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TreasuryExpenseCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TreasuryExpense.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TreasuryExpenseAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TreasuryExpenseAggregateArgs>(args: Subset<T, TreasuryExpenseAggregateArgs>): Prisma.PrismaPromise<GetTreasuryExpenseAggregateType<T>>
+
+    /**
+     * Group by TreasuryExpense.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TreasuryExpenseGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TreasuryExpenseGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TreasuryExpenseGroupByArgs['orderBy'] }
+        : { orderBy?: TreasuryExpenseGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TreasuryExpenseGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTreasuryExpenseGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TreasuryExpense model
+   */
+  readonly fields: TreasuryExpenseFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TreasuryExpense.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TreasuryExpenseClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    branch<T extends TreasuryExpense$branchArgs<ExtArgs> = {}>(args?: Subset<T, TreasuryExpense$branchArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TreasuryExpense model
+   */
+  interface TreasuryExpenseFieldRefs {
+    readonly id: FieldRef<"TreasuryExpense", 'String'>
+    readonly branchId: FieldRef<"TreasuryExpense", 'String'>
+    readonly category: FieldRef<"TreasuryExpense", 'String'>
+    readonly amount: FieldRef<"TreasuryExpense", 'Float'>
+    readonly paymentMethod: FieldRef<"TreasuryExpense", 'String'>
+    readonly description: FieldRef<"TreasuryExpense", 'String'>
+    readonly recipientName: FieldRef<"TreasuryExpense", 'String'>
+    readonly recordedBy: FieldRef<"TreasuryExpense", 'String'>
+    readonly date: FieldRef<"TreasuryExpense", 'DateTime'>
+    readonly createdAt: FieldRef<"TreasuryExpense", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TreasuryExpense findUnique
+   */
+  export type TreasuryExpenseFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which TreasuryExpense to fetch.
+     */
+    where: TreasuryExpenseWhereUniqueInput
+  }
+
+  /**
+   * TreasuryExpense findUniqueOrThrow
+   */
+  export type TreasuryExpenseFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which TreasuryExpense to fetch.
+     */
+    where: TreasuryExpenseWhereUniqueInput
+  }
+
+  /**
+   * TreasuryExpense findFirst
+   */
+  export type TreasuryExpenseFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which TreasuryExpense to fetch.
+     */
+    where?: TreasuryExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TreasuryExpenses to fetch.
+     */
+    orderBy?: TreasuryExpenseOrderByWithRelationInput | TreasuryExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TreasuryExpenses.
+     */
+    cursor?: TreasuryExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TreasuryExpenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TreasuryExpenses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TreasuryExpenses.
+     */
+    distinct?: TreasuryExpenseScalarFieldEnum | TreasuryExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * TreasuryExpense findFirstOrThrow
+   */
+  export type TreasuryExpenseFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which TreasuryExpense to fetch.
+     */
+    where?: TreasuryExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TreasuryExpenses to fetch.
+     */
+    orderBy?: TreasuryExpenseOrderByWithRelationInput | TreasuryExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TreasuryExpenses.
+     */
+    cursor?: TreasuryExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TreasuryExpenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TreasuryExpenses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TreasuryExpenses.
+     */
+    distinct?: TreasuryExpenseScalarFieldEnum | TreasuryExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * TreasuryExpense findMany
+   */
+  export type TreasuryExpenseFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * Filter, which TreasuryExpenses to fetch.
+     */
+    where?: TreasuryExpenseWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TreasuryExpenses to fetch.
+     */
+    orderBy?: TreasuryExpenseOrderByWithRelationInput | TreasuryExpenseOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TreasuryExpenses.
+     */
+    cursor?: TreasuryExpenseWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TreasuryExpenses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TreasuryExpenses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TreasuryExpenses.
+     */
+    distinct?: TreasuryExpenseScalarFieldEnum | TreasuryExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * TreasuryExpense create
+   */
+  export type TreasuryExpenseCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TreasuryExpense.
+     */
+    data: XOR<TreasuryExpenseCreateInput, TreasuryExpenseUncheckedCreateInput>
+  }
+
+  /**
+   * TreasuryExpense createMany
+   */
+  export type TreasuryExpenseCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TreasuryExpenses.
+     */
+    data: TreasuryExpenseCreateManyInput | TreasuryExpenseCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TreasuryExpense createManyAndReturn
+   */
+  export type TreasuryExpenseCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * The data used to create many TreasuryExpenses.
+     */
+    data: TreasuryExpenseCreateManyInput | TreasuryExpenseCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TreasuryExpense update
+   */
+  export type TreasuryExpenseUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TreasuryExpense.
+     */
+    data: XOR<TreasuryExpenseUpdateInput, TreasuryExpenseUncheckedUpdateInput>
+    /**
+     * Choose, which TreasuryExpense to update.
+     */
+    where: TreasuryExpenseWhereUniqueInput
+  }
+
+  /**
+   * TreasuryExpense updateMany
+   */
+  export type TreasuryExpenseUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TreasuryExpenses.
+     */
+    data: XOR<TreasuryExpenseUpdateManyMutationInput, TreasuryExpenseUncheckedUpdateManyInput>
+    /**
+     * Filter which TreasuryExpenses to update
+     */
+    where?: TreasuryExpenseWhereInput
+    /**
+     * Limit how many TreasuryExpenses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TreasuryExpense updateManyAndReturn
+   */
+  export type TreasuryExpenseUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * The data used to update TreasuryExpenses.
+     */
+    data: XOR<TreasuryExpenseUpdateManyMutationInput, TreasuryExpenseUncheckedUpdateManyInput>
+    /**
+     * Filter which TreasuryExpenses to update
+     */
+    where?: TreasuryExpenseWhereInput
+    /**
+     * Limit how many TreasuryExpenses to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TreasuryExpense upsert
+   */
+  export type TreasuryExpenseUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TreasuryExpense to update in case it exists.
+     */
+    where: TreasuryExpenseWhereUniqueInput
+    /**
+     * In case the TreasuryExpense found by the `where` argument doesn't exist, create a new TreasuryExpense with this data.
+     */
+    create: XOR<TreasuryExpenseCreateInput, TreasuryExpenseUncheckedCreateInput>
+    /**
+     * In case the TreasuryExpense was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TreasuryExpenseUpdateInput, TreasuryExpenseUncheckedUpdateInput>
+  }
+
+  /**
+   * TreasuryExpense delete
+   */
+  export type TreasuryExpenseDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+    /**
+     * Filter which TreasuryExpense to delete.
+     */
+    where: TreasuryExpenseWhereUniqueInput
+  }
+
+  /**
+   * TreasuryExpense deleteMany
+   */
+  export type TreasuryExpenseDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TreasuryExpenses to delete
+     */
+    where?: TreasuryExpenseWhereInput
+    /**
+     * Limit how many TreasuryExpenses to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TreasuryExpense.branch
+   */
+  export type TreasuryExpense$branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Branch
+     */
+    select?: BranchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Branch
+     */
+    omit?: BranchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchInclude<ExtArgs> | null
+    where?: BranchWhereInput
+  }
+
+  /**
+   * TreasuryExpense without action
+   */
+  export type TreasuryExpenseDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TreasuryExpense
+     */
+    select?: TreasuryExpenseSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TreasuryExpense
+     */
+    omit?: TreasuryExpenseOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TreasuryExpenseInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -17121,6 +19933,51 @@ export namespace Prisma {
   export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
 
 
+  export const CashShiftScalarFieldEnum: {
+    id: 'id',
+    shiftNumber: 'shiftNumber',
+    branchId: 'branchId',
+    cashierName: 'cashierName',
+    openedAt: 'openedAt',
+    closedAt: 'closedAt',
+    status: 'status',
+    ticketsCount: 'ticketsCount',
+    servicesTotal: 'servicesTotal',
+    retailTotal: 'retailTotal',
+    cashCollected: 'cashCollected',
+    visaCollected: 'visaCollected',
+    instapayCollected: 'instapayCollected',
+    vodafoneCollected: 'vodafoneCollected',
+    advancesPayouts: 'advancesPayouts',
+    expensesTotal: 'expensesTotal',
+    expectedCash: 'expectedCash',
+    actualCash: 'actualCash',
+    difference: 'difference',
+    handedTo: 'handedTo',
+    notes: 'notes',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type CashShiftScalarFieldEnum = (typeof CashShiftScalarFieldEnum)[keyof typeof CashShiftScalarFieldEnum]
+
+
+  export const TreasuryExpenseScalarFieldEnum: {
+    id: 'id',
+    branchId: 'branchId',
+    category: 'category',
+    amount: 'amount',
+    paymentMethod: 'paymentMethod',
+    description: 'description',
+    recipientName: 'recipientName',
+    recordedBy: 'recordedBy',
+    date: 'date',
+    createdAt: 'createdAt'
+  };
+
+  export type TreasuryExpenseScalarFieldEnum = (typeof TreasuryExpenseScalarFieldEnum)[keyof typeof TreasuryExpenseScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -17237,6 +20094,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerListRelationFilter
     offers?: OfferListRelationFilter
     chatMessages?: ChatMessageListRelationFilter
+    shifts?: CashShiftListRelationFilter
+    expenses?: TreasuryExpenseListRelationFilter
   }
 
   export type BranchOrderByWithRelationInput = {
@@ -17257,6 +20116,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerOrderByRelationAggregateInput
     offers?: OfferOrderByRelationAggregateInput
     chatMessages?: ChatMessageOrderByRelationAggregateInput
+    shifts?: CashShiftOrderByRelationAggregateInput
+    expenses?: TreasuryExpenseOrderByRelationAggregateInput
   }
 
   export type BranchWhereUniqueInput = Prisma.AtLeast<{
@@ -17280,6 +20141,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerListRelationFilter
     offers?: OfferListRelationFilter
     chatMessages?: ChatMessageListRelationFilter
+    shifts?: CashShiftListRelationFilter
+    expenses?: TreasuryExpenseListRelationFilter
   }, "id" | "code">
 
   export type BranchOrderByWithAggregationInput = {
@@ -18435,6 +21298,235 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"ChatMessage"> | Date | string
   }
 
+  export type CashShiftWhereInput = {
+    AND?: CashShiftWhereInput | CashShiftWhereInput[]
+    OR?: CashShiftWhereInput[]
+    NOT?: CashShiftWhereInput | CashShiftWhereInput[]
+    id?: StringFilter<"CashShift"> | string
+    shiftNumber?: StringFilter<"CashShift"> | string
+    branchId?: StringFilter<"CashShift"> | string
+    cashierName?: StringFilter<"CashShift"> | string
+    openedAt?: DateTimeFilter<"CashShift"> | Date | string
+    closedAt?: DateTimeNullableFilter<"CashShift"> | Date | string | null
+    status?: StringFilter<"CashShift"> | string
+    ticketsCount?: IntFilter<"CashShift"> | number
+    servicesTotal?: FloatFilter<"CashShift"> | number
+    retailTotal?: FloatFilter<"CashShift"> | number
+    cashCollected?: FloatFilter<"CashShift"> | number
+    visaCollected?: FloatFilter<"CashShift"> | number
+    instapayCollected?: FloatFilter<"CashShift"> | number
+    vodafoneCollected?: FloatFilter<"CashShift"> | number
+    advancesPayouts?: FloatFilter<"CashShift"> | number
+    expensesTotal?: FloatFilter<"CashShift"> | number
+    expectedCash?: FloatFilter<"CashShift"> | number
+    actualCash?: FloatFilter<"CashShift"> | number
+    difference?: FloatFilter<"CashShift"> | number
+    handedTo?: StringFilter<"CashShift"> | string
+    notes?: StringNullableFilter<"CashShift"> | string | null
+    createdAt?: DateTimeFilter<"CashShift"> | Date | string
+    updatedAt?: DateTimeFilter<"CashShift"> | Date | string
+    branch?: XOR<BranchScalarRelationFilter, BranchWhereInput>
+  }
+
+  export type CashShiftOrderByWithRelationInput = {
+    id?: SortOrder
+    shiftNumber?: SortOrder
+    branchId?: SortOrder
+    cashierName?: SortOrder
+    openedAt?: SortOrder
+    closedAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    ticketsCount?: SortOrder
+    servicesTotal?: SortOrder
+    retailTotal?: SortOrder
+    cashCollected?: SortOrder
+    visaCollected?: SortOrder
+    instapayCollected?: SortOrder
+    vodafoneCollected?: SortOrder
+    advancesPayouts?: SortOrder
+    expensesTotal?: SortOrder
+    expectedCash?: SortOrder
+    actualCash?: SortOrder
+    difference?: SortOrder
+    handedTo?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    branch?: BranchOrderByWithRelationInput
+  }
+
+  export type CashShiftWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    shiftNumber?: string
+    AND?: CashShiftWhereInput | CashShiftWhereInput[]
+    OR?: CashShiftWhereInput[]
+    NOT?: CashShiftWhereInput | CashShiftWhereInput[]
+    branchId?: StringFilter<"CashShift"> | string
+    cashierName?: StringFilter<"CashShift"> | string
+    openedAt?: DateTimeFilter<"CashShift"> | Date | string
+    closedAt?: DateTimeNullableFilter<"CashShift"> | Date | string | null
+    status?: StringFilter<"CashShift"> | string
+    ticketsCount?: IntFilter<"CashShift"> | number
+    servicesTotal?: FloatFilter<"CashShift"> | number
+    retailTotal?: FloatFilter<"CashShift"> | number
+    cashCollected?: FloatFilter<"CashShift"> | number
+    visaCollected?: FloatFilter<"CashShift"> | number
+    instapayCollected?: FloatFilter<"CashShift"> | number
+    vodafoneCollected?: FloatFilter<"CashShift"> | number
+    advancesPayouts?: FloatFilter<"CashShift"> | number
+    expensesTotal?: FloatFilter<"CashShift"> | number
+    expectedCash?: FloatFilter<"CashShift"> | number
+    actualCash?: FloatFilter<"CashShift"> | number
+    difference?: FloatFilter<"CashShift"> | number
+    handedTo?: StringFilter<"CashShift"> | string
+    notes?: StringNullableFilter<"CashShift"> | string | null
+    createdAt?: DateTimeFilter<"CashShift"> | Date | string
+    updatedAt?: DateTimeFilter<"CashShift"> | Date | string
+    branch?: XOR<BranchScalarRelationFilter, BranchWhereInput>
+  }, "id" | "shiftNumber">
+
+  export type CashShiftOrderByWithAggregationInput = {
+    id?: SortOrder
+    shiftNumber?: SortOrder
+    branchId?: SortOrder
+    cashierName?: SortOrder
+    openedAt?: SortOrder
+    closedAt?: SortOrderInput | SortOrder
+    status?: SortOrder
+    ticketsCount?: SortOrder
+    servicesTotal?: SortOrder
+    retailTotal?: SortOrder
+    cashCollected?: SortOrder
+    visaCollected?: SortOrder
+    instapayCollected?: SortOrder
+    vodafoneCollected?: SortOrder
+    advancesPayouts?: SortOrder
+    expensesTotal?: SortOrder
+    expectedCash?: SortOrder
+    actualCash?: SortOrder
+    difference?: SortOrder
+    handedTo?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: CashShiftCountOrderByAggregateInput
+    _avg?: CashShiftAvgOrderByAggregateInput
+    _max?: CashShiftMaxOrderByAggregateInput
+    _min?: CashShiftMinOrderByAggregateInput
+    _sum?: CashShiftSumOrderByAggregateInput
+  }
+
+  export type CashShiftScalarWhereWithAggregatesInput = {
+    AND?: CashShiftScalarWhereWithAggregatesInput | CashShiftScalarWhereWithAggregatesInput[]
+    OR?: CashShiftScalarWhereWithAggregatesInput[]
+    NOT?: CashShiftScalarWhereWithAggregatesInput | CashShiftScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CashShift"> | string
+    shiftNumber?: StringWithAggregatesFilter<"CashShift"> | string
+    branchId?: StringWithAggregatesFilter<"CashShift"> | string
+    cashierName?: StringWithAggregatesFilter<"CashShift"> | string
+    openedAt?: DateTimeWithAggregatesFilter<"CashShift"> | Date | string
+    closedAt?: DateTimeNullableWithAggregatesFilter<"CashShift"> | Date | string | null
+    status?: StringWithAggregatesFilter<"CashShift"> | string
+    ticketsCount?: IntWithAggregatesFilter<"CashShift"> | number
+    servicesTotal?: FloatWithAggregatesFilter<"CashShift"> | number
+    retailTotal?: FloatWithAggregatesFilter<"CashShift"> | number
+    cashCollected?: FloatWithAggregatesFilter<"CashShift"> | number
+    visaCollected?: FloatWithAggregatesFilter<"CashShift"> | number
+    instapayCollected?: FloatWithAggregatesFilter<"CashShift"> | number
+    vodafoneCollected?: FloatWithAggregatesFilter<"CashShift"> | number
+    advancesPayouts?: FloatWithAggregatesFilter<"CashShift"> | number
+    expensesTotal?: FloatWithAggregatesFilter<"CashShift"> | number
+    expectedCash?: FloatWithAggregatesFilter<"CashShift"> | number
+    actualCash?: FloatWithAggregatesFilter<"CashShift"> | number
+    difference?: FloatWithAggregatesFilter<"CashShift"> | number
+    handedTo?: StringWithAggregatesFilter<"CashShift"> | string
+    notes?: StringNullableWithAggregatesFilter<"CashShift"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"CashShift"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"CashShift"> | Date | string
+  }
+
+  export type TreasuryExpenseWhereInput = {
+    AND?: TreasuryExpenseWhereInput | TreasuryExpenseWhereInput[]
+    OR?: TreasuryExpenseWhereInput[]
+    NOT?: TreasuryExpenseWhereInput | TreasuryExpenseWhereInput[]
+    id?: StringFilter<"TreasuryExpense"> | string
+    branchId?: StringNullableFilter<"TreasuryExpense"> | string | null
+    category?: StringFilter<"TreasuryExpense"> | string
+    amount?: FloatFilter<"TreasuryExpense"> | number
+    paymentMethod?: StringFilter<"TreasuryExpense"> | string
+    description?: StringFilter<"TreasuryExpense"> | string
+    recipientName?: StringNullableFilter<"TreasuryExpense"> | string | null
+    recordedBy?: StringFilter<"TreasuryExpense"> | string
+    date?: DateTimeFilter<"TreasuryExpense"> | Date | string
+    createdAt?: DateTimeFilter<"TreasuryExpense"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }
+
+  export type TreasuryExpenseOrderByWithRelationInput = {
+    id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    paymentMethod?: SortOrder
+    description?: SortOrder
+    recipientName?: SortOrderInput | SortOrder
+    recordedBy?: SortOrder
+    date?: SortOrder
+    createdAt?: SortOrder
+    branch?: BranchOrderByWithRelationInput
+  }
+
+  export type TreasuryExpenseWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TreasuryExpenseWhereInput | TreasuryExpenseWhereInput[]
+    OR?: TreasuryExpenseWhereInput[]
+    NOT?: TreasuryExpenseWhereInput | TreasuryExpenseWhereInput[]
+    branchId?: StringNullableFilter<"TreasuryExpense"> | string | null
+    category?: StringFilter<"TreasuryExpense"> | string
+    amount?: FloatFilter<"TreasuryExpense"> | number
+    paymentMethod?: StringFilter<"TreasuryExpense"> | string
+    description?: StringFilter<"TreasuryExpense"> | string
+    recipientName?: StringNullableFilter<"TreasuryExpense"> | string | null
+    recordedBy?: StringFilter<"TreasuryExpense"> | string
+    date?: DateTimeFilter<"TreasuryExpense"> | Date | string
+    createdAt?: DateTimeFilter<"TreasuryExpense"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
+  }, "id">
+
+  export type TreasuryExpenseOrderByWithAggregationInput = {
+    id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    paymentMethod?: SortOrder
+    description?: SortOrder
+    recipientName?: SortOrderInput | SortOrder
+    recordedBy?: SortOrder
+    date?: SortOrder
+    createdAt?: SortOrder
+    _count?: TreasuryExpenseCountOrderByAggregateInput
+    _avg?: TreasuryExpenseAvgOrderByAggregateInput
+    _max?: TreasuryExpenseMaxOrderByAggregateInput
+    _min?: TreasuryExpenseMinOrderByAggregateInput
+    _sum?: TreasuryExpenseSumOrderByAggregateInput
+  }
+
+  export type TreasuryExpenseScalarWhereWithAggregatesInput = {
+    AND?: TreasuryExpenseScalarWhereWithAggregatesInput | TreasuryExpenseScalarWhereWithAggregatesInput[]
+    OR?: TreasuryExpenseScalarWhereWithAggregatesInput[]
+    NOT?: TreasuryExpenseScalarWhereWithAggregatesInput | TreasuryExpenseScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TreasuryExpense"> | string
+    branchId?: StringNullableWithAggregatesFilter<"TreasuryExpense"> | string | null
+    category?: StringWithAggregatesFilter<"TreasuryExpense"> | string
+    amount?: FloatWithAggregatesFilter<"TreasuryExpense"> | number
+    paymentMethod?: StringWithAggregatesFilter<"TreasuryExpense"> | string
+    description?: StringWithAggregatesFilter<"TreasuryExpense"> | string
+    recipientName?: StringNullableWithAggregatesFilter<"TreasuryExpense"> | string | null
+    recordedBy?: StringWithAggregatesFilter<"TreasuryExpense"> | string
+    date?: DateTimeWithAggregatesFilter<"TreasuryExpense"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"TreasuryExpense"> | Date | string
+  }
+
   export type BranchCreateInput = {
     id?: string
     name: string
@@ -18453,6 +21545,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateInput = {
@@ -18473,6 +21567,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUpdateInput = {
@@ -18493,6 +21589,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateInput = {
@@ -18513,6 +21611,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateManyInput = {
@@ -19842,6 +22942,277 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CashShiftCreateInput = {
+    id?: string
+    shiftNumber: string
+    cashierName: string
+    openedAt?: Date | string
+    closedAt?: Date | string | null
+    status?: string
+    ticketsCount?: number
+    servicesTotal?: number
+    retailTotal?: number
+    cashCollected?: number
+    visaCollected?: number
+    instapayCollected?: number
+    vodafoneCollected?: number
+    advancesPayouts?: number
+    expensesTotal?: number
+    expectedCash?: number
+    actualCash?: number
+    difference?: number
+    handedTo?: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    branch: BranchCreateNestedOneWithoutShiftsInput
+  }
+
+  export type CashShiftUncheckedCreateInput = {
+    id?: string
+    shiftNumber: string
+    branchId: string
+    cashierName: string
+    openedAt?: Date | string
+    closedAt?: Date | string | null
+    status?: string
+    ticketsCount?: number
+    servicesTotal?: number
+    retailTotal?: number
+    cashCollected?: number
+    visaCollected?: number
+    instapayCollected?: number
+    vodafoneCollected?: number
+    advancesPayouts?: number
+    expensesTotal?: number
+    expectedCash?: number
+    actualCash?: number
+    difference?: number
+    handedTo?: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CashShiftUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shiftNumber?: StringFieldUpdateOperationsInput | string
+    cashierName?: StringFieldUpdateOperationsInput | string
+    openedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    ticketsCount?: IntFieldUpdateOperationsInput | number
+    servicesTotal?: FloatFieldUpdateOperationsInput | number
+    retailTotal?: FloatFieldUpdateOperationsInput | number
+    cashCollected?: FloatFieldUpdateOperationsInput | number
+    visaCollected?: FloatFieldUpdateOperationsInput | number
+    instapayCollected?: FloatFieldUpdateOperationsInput | number
+    vodafoneCollected?: FloatFieldUpdateOperationsInput | number
+    advancesPayouts?: FloatFieldUpdateOperationsInput | number
+    expensesTotal?: FloatFieldUpdateOperationsInput | number
+    expectedCash?: FloatFieldUpdateOperationsInput | number
+    actualCash?: FloatFieldUpdateOperationsInput | number
+    difference?: FloatFieldUpdateOperationsInput | number
+    handedTo?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    branch?: BranchUpdateOneRequiredWithoutShiftsNestedInput
+  }
+
+  export type CashShiftUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shiftNumber?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    cashierName?: StringFieldUpdateOperationsInput | string
+    openedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    ticketsCount?: IntFieldUpdateOperationsInput | number
+    servicesTotal?: FloatFieldUpdateOperationsInput | number
+    retailTotal?: FloatFieldUpdateOperationsInput | number
+    cashCollected?: FloatFieldUpdateOperationsInput | number
+    visaCollected?: FloatFieldUpdateOperationsInput | number
+    instapayCollected?: FloatFieldUpdateOperationsInput | number
+    vodafoneCollected?: FloatFieldUpdateOperationsInput | number
+    advancesPayouts?: FloatFieldUpdateOperationsInput | number
+    expensesTotal?: FloatFieldUpdateOperationsInput | number
+    expectedCash?: FloatFieldUpdateOperationsInput | number
+    actualCash?: FloatFieldUpdateOperationsInput | number
+    difference?: FloatFieldUpdateOperationsInput | number
+    handedTo?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CashShiftCreateManyInput = {
+    id?: string
+    shiftNumber: string
+    branchId: string
+    cashierName: string
+    openedAt?: Date | string
+    closedAt?: Date | string | null
+    status?: string
+    ticketsCount?: number
+    servicesTotal?: number
+    retailTotal?: number
+    cashCollected?: number
+    visaCollected?: number
+    instapayCollected?: number
+    vodafoneCollected?: number
+    advancesPayouts?: number
+    expensesTotal?: number
+    expectedCash?: number
+    actualCash?: number
+    difference?: number
+    handedTo?: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CashShiftUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shiftNumber?: StringFieldUpdateOperationsInput | string
+    cashierName?: StringFieldUpdateOperationsInput | string
+    openedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    ticketsCount?: IntFieldUpdateOperationsInput | number
+    servicesTotal?: FloatFieldUpdateOperationsInput | number
+    retailTotal?: FloatFieldUpdateOperationsInput | number
+    cashCollected?: FloatFieldUpdateOperationsInput | number
+    visaCollected?: FloatFieldUpdateOperationsInput | number
+    instapayCollected?: FloatFieldUpdateOperationsInput | number
+    vodafoneCollected?: FloatFieldUpdateOperationsInput | number
+    advancesPayouts?: FloatFieldUpdateOperationsInput | number
+    expensesTotal?: FloatFieldUpdateOperationsInput | number
+    expectedCash?: FloatFieldUpdateOperationsInput | number
+    actualCash?: FloatFieldUpdateOperationsInput | number
+    difference?: FloatFieldUpdateOperationsInput | number
+    handedTo?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CashShiftUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shiftNumber?: StringFieldUpdateOperationsInput | string
+    branchId?: StringFieldUpdateOperationsInput | string
+    cashierName?: StringFieldUpdateOperationsInput | string
+    openedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    ticketsCount?: IntFieldUpdateOperationsInput | number
+    servicesTotal?: FloatFieldUpdateOperationsInput | number
+    retailTotal?: FloatFieldUpdateOperationsInput | number
+    cashCollected?: FloatFieldUpdateOperationsInput | number
+    visaCollected?: FloatFieldUpdateOperationsInput | number
+    instapayCollected?: FloatFieldUpdateOperationsInput | number
+    vodafoneCollected?: FloatFieldUpdateOperationsInput | number
+    advancesPayouts?: FloatFieldUpdateOperationsInput | number
+    expensesTotal?: FloatFieldUpdateOperationsInput | number
+    expectedCash?: FloatFieldUpdateOperationsInput | number
+    actualCash?: FloatFieldUpdateOperationsInput | number
+    difference?: FloatFieldUpdateOperationsInput | number
+    handedTo?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TreasuryExpenseCreateInput = {
+    id?: string
+    category: string
+    amount: number
+    paymentMethod?: string
+    description: string
+    recipientName?: string | null
+    recordedBy?: string
+    date?: Date | string
+    createdAt?: Date | string
+    branch?: BranchCreateNestedOneWithoutExpensesInput
+  }
+
+  export type TreasuryExpenseUncheckedCreateInput = {
+    id?: string
+    branchId?: string | null
+    category: string
+    amount: number
+    paymentMethod?: string
+    description: string
+    recipientName?: string | null
+    recordedBy?: string
+    date?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type TreasuryExpenseUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    recipientName?: NullableStringFieldUpdateOperationsInput | string | null
+    recordedBy?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    branch?: BranchUpdateOneWithoutExpensesNestedInput
+  }
+
+  export type TreasuryExpenseUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    recipientName?: NullableStringFieldUpdateOperationsInput | string | null
+    recordedBy?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TreasuryExpenseCreateManyInput = {
+    id?: string
+    branchId?: string | null
+    category: string
+    amount: number
+    paymentMethod?: string
+    description: string
+    recipientName?: string | null
+    recordedBy?: string
+    date?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type TreasuryExpenseUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    recipientName?: NullableStringFieldUpdateOperationsInput | string | null
+    recordedBy?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TreasuryExpenseUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    recipientName?: NullableStringFieldUpdateOperationsInput | string | null
+    recordedBy?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -19936,6 +23307,18 @@ export namespace Prisma {
     none?: ChatMessageWhereInput
   }
 
+  export type CashShiftListRelationFilter = {
+    every?: CashShiftWhereInput
+    some?: CashShiftWhereInput
+    none?: CashShiftWhereInput
+  }
+
+  export type TreasuryExpenseListRelationFilter = {
+    every?: TreasuryExpenseWhereInput
+    some?: TreasuryExpenseWhereInput
+    none?: TreasuryExpenseWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -19970,6 +23353,14 @@ export namespace Prisma {
   }
 
   export type ChatMessageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CashShiftOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TreasuryExpenseOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -20884,6 +24275,161 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type CashShiftCountOrderByAggregateInput = {
+    id?: SortOrder
+    shiftNumber?: SortOrder
+    branchId?: SortOrder
+    cashierName?: SortOrder
+    openedAt?: SortOrder
+    closedAt?: SortOrder
+    status?: SortOrder
+    ticketsCount?: SortOrder
+    servicesTotal?: SortOrder
+    retailTotal?: SortOrder
+    cashCollected?: SortOrder
+    visaCollected?: SortOrder
+    instapayCollected?: SortOrder
+    vodafoneCollected?: SortOrder
+    advancesPayouts?: SortOrder
+    expensesTotal?: SortOrder
+    expectedCash?: SortOrder
+    actualCash?: SortOrder
+    difference?: SortOrder
+    handedTo?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CashShiftAvgOrderByAggregateInput = {
+    ticketsCount?: SortOrder
+    servicesTotal?: SortOrder
+    retailTotal?: SortOrder
+    cashCollected?: SortOrder
+    visaCollected?: SortOrder
+    instapayCollected?: SortOrder
+    vodafoneCollected?: SortOrder
+    advancesPayouts?: SortOrder
+    expensesTotal?: SortOrder
+    expectedCash?: SortOrder
+    actualCash?: SortOrder
+    difference?: SortOrder
+  }
+
+  export type CashShiftMaxOrderByAggregateInput = {
+    id?: SortOrder
+    shiftNumber?: SortOrder
+    branchId?: SortOrder
+    cashierName?: SortOrder
+    openedAt?: SortOrder
+    closedAt?: SortOrder
+    status?: SortOrder
+    ticketsCount?: SortOrder
+    servicesTotal?: SortOrder
+    retailTotal?: SortOrder
+    cashCollected?: SortOrder
+    visaCollected?: SortOrder
+    instapayCollected?: SortOrder
+    vodafoneCollected?: SortOrder
+    advancesPayouts?: SortOrder
+    expensesTotal?: SortOrder
+    expectedCash?: SortOrder
+    actualCash?: SortOrder
+    difference?: SortOrder
+    handedTo?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CashShiftMinOrderByAggregateInput = {
+    id?: SortOrder
+    shiftNumber?: SortOrder
+    branchId?: SortOrder
+    cashierName?: SortOrder
+    openedAt?: SortOrder
+    closedAt?: SortOrder
+    status?: SortOrder
+    ticketsCount?: SortOrder
+    servicesTotal?: SortOrder
+    retailTotal?: SortOrder
+    cashCollected?: SortOrder
+    visaCollected?: SortOrder
+    instapayCollected?: SortOrder
+    vodafoneCollected?: SortOrder
+    advancesPayouts?: SortOrder
+    expensesTotal?: SortOrder
+    expectedCash?: SortOrder
+    actualCash?: SortOrder
+    difference?: SortOrder
+    handedTo?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CashShiftSumOrderByAggregateInput = {
+    ticketsCount?: SortOrder
+    servicesTotal?: SortOrder
+    retailTotal?: SortOrder
+    cashCollected?: SortOrder
+    visaCollected?: SortOrder
+    instapayCollected?: SortOrder
+    vodafoneCollected?: SortOrder
+    advancesPayouts?: SortOrder
+    expensesTotal?: SortOrder
+    expectedCash?: SortOrder
+    actualCash?: SortOrder
+    difference?: SortOrder
+  }
+
+  export type TreasuryExpenseCountOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    paymentMethod?: SortOrder
+    description?: SortOrder
+    recipientName?: SortOrder
+    recordedBy?: SortOrder
+    date?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TreasuryExpenseAvgOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type TreasuryExpenseMaxOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    paymentMethod?: SortOrder
+    description?: SortOrder
+    recipientName?: SortOrder
+    recordedBy?: SortOrder
+    date?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TreasuryExpenseMinOrderByAggregateInput = {
+    id?: SortOrder
+    branchId?: SortOrder
+    category?: SortOrder
+    amount?: SortOrder
+    paymentMethod?: SortOrder
+    description?: SortOrder
+    recipientName?: SortOrder
+    recordedBy?: SortOrder
+    date?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TreasuryExpenseSumOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
   export type UserCreateNestedManyWithoutBranchInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -20940,6 +24486,20 @@ export namespace Prisma {
     connect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
   }
 
+  export type CashShiftCreateNestedManyWithoutBranchInput = {
+    create?: XOR<CashShiftCreateWithoutBranchInput, CashShiftUncheckedCreateWithoutBranchInput> | CashShiftCreateWithoutBranchInput[] | CashShiftUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CashShiftCreateOrConnectWithoutBranchInput | CashShiftCreateOrConnectWithoutBranchInput[]
+    createMany?: CashShiftCreateManyBranchInputEnvelope
+    connect?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+  }
+
+  export type TreasuryExpenseCreateNestedManyWithoutBranchInput = {
+    create?: XOR<TreasuryExpenseCreateWithoutBranchInput, TreasuryExpenseUncheckedCreateWithoutBranchInput> | TreasuryExpenseCreateWithoutBranchInput[] | TreasuryExpenseUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: TreasuryExpenseCreateOrConnectWithoutBranchInput | TreasuryExpenseCreateOrConnectWithoutBranchInput[]
+    createMany?: TreasuryExpenseCreateManyBranchInputEnvelope
+    connect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutBranchInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -20994,6 +24554,20 @@ export namespace Prisma {
     connectOrCreate?: ChatMessageCreateOrConnectWithoutBranchInput | ChatMessageCreateOrConnectWithoutBranchInput[]
     createMany?: ChatMessageCreateManyBranchInputEnvelope
     connect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+  }
+
+  export type CashShiftUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<CashShiftCreateWithoutBranchInput, CashShiftUncheckedCreateWithoutBranchInput> | CashShiftCreateWithoutBranchInput[] | CashShiftUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CashShiftCreateOrConnectWithoutBranchInput | CashShiftCreateOrConnectWithoutBranchInput[]
+    createMany?: CashShiftCreateManyBranchInputEnvelope
+    connect?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+  }
+
+  export type TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<TreasuryExpenseCreateWithoutBranchInput, TreasuryExpenseUncheckedCreateWithoutBranchInput> | TreasuryExpenseCreateWithoutBranchInput[] | TreasuryExpenseUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: TreasuryExpenseCreateOrConnectWithoutBranchInput | TreasuryExpenseCreateOrConnectWithoutBranchInput[]
+    createMany?: TreasuryExpenseCreateManyBranchInputEnvelope
+    connect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -21124,6 +24698,34 @@ export namespace Prisma {
     deleteMany?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
   }
 
+  export type CashShiftUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<CashShiftCreateWithoutBranchInput, CashShiftUncheckedCreateWithoutBranchInput> | CashShiftCreateWithoutBranchInput[] | CashShiftUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CashShiftCreateOrConnectWithoutBranchInput | CashShiftCreateOrConnectWithoutBranchInput[]
+    upsert?: CashShiftUpsertWithWhereUniqueWithoutBranchInput | CashShiftUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: CashShiftCreateManyBranchInputEnvelope
+    set?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    disconnect?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    delete?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    connect?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    update?: CashShiftUpdateWithWhereUniqueWithoutBranchInput | CashShiftUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: CashShiftUpdateManyWithWhereWithoutBranchInput | CashShiftUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: CashShiftScalarWhereInput | CashShiftScalarWhereInput[]
+  }
+
+  export type TreasuryExpenseUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<TreasuryExpenseCreateWithoutBranchInput, TreasuryExpenseUncheckedCreateWithoutBranchInput> | TreasuryExpenseCreateWithoutBranchInput[] | TreasuryExpenseUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: TreasuryExpenseCreateOrConnectWithoutBranchInput | TreasuryExpenseCreateOrConnectWithoutBranchInput[]
+    upsert?: TreasuryExpenseUpsertWithWhereUniqueWithoutBranchInput | TreasuryExpenseUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: TreasuryExpenseCreateManyBranchInputEnvelope
+    set?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    disconnect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    delete?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    connect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    update?: TreasuryExpenseUpdateWithWhereUniqueWithoutBranchInput | TreasuryExpenseUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: TreasuryExpenseUpdateManyWithWhereWithoutBranchInput | TreasuryExpenseUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: TreasuryExpenseScalarWhereInput | TreasuryExpenseScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutBranchNestedInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -21234,6 +24836,34 @@ export namespace Prisma {
     update?: ChatMessageUpdateWithWhereUniqueWithoutBranchInput | ChatMessageUpdateWithWhereUniqueWithoutBranchInput[]
     updateMany?: ChatMessageUpdateManyWithWhereWithoutBranchInput | ChatMessageUpdateManyWithWhereWithoutBranchInput[]
     deleteMany?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
+  }
+
+  export type CashShiftUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<CashShiftCreateWithoutBranchInput, CashShiftUncheckedCreateWithoutBranchInput> | CashShiftCreateWithoutBranchInput[] | CashShiftUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CashShiftCreateOrConnectWithoutBranchInput | CashShiftCreateOrConnectWithoutBranchInput[]
+    upsert?: CashShiftUpsertWithWhereUniqueWithoutBranchInput | CashShiftUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: CashShiftCreateManyBranchInputEnvelope
+    set?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    disconnect?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    delete?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    connect?: CashShiftWhereUniqueInput | CashShiftWhereUniqueInput[]
+    update?: CashShiftUpdateWithWhereUniqueWithoutBranchInput | CashShiftUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: CashShiftUpdateManyWithWhereWithoutBranchInput | CashShiftUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: CashShiftScalarWhereInput | CashShiftScalarWhereInput[]
+  }
+
+  export type TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<TreasuryExpenseCreateWithoutBranchInput, TreasuryExpenseUncheckedCreateWithoutBranchInput> | TreasuryExpenseCreateWithoutBranchInput[] | TreasuryExpenseUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: TreasuryExpenseCreateOrConnectWithoutBranchInput | TreasuryExpenseCreateOrConnectWithoutBranchInput[]
+    upsert?: TreasuryExpenseUpsertWithWhereUniqueWithoutBranchInput | TreasuryExpenseUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: TreasuryExpenseCreateManyBranchInputEnvelope
+    set?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    disconnect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    delete?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    connect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+    update?: TreasuryExpenseUpdateWithWhereUniqueWithoutBranchInput | TreasuryExpenseUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: TreasuryExpenseUpdateManyWithWhereWithoutBranchInput | TreasuryExpenseUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: TreasuryExpenseScalarWhereInput | TreasuryExpenseScalarWhereInput[]
   }
 
   export type BranchCreateNestedOneWithoutUsersInput = {
@@ -21722,6 +25352,36 @@ export namespace Prisma {
     delete?: BranchWhereInput | boolean
     connect?: BranchWhereUniqueInput
     update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutChatMessagesInput, BranchUpdateWithoutChatMessagesInput>, BranchUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type BranchCreateNestedOneWithoutShiftsInput = {
+    create?: XOR<BranchCreateWithoutShiftsInput, BranchUncheckedCreateWithoutShiftsInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutShiftsInput
+    connect?: BranchWhereUniqueInput
+  }
+
+  export type BranchUpdateOneRequiredWithoutShiftsNestedInput = {
+    create?: XOR<BranchCreateWithoutShiftsInput, BranchUncheckedCreateWithoutShiftsInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutShiftsInput
+    upsert?: BranchUpsertWithoutShiftsInput
+    connect?: BranchWhereUniqueInput
+    update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutShiftsInput, BranchUpdateWithoutShiftsInput>, BranchUncheckedUpdateWithoutShiftsInput>
+  }
+
+  export type BranchCreateNestedOneWithoutExpensesInput = {
+    create?: XOR<BranchCreateWithoutExpensesInput, BranchUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutExpensesInput
+    connect?: BranchWhereUniqueInput
+  }
+
+  export type BranchUpdateOneWithoutExpensesNestedInput = {
+    create?: XOR<BranchCreateWithoutExpensesInput, BranchUncheckedCreateWithoutExpensesInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutExpensesInput
+    upsert?: BranchUpsertWithoutExpensesInput
+    disconnect?: BranchWhereInput | boolean
+    delete?: BranchWhereInput | boolean
+    connect?: BranchWhereUniqueInput
+    update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutExpensesInput, BranchUpdateWithoutExpensesInput>, BranchUncheckedUpdateWithoutExpensesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -22297,6 +25957,100 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CashShiftCreateWithoutBranchInput = {
+    id?: string
+    shiftNumber: string
+    cashierName: string
+    openedAt?: Date | string
+    closedAt?: Date | string | null
+    status?: string
+    ticketsCount?: number
+    servicesTotal?: number
+    retailTotal?: number
+    cashCollected?: number
+    visaCollected?: number
+    instapayCollected?: number
+    vodafoneCollected?: number
+    advancesPayouts?: number
+    expensesTotal?: number
+    expectedCash?: number
+    actualCash?: number
+    difference?: number
+    handedTo?: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CashShiftUncheckedCreateWithoutBranchInput = {
+    id?: string
+    shiftNumber: string
+    cashierName: string
+    openedAt?: Date | string
+    closedAt?: Date | string | null
+    status?: string
+    ticketsCount?: number
+    servicesTotal?: number
+    retailTotal?: number
+    cashCollected?: number
+    visaCollected?: number
+    instapayCollected?: number
+    vodafoneCollected?: number
+    advancesPayouts?: number
+    expensesTotal?: number
+    expectedCash?: number
+    actualCash?: number
+    difference?: number
+    handedTo?: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CashShiftCreateOrConnectWithoutBranchInput = {
+    where: CashShiftWhereUniqueInput
+    create: XOR<CashShiftCreateWithoutBranchInput, CashShiftUncheckedCreateWithoutBranchInput>
+  }
+
+  export type CashShiftCreateManyBranchInputEnvelope = {
+    data: CashShiftCreateManyBranchInput | CashShiftCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TreasuryExpenseCreateWithoutBranchInput = {
+    id?: string
+    category: string
+    amount: number
+    paymentMethod?: string
+    description: string
+    recipientName?: string | null
+    recordedBy?: string
+    date?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type TreasuryExpenseUncheckedCreateWithoutBranchInput = {
+    id?: string
+    category: string
+    amount: number
+    paymentMethod?: string
+    description: string
+    recipientName?: string | null
+    recordedBy?: string
+    date?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type TreasuryExpenseCreateOrConnectWithoutBranchInput = {
+    where: TreasuryExpenseWhereUniqueInput
+    create: XOR<TreasuryExpenseCreateWithoutBranchInput, TreasuryExpenseUncheckedCreateWithoutBranchInput>
+  }
+
+  export type TreasuryExpenseCreateManyBranchInputEnvelope = {
+    data: TreasuryExpenseCreateManyBranchInput | TreasuryExpenseCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithWhereUniqueWithoutBranchInput = {
     where: UserWhereUniqueInput
     update: XOR<UserUpdateWithoutBranchInput, UserUncheckedUpdateWithoutBranchInput>
@@ -22583,6 +26337,83 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ChatMessage"> | Date | string
   }
 
+  export type CashShiftUpsertWithWhereUniqueWithoutBranchInput = {
+    where: CashShiftWhereUniqueInput
+    update: XOR<CashShiftUpdateWithoutBranchInput, CashShiftUncheckedUpdateWithoutBranchInput>
+    create: XOR<CashShiftCreateWithoutBranchInput, CashShiftUncheckedCreateWithoutBranchInput>
+  }
+
+  export type CashShiftUpdateWithWhereUniqueWithoutBranchInput = {
+    where: CashShiftWhereUniqueInput
+    data: XOR<CashShiftUpdateWithoutBranchInput, CashShiftUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type CashShiftUpdateManyWithWhereWithoutBranchInput = {
+    where: CashShiftScalarWhereInput
+    data: XOR<CashShiftUpdateManyMutationInput, CashShiftUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type CashShiftScalarWhereInput = {
+    AND?: CashShiftScalarWhereInput | CashShiftScalarWhereInput[]
+    OR?: CashShiftScalarWhereInput[]
+    NOT?: CashShiftScalarWhereInput | CashShiftScalarWhereInput[]
+    id?: StringFilter<"CashShift"> | string
+    shiftNumber?: StringFilter<"CashShift"> | string
+    branchId?: StringFilter<"CashShift"> | string
+    cashierName?: StringFilter<"CashShift"> | string
+    openedAt?: DateTimeFilter<"CashShift"> | Date | string
+    closedAt?: DateTimeNullableFilter<"CashShift"> | Date | string | null
+    status?: StringFilter<"CashShift"> | string
+    ticketsCount?: IntFilter<"CashShift"> | number
+    servicesTotal?: FloatFilter<"CashShift"> | number
+    retailTotal?: FloatFilter<"CashShift"> | number
+    cashCollected?: FloatFilter<"CashShift"> | number
+    visaCollected?: FloatFilter<"CashShift"> | number
+    instapayCollected?: FloatFilter<"CashShift"> | number
+    vodafoneCollected?: FloatFilter<"CashShift"> | number
+    advancesPayouts?: FloatFilter<"CashShift"> | number
+    expensesTotal?: FloatFilter<"CashShift"> | number
+    expectedCash?: FloatFilter<"CashShift"> | number
+    actualCash?: FloatFilter<"CashShift"> | number
+    difference?: FloatFilter<"CashShift"> | number
+    handedTo?: StringFilter<"CashShift"> | string
+    notes?: StringNullableFilter<"CashShift"> | string | null
+    createdAt?: DateTimeFilter<"CashShift"> | Date | string
+    updatedAt?: DateTimeFilter<"CashShift"> | Date | string
+  }
+
+  export type TreasuryExpenseUpsertWithWhereUniqueWithoutBranchInput = {
+    where: TreasuryExpenseWhereUniqueInput
+    update: XOR<TreasuryExpenseUpdateWithoutBranchInput, TreasuryExpenseUncheckedUpdateWithoutBranchInput>
+    create: XOR<TreasuryExpenseCreateWithoutBranchInput, TreasuryExpenseUncheckedCreateWithoutBranchInput>
+  }
+
+  export type TreasuryExpenseUpdateWithWhereUniqueWithoutBranchInput = {
+    where: TreasuryExpenseWhereUniqueInput
+    data: XOR<TreasuryExpenseUpdateWithoutBranchInput, TreasuryExpenseUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type TreasuryExpenseUpdateManyWithWhereWithoutBranchInput = {
+    where: TreasuryExpenseScalarWhereInput
+    data: XOR<TreasuryExpenseUpdateManyMutationInput, TreasuryExpenseUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type TreasuryExpenseScalarWhereInput = {
+    AND?: TreasuryExpenseScalarWhereInput | TreasuryExpenseScalarWhereInput[]
+    OR?: TreasuryExpenseScalarWhereInput[]
+    NOT?: TreasuryExpenseScalarWhereInput | TreasuryExpenseScalarWhereInput[]
+    id?: StringFilter<"TreasuryExpense"> | string
+    branchId?: StringNullableFilter<"TreasuryExpense"> | string | null
+    category?: StringFilter<"TreasuryExpense"> | string
+    amount?: FloatFilter<"TreasuryExpense"> | number
+    paymentMethod?: StringFilter<"TreasuryExpense"> | string
+    description?: StringFilter<"TreasuryExpense"> | string
+    recipientName?: StringNullableFilter<"TreasuryExpense"> | string | null
+    recordedBy?: StringFilter<"TreasuryExpense"> | string
+    date?: DateTimeFilter<"TreasuryExpense"> | Date | string
+    createdAt?: DateTimeFilter<"TreasuryExpense"> | Date | string
+  }
+
   export type BranchCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -22600,6 +26431,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutUsersInput = {
@@ -22619,6 +26452,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutUsersInput = {
@@ -22701,6 +26536,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutUsersInput = {
@@ -22720,6 +26557,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutUserInput = {
@@ -22825,6 +26664,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutSpecialistsInput = {
@@ -22844,6 +26685,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutSpecialistsInput = {
@@ -23052,6 +26895,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutSpecialistsInput = {
@@ -23071,6 +26916,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BookingUpsertWithWhereUniqueWithoutSpecialistInput = {
@@ -23313,6 +27160,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutBookingsInput = {
@@ -23332,6 +27181,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutBookingsInput = {
@@ -23461,6 +27312,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutBookingsInput = {
@@ -23480,6 +27333,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutBookingsInput = {
@@ -23552,6 +27407,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutTicketsInput = {
@@ -23571,6 +27428,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutTicketsInput = {
@@ -23694,6 +27553,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutTicketsInput = {
@@ -23713,6 +27574,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutTicketsInput = {
@@ -23832,6 +27695,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutProductsInput = {
@@ -23851,6 +27716,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutProductsInput = {
@@ -23886,6 +27753,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutProductsInput = {
@@ -23905,6 +27774,8 @@ export namespace Prisma {
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistCreateWithoutLedgersInput = {
@@ -23971,6 +27842,8 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutLedgersInput = {
@@ -23990,6 +27863,8 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutLedgersInput = {
@@ -24078,6 +27953,8 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutLedgersInput = {
@@ -24097,6 +27974,8 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateWithoutOffersInput = {
@@ -24116,6 +27995,8 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutOffersInput = {
@@ -24135,6 +28016,8 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutOffersInput = {
@@ -24170,6 +28053,8 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutOffersInput = {
@@ -24189,6 +28074,8 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateWithoutChatMessagesInput = {
@@ -24208,6 +28095,8 @@ export namespace Prisma {
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
     offers?: OfferCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutChatMessagesInput = {
@@ -24227,6 +28116,8 @@ export namespace Prisma {
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutChatMessagesInput = {
@@ -24262,6 +28153,8 @@ export namespace Prisma {
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
     offers?: OfferUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutChatMessagesInput = {
@@ -24281,6 +28174,208 @@ export namespace Prisma {
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchCreateWithoutShiftsInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    bookings?: BookingCreateNestedManyWithoutBranchInput
+    tickets?: TicketCreateNestedManyWithoutBranchInput
+    products?: ProductCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchUncheckedCreateWithoutShiftsInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
+    products?: ProductUncheckedCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchCreateOrConnectWithoutShiftsInput = {
+    where: BranchWhereUniqueInput
+    create: XOR<BranchCreateWithoutShiftsInput, BranchUncheckedCreateWithoutShiftsInput>
+  }
+
+  export type BranchUpsertWithoutShiftsInput = {
+    update: XOR<BranchUpdateWithoutShiftsInput, BranchUncheckedUpdateWithoutShiftsInput>
+    create: XOR<BranchCreateWithoutShiftsInput, BranchUncheckedCreateWithoutShiftsInput>
+    where?: BranchWhereInput
+  }
+
+  export type BranchUpdateToOneWithWhereWithoutShiftsInput = {
+    where?: BranchWhereInput
+    data: XOR<BranchUpdateWithoutShiftsInput, BranchUncheckedUpdateWithoutShiftsInput>
+  }
+
+  export type BranchUpdateWithoutShiftsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUpdateManyWithoutBranchNestedInput
+    products?: ProductUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchUncheckedUpdateWithoutShiftsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
+    products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchCreateWithoutExpensesInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    bookings?: BookingCreateNestedManyWithoutBranchInput
+    tickets?: TicketCreateNestedManyWithoutBranchInput
+    products?: ProductCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchUncheckedCreateWithoutExpensesInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
+    products?: ProductUncheckedCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchCreateOrConnectWithoutExpensesInput = {
+    where: BranchWhereUniqueInput
+    create: XOR<BranchCreateWithoutExpensesInput, BranchUncheckedCreateWithoutExpensesInput>
+  }
+
+  export type BranchUpsertWithoutExpensesInput = {
+    update: XOR<BranchUpdateWithoutExpensesInput, BranchUncheckedUpdateWithoutExpensesInput>
+    create: XOR<BranchCreateWithoutExpensesInput, BranchUncheckedCreateWithoutExpensesInput>
+    where?: BranchWhereInput
+  }
+
+  export type BranchUpdateToOneWithWhereWithoutExpensesInput = {
+    where?: BranchWhereInput
+    data: XOR<BranchUpdateWithoutExpensesInput, BranchUncheckedUpdateWithoutExpensesInput>
+  }
+
+  export type BranchUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUpdateManyWithoutBranchNestedInput
+    products?: ProductUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchUncheckedUpdateWithoutExpensesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
+    products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type UserCreateManyBranchInput = {
@@ -24406,6 +28501,43 @@ export namespace Prisma {
     senderName?: string
     message: string
     isRead?: boolean
+    createdAt?: Date | string
+  }
+
+  export type CashShiftCreateManyBranchInput = {
+    id?: string
+    shiftNumber: string
+    cashierName: string
+    openedAt?: Date | string
+    closedAt?: Date | string | null
+    status?: string
+    ticketsCount?: number
+    servicesTotal?: number
+    retailTotal?: number
+    cashCollected?: number
+    visaCollected?: number
+    instapayCollected?: number
+    vodafoneCollected?: number
+    advancesPayouts?: number
+    expensesTotal?: number
+    expectedCash?: number
+    actualCash?: number
+    difference?: number
+    handedTo?: string
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TreasuryExpenseCreateManyBranchInput = {
+    id?: string
+    category: string
+    amount: number
+    paymentMethod?: string
+    description: string
+    recipientName?: string | null
+    recordedBy?: string
+    date?: Date | string
     createdAt?: Date | string
   }
 
@@ -24792,6 +28924,117 @@ export namespace Prisma {
     senderName?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     isRead?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CashShiftUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shiftNumber?: StringFieldUpdateOperationsInput | string
+    cashierName?: StringFieldUpdateOperationsInput | string
+    openedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    ticketsCount?: IntFieldUpdateOperationsInput | number
+    servicesTotal?: FloatFieldUpdateOperationsInput | number
+    retailTotal?: FloatFieldUpdateOperationsInput | number
+    cashCollected?: FloatFieldUpdateOperationsInput | number
+    visaCollected?: FloatFieldUpdateOperationsInput | number
+    instapayCollected?: FloatFieldUpdateOperationsInput | number
+    vodafoneCollected?: FloatFieldUpdateOperationsInput | number
+    advancesPayouts?: FloatFieldUpdateOperationsInput | number
+    expensesTotal?: FloatFieldUpdateOperationsInput | number
+    expectedCash?: FloatFieldUpdateOperationsInput | number
+    actualCash?: FloatFieldUpdateOperationsInput | number
+    difference?: FloatFieldUpdateOperationsInput | number
+    handedTo?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CashShiftUncheckedUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shiftNumber?: StringFieldUpdateOperationsInput | string
+    cashierName?: StringFieldUpdateOperationsInput | string
+    openedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    ticketsCount?: IntFieldUpdateOperationsInput | number
+    servicesTotal?: FloatFieldUpdateOperationsInput | number
+    retailTotal?: FloatFieldUpdateOperationsInput | number
+    cashCollected?: FloatFieldUpdateOperationsInput | number
+    visaCollected?: FloatFieldUpdateOperationsInput | number
+    instapayCollected?: FloatFieldUpdateOperationsInput | number
+    vodafoneCollected?: FloatFieldUpdateOperationsInput | number
+    advancesPayouts?: FloatFieldUpdateOperationsInput | number
+    expensesTotal?: FloatFieldUpdateOperationsInput | number
+    expectedCash?: FloatFieldUpdateOperationsInput | number
+    actualCash?: FloatFieldUpdateOperationsInput | number
+    difference?: FloatFieldUpdateOperationsInput | number
+    handedTo?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CashShiftUncheckedUpdateManyWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shiftNumber?: StringFieldUpdateOperationsInput | string
+    cashierName?: StringFieldUpdateOperationsInput | string
+    openedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    ticketsCount?: IntFieldUpdateOperationsInput | number
+    servicesTotal?: FloatFieldUpdateOperationsInput | number
+    retailTotal?: FloatFieldUpdateOperationsInput | number
+    cashCollected?: FloatFieldUpdateOperationsInput | number
+    visaCollected?: FloatFieldUpdateOperationsInput | number
+    instapayCollected?: FloatFieldUpdateOperationsInput | number
+    vodafoneCollected?: FloatFieldUpdateOperationsInput | number
+    advancesPayouts?: FloatFieldUpdateOperationsInput | number
+    expensesTotal?: FloatFieldUpdateOperationsInput | number
+    expectedCash?: FloatFieldUpdateOperationsInput | number
+    actualCash?: FloatFieldUpdateOperationsInput | number
+    difference?: FloatFieldUpdateOperationsInput | number
+    handedTo?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TreasuryExpenseUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    recipientName?: NullableStringFieldUpdateOperationsInput | string | null
+    recordedBy?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TreasuryExpenseUncheckedUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    recipientName?: NullableStringFieldUpdateOperationsInput | string | null
+    recordedBy?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TreasuryExpenseUncheckedUpdateManyWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    amount?: FloatFieldUpdateOperationsInput | number
+    paymentMethod?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    recipientName?: NullableStringFieldUpdateOperationsInput | string | null
+    recordedBy?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

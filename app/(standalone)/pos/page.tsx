@@ -24,6 +24,10 @@ import {
   Tag,
   AlertCircle,
   Users,
+  Lock,
+  Receipt,
+  Wallet,
+  FileText,
 } from "lucide-react";
 
 export default function CashierPosPage() {
@@ -60,6 +64,38 @@ export default function CashierPosPage() {
 
   // Sound ref for new ticket alert
   const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // VIP Floating Toast State (No Native Windows Alerts!)
+  const [posToast, setPosToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+  const showToast = (type: "success" | "error" | "info", message: string) => {
+    setPosToast({ type, message });
+    setTimeout(() => {
+      setPosToast((prev) => (prev?.message === message ? null : prev));
+    }, 4500);
+  };
+
+  // Shift Close Modal State
+  const [showCloseShiftModal, setShowCloseShiftModal] = useState<boolean>(false);
+  const [shiftStats, setShiftStats] = useState<any>(null);
+  const [openShift, setOpenShift] = useState<any>(null);
+  const [shiftForm, setShiftForm] = useState({
+    actualCash: 0,
+    handedTo: "أ/ حمزة عباس (المايسترو - المالك) 👑",
+    notes: "",
+  });
+  const [closingShift, setClosingShift] = useState<boolean>(false);
+  const [lastClosedShift, setLastClosedShift] = useState<any>(null);
+
+  // Quick Advance Modal State
+  const [showAdvanceModal, setShowAdvanceModal] = useState<boolean>(false);
+  const [advanceSpecId, setAdvanceSpecId] = useState<string>("");
+  const [advanceAmount, setAdvanceAmount] = useState<number>(200);
+  const [advanceNotes, setAdvanceNotes] = useState<string>("سلفة نقدية من درج الكاشير");
+  const [savingAdvance, setSavingAdvance] = useState<boolean>(false);
+
+  // Quick Treasury / Safe Modal State
+  const [showTreasuryModal, setShowTreasuryModal] = useState<boolean>(false);
+  const [treasurySummary, setTreasurySummary] = useState<any>(null);
 
   // Check Auth
   useEffect(() => {
@@ -146,12 +182,13 @@ export default function CashierPosPage() {
       });
       const data = await res.json();
       if (data.success) {
+        showToast("success", "تم تحديث حالة وردية المتخصص بنجاح 🟢");
         await fetchPosData();
       } else {
-        alert(data.error || "فشل تحديث الوردية");
+        showToast("error", data.error || "فشل تحديث الوردية");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -159,7 +196,7 @@ export default function CashierPosPage() {
   const handleAdmitCustomerToChair = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!admitCustomerName.trim() || !admitSpecialistId) {
-      alert("يرجى إدخال اسم العميل واختيار المتخصص");
+      showToast("error", "يرجى إدخال اسم العميل واختيار المتخصص");
       return;
     }
 
@@ -179,17 +216,142 @@ export default function CashierPosPage() {
 
       const data = await res.json();
       if (data.success) {
+        showToast("success", `تم إجلاس العميل (${admitCustomerName}) على كرسي ${chosenSpec?.name} 💺`);
         setShowAdmitModal(false);
         setAdmitCustomerName("");
         setAdmitCustomerPhone("");
         await fetchPosData();
       } else {
-        alert(data.error || "فشل إجلاس العميل");
+        showToast("error", data.error || "فشل إجلاس العميل");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     } finally {
       setAdmittingClient(false);
+    }
+  };
+
+  // Open Shift Close Modal in POS
+  const handleOpenCloseShiftModal = async () => {
+    try {
+      const res = await fetch(`/api/shifts?branchId=${selectedBranchId || "ALL"}`);
+      const data = await res.json();
+      if (data.success) {
+        setShiftStats(data.liveStats);
+        setOpenShift(data.openShift);
+        setShiftForm({
+          actualCash: data.liveStats?.expectedCash || 0,
+          handedTo: "أ/ حمزة عباس (المايسترو - المالك) 👑",
+          notes: "",
+        });
+        setShowCloseShiftModal(true);
+      } else {
+        showToast("error", data.error || "فشل جلب بيانات الوردية");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    }
+  };
+
+  // Execute Shift Close & Handover
+  const handleExecuteCloseShift = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!openShift) {
+      showToast("error", "لا توجد وردية مفتوحة حالياً لإقفالها");
+      return;
+    }
+    try {
+      setClosingShift(true);
+      const res = await fetch("/api/shifts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "CLOSE",
+          shiftId: openShift.id,
+          actualCash: Number(shiftForm.actualCash),
+          handedTo: shiftForm.handedTo,
+          notes: shiftForm.notes,
+          expectedCash: shiftStats?.expectedCash || 0,
+          ticketsCount: shiftStats?.ticketsCount || 0,
+          servicesTotal: shiftStats?.servicesTotal || 0,
+          retailTotal: shiftStats?.retailTotal || 0,
+          cashCollected: shiftStats?.cashCollected || 0,
+          visaCollected: shiftStats?.visaCollected || 0,
+          instapayCollected: shiftStats?.instapayCollected || 0,
+          vodafoneCollected: shiftStats?.vodafoneCollected || 0,
+          advancesPayouts: shiftStats?.advancesPayouts || 0,
+          expensesTotal: shiftStats?.expensesTotal || 0,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", `تم إقفال الوردية بنجاح وتسليم النقدية إلى (${shiftForm.handedTo}) 🔒`);
+        setLastClosedShift(data.shift);
+        setShowCloseShiftModal(false);
+        // Print shift Z-Report
+        setTimeout(() => {
+          window.print();
+        }, 500);
+        await fetchPosData();
+      } else {
+        showToast("error", data.error || "فشل إقفال الوردية");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    } finally {
+      setClosingShift(false);
+    }
+  };
+
+  // Cash Advance for Specialist on Duty
+  const handleRecordAdvance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!advanceSpecId || advanceAmount <= 0) {
+      showToast("error", "يرجى اختيار المتخصص وتحديد مبلغ السلفة");
+      return;
+    }
+    try {
+      setSavingAdvance(true);
+      const chosen = specialists.find((s) => s.id === advanceSpecId);
+      const res = await fetch("/api/ledgers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          specialistId: advanceSpecId,
+          branchId: chosen?.branchId || selectedBranchId || branches[0]?.id,
+          type: "ADVANCE_WITHDRAWAL",
+          amount: Number(advanceAmount),
+          notes: advanceNotes,
+          recordedBy: currentUser?.name || "الكاشير",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", `تم صرف سلفة نقدية بمبلغ ${advanceAmount} ج.م لـ (${chosen?.name}) وخصمها من الدرج 💸`);
+        setShowAdvanceModal(false);
+        setAdvanceAmount(200);
+        await fetchPosData();
+      } else {
+        showToast("error", data.error || "فشل تسجيل السلفة");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    } finally {
+      setSavingAdvance(false);
+    }
+  };
+
+  // Open Treasury / Safe Modal
+  const handleOpenTreasuryModal = async () => {
+    try {
+      const res = await fetch(`/api/treasury?period=TODAY&branchId=${selectedBranchId || "ALL"}`);
+      const data = await res.json();
+      if (data.success && data.summary) {
+        setTreasurySummary(data.summary);
+        setShowTreasuryModal(true);
+      }
+    } catch {
+      showToast("error", "تعذر جلب ملخص الخزينة");
     }
   };
 
@@ -266,10 +428,10 @@ export default function CashierPosPage() {
           window.print();
         }, 300);
       } else {
-        alert(data.error || "فشل تحصيل التذكرة");
+        showToast("error", data.error || "فشل تحصيل التذكرة");
       }
     } catch {
-      alert("تعذر تسجيل التحصيل");
+      showToast("error", "تعذر تسجيل التحصيل");
     } finally {
       setSettlingTicket(false);
     }
@@ -359,18 +521,48 @@ export default function CashierPosPage() {
               setAdmitSpecialistId(specialists[0]?.id || "");
               setShowAdmitModal(true);
             }}
-            className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
+            className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0 cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>إجلاس زبون بالكرسي 💺</span>
+            <span>إجلاس زبون 💺</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setAdvanceSpecId(specialists[0]?.id || "");
+              setShowAdvanceModal(true);
+            }}
+            className="py-1.5 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            title="صرف سلفة نقدية فورية لمختص على الكرسي"
+          >
+            <Wallet className="w-3.5 h-3.5" />
+            <span>سلفة كاش 💸</span>
+          </button>
+
+          <button
+            onClick={handleOpenTreasuryModal}
+            className="py-1.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            title="عرض إيراد اليوم والخزنة والدرج"
+          >
+            <Receipt className="w-3.5 h-3.5" />
+            <span>الخزنة واليومية 💰</span>
+          </button>
+
+          <button
+            onClick={handleOpenCloseShiftModal}
+            className="py-1.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-black transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            title="إقفال وردية الكاشير وتسليم النقدية للمالك"
+          >
+            <Lock className="w-3.5 h-3.5 text-amber-400" />
+            <span>إقفال وتسليم الوردية 🔒</span>
           </button>
 
           <button
             onClick={() => setShowShiftModal(true)}
-            className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+            className="py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-bold transition flex items-center gap-1 shadow-sm cursor-pointer"
           >
-            <Users className="w-3.5 h-3.5" />
-            <span>ورديات وحضور المختصين 💈</span>
+            <Users className="w-3.5 h-3.5 text-amber-400" />
+            <span>حضور المختصين 💈</span>
           </button>
 
           <button
@@ -924,6 +1116,501 @@ export default function CashierPosPage() {
           <div className="text-center text-[10px] space-y-1 pt-1">
             <p className="font-bold">شكراً لزيارتكم صالون صدام الملكي 👑</p>
             <p className="font-mono">الخط الساخن: 19888</p>
+          </div>
+        </div>
+      )}
+      {/* ─────────────────────────────────────────────────────────────
+          4. POS CLOSE SHIFT MODAL (إقفال وتسليم الوردية)
+         ───────────────────────────────────────────────────────────── */}
+      {showCloseShiftModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-lg bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Lock className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="text-sm font-black text-white">إقفال وردية الكاشير وتسليم النقدية</h3>
+                  <p className="text-[11px] text-amber-300 font-bold">
+                    وردية #{openShift?.shiftNumber || 1} • {openShift?.branch?.name || currentUser?.branchName || "الفرع الحالي"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCloseShiftModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Live Shift Drawer Breakdown */}
+            <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
+              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-white/10">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">الكاشير المسؤول:</span>
+                  <span className="text-white font-bold">{openShift?.openedBy || currentUser?.name}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">بدء الوردية:</span>
+                  <span className="text-amber-300 font-mono text-[11px]">
+                    {openShift?.openedAt
+                      ? new Date(openShift.openedAt).toLocaleTimeString("ar-EG", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "الآن"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">إيراد الحلاقة:</span>
+                  <span className="font-mono font-bold text-white">
+                    {shiftStats?.servicesTotal || 0} ج
+                  </span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">إيراد المنتجات:</span>
+                  <span className="font-mono font-bold text-white">
+                    {shiftStats?.retailTotal || 0} ج
+                  </span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">سلف المختصين:</span>
+                  <span className="font-mono font-bold text-rose-300">
+                    -{shiftStats?.advancesPayouts || 0} ج
+                  </span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">المصروفات:</span>
+                  <span className="font-mono font-bold text-rose-300">
+                    -{shiftStats?.expensesTotal || 0} ج
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[11px]">
+                <span className="text-slate-400 font-bold">المقبوضات:</span>
+                <span className="font-mono text-slate-300">
+                  كاش: <strong className="text-amber-300">{shiftStats?.cashCollected || 0} ج</strong> • 
+                  إلكتروني:{" "}
+                  <strong className="text-sky-300">
+                    {(shiftStats?.visaCollected || 0) +
+                      (shiftStats?.instapayCollected || 0) +
+                      (shiftStats?.vodafoneCollected || 0)}{" "}
+                    ج
+                  </strong>
+                </span>
+              </div>
+
+              {/* Expected Drawer Cash */}
+              <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-black text-amber-300 block">النقدية المحسوبة المتوقعة بالدرج:</span>
+                  <span className="text-[10px] text-slate-400">كاش المقبوضات - سلف الكاش - مصروفات الكاش</span>
+                </div>
+                <span className="text-lg font-mono font-black text-amber-400">
+                  {shiftStats?.expectedCash || 0} ج.م
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={handleExecuteCloseShift} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  النقدية الفعلية بعد الجرد بالدرج (ج.م) *:
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={shiftForm.actualCash}
+                  onChange={(e) => setShiftForm({ ...shiftForm, actualCash: Number(e.target.value) })}
+                  className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-base focus:border-amber-400"
+                />
+              </div>
+
+              {/* Live difference indicator */}
+              {(() => {
+                const diff = Number(shiftForm.actualCash) - Number(shiftStats?.expectedCash || 0);
+                return (
+                  <div
+                    className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
+                      diff === 0
+                        ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                        : diff < 0
+                        ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                        : "bg-sky-500/15 border-sky-500/30 text-sky-300"
+                    }`}
+                  >
+                    <span>حالة مطابقة الدرج:</span>
+                    <span className="font-mono font-black">
+                      {diff === 0
+                        ? "النقدية متطابقة تماماً مع الحسابات ✅ (0 ج.م)"
+                        : diff < 0
+                        ? `يوجد عجز نقدي بالدرج: ${diff} ج.م 🔴`
+                        : `يوجد فائض نقدي بالدرج: +${diff} ج.م 🟢`}
+                    </span>
+                  </div>
+                );
+              })()}
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">تم تسليم النقدية إلى *:</label>
+                <div className="space-y-1.5">
+                  <input
+                    type="text"
+                    required
+                    value={shiftForm.handedTo}
+                    onChange={(e) => setShiftForm({ ...shiftForm, handedTo: e.target.value })}
+                    placeholder="مثال: أ/ حمزة عباس (المايسترو - المالك) 👑"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                  />
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      "أ/ حمزة عباس (المايسترو - المالك) 👑",
+                      "مدير الفرع المناوب 👔",
+                      "الخزنة الرئيسية للصالون 🏦",
+                    ].map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setShiftForm({ ...shiftForm, handedTo: opt })}
+                        className="py-0.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[10px] border border-white/5 cursor-pointer"
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">ملاحظات الإقفال (اختياري):</label>
+                <input
+                  type="text"
+                  value={shiftForm.notes}
+                  onChange={(e) => setShiftForm({ ...shiftForm, notes: e.target.value })}
+                  placeholder="أي ملاحظات حول التوريد أو الوردية"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={closingShift}
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Lock className="w-4 h-4" />
+                <span>{closingShift ? "جاري الإقفال..." : "إقفال الوردية وطباعة إيصال التسليم 🔒🖨️"}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          5. QUICK CASH ADVANCE MODAL (سلفة كاش لمختص من الدرج)
+         ───────────────────────────────────────────────────────────── */}
+      {showAdvanceModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-sm bg-[#12121a] border border-sky-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Wallet className="w-5 h-5 text-sky-400" />
+                <h3 className="text-sm font-black text-white">صرف سلفة كاش لمختص من الدرج</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdvanceModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRecordAdvance} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">المتخصص المستلم للسلفة:</label>
+                <select
+                  required
+                  value={advanceSpecId}
+                  onChange={(e) => setAdvanceSpecId(e.target.value)}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                >
+                  <option value="">-- اختر المتخصص --</option>
+                  {specialists.map((sp) => (
+                    <option key={sp.id} value={sp.id}>
+                      {sp.name} • كرسي #{sp.chairNumber} ({sp.branch?.name})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">المبلغ المصروف (ج.م):</label>
+                <input
+                  type="number"
+                  min={1}
+                  required
+                  value={advanceAmount}
+                  onChange={(e) => setAdvanceAmount(Number(e.target.value))}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">البيان أو الملاحظات:</label>
+                <input
+                  type="text"
+                  value={advanceNotes}
+                  onChange={(e) => setAdvanceNotes(e.target.value)}
+                  placeholder="سلفة نقدية من درج الكاشير"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300">
+                ⚡ سيتم خصم هذا المبلغ فورياً من نقدية الدرج الحالية، وتسجيله في كشف حساب المتخصص كحركة سلفة مدينة (-).
+              </div>
+
+              <button
+                type="submit"
+                disabled={savingAdvance}
+                className="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs transition shadow-lg shadow-sky-500/20 cursor-pointer disabled:opacity-50"
+              >
+                {savingAdvance ? "جاري التسجيل..." : "تأكيد صرف السلفة وتحديث الدرج 💸"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. QUICK TREASURY / SAFE SUMMARY MODAL (ملخص اليومية والخزنة)
+         ───────────────────────────────────────────────────────────── */}
+      {showTreasuryModal && treasurySummary && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans no-print"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-md bg-[#12121a] border border-emerald-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-sm font-black text-white">ملخص خزنة ودرج اليوم</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTreasuryModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 rounded-2xl bg-black/60 border border-white/10">
+                  <span className="text-slate-400 block text-[10px]">إجمالي المبيعات اليوم:</span>
+                  <span className="text-lg font-mono font-black text-white">
+                    {treasurySummary.totalSales} ج.م
+                  </span>
+                </div>
+                <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30">
+                  <span className="text-amber-300 font-bold block text-[10px]">صافي نقدية الدرج الآن:</span>
+                  <span className="text-lg font-mono font-black text-amber-400">
+                    {treasurySummary.netDrawerCash} ج.م
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">حلاقة وخدمات وبكجات:</span>
+                  <span className="font-mono text-white font-bold">{treasurySummary.servicesTotal} ج.م</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">بيع منتجات ومستحضرات:</span>
+                  <span className="font-mono text-white font-bold">{treasurySummary.retailTotal} ج.م</span>
+                </div>
+                <div className="flex justify-between text-emerald-300">
+                  <span>مقبوضات كاش نقدي:</span>
+                  <span className="font-mono font-bold">+{treasurySummary.cashCollected} ج.م</span>
+                </div>
+                <div className="flex justify-between text-sky-300">
+                  <span>مقبوضات إلكتروني (فيزا/انستاباي/فودافون):</span>
+                  <span className="font-mono font-bold">+{treasurySummary.electronicCollected} ج.م</span>
+                </div>
+                <div className="flex justify-between text-rose-300">
+                  <span>سلف نقدية منصرفة من الدرج:</span>
+                  <span className="font-mono font-bold">-{treasurySummary.advancesPaid} ج.م</span>
+                </div>
+                <div className="flex justify-between text-rose-300">
+                  <span>مصروفات ونثريات نقدية:</span>
+                  <span className="font-mono font-bold">-{treasurySummary.expensesPaid} ج.م</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowTreasuryModal(false)}
+                className="w-full py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-black text-xs transition cursor-pointer"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          7. THERMAL SHIFT HANDOVER Z-REPORT (80MM PRINT TEMPLATE)
+         ───────────────────────────────────────────────────────────── */}
+      {lastClosedShift && (
+        <div id="shift-handover-receipt" className="hidden print:block text-black font-sans" dir="rtl">
+          <div className="text-center space-y-1 border-b-2 border-black pb-2 mb-2">
+            <h2 className="text-lg font-black tracking-wider">صالون حلاقة صدام VIP</h2>
+            <p className="text-[11px] font-mono font-bold">تقرير إقفال وتسليم وردية الكاشير (Z-Report)</p>
+            <p className="text-[10px]">{lastClosedShift.branch?.name || "فرع حدائق القبة"}</p>
+            <p className="text-[11px] font-black font-mono">وردية رقم: #{lastClosedShift.shiftNumber}</p>
+            <p className="text-[10px]">الكاشير: {lastClosedShift.openedBy}</p>
+            <p className="text-[10px] font-mono">
+              تاريخ الإقفال: {new Date(lastClosedShift.closedAt || new Date()).toLocaleDateString("ar-EG")} •{" "}
+              {new Date(lastClosedShift.closedAt || new Date()).toLocaleTimeString("ar-EG")}
+            </p>
+          </div>
+
+          <div className="text-[11px] space-y-1.5 border-b border-black pb-2 mb-2">
+            <div className="flex justify-between">
+              <span>عدد الفواتير / التذاكر:</span>
+              <strong>{lastClosedShift.ticketsCount} تذكرة</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>إيراد الحلاقة والخدمات:</span>
+              <strong>{lastClosedShift.servicesTotal} ج.م</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>إيراد بيع المنتجات والمستحضرات:</span>
+              <strong>{lastClosedShift.retailTotal} ج.م</strong>
+            </div>
+            <div className="flex justify-between font-bold">
+              <span>إجمالي الإيرادات:</span>
+              <strong>
+                {(lastClosedShift.servicesTotal || 0) + (lastClosedShift.retailTotal || 0)} ج.م
+              </strong>
+            </div>
+          </div>
+
+          <div className="text-[11px] space-y-1 border-b border-black pb-2 mb-2">
+            <p className="font-black">تفاصيل المقبوضات والدرج:</p>
+            <div className="flex justify-between">
+              <span>المقبوض نقداً (كاش):</span>
+              <strong>{lastClosedShift.cashCollected} ج.م</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>فيزا وبطاقات بنكية:</span>
+              <strong>{lastClosedShift.visaCollected} ج.م</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>انستاباي InstaPay:</span>
+              <strong>{lastClosedShift.instapayCollected} ج.م</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>فودافون كاش:</span>
+              <strong>{lastClosedShift.vodafoneCollected} ج.م</strong>
+            </div>
+            <div className="flex justify-between text-rose-700">
+              <span>سلف منصرفة للمختصين:</span>
+              <strong>-{lastClosedShift.advancesPayouts} ج.م</strong>
+            </div>
+            <div className="flex justify-between text-rose-700">
+              <span>مصروفات ونثريات نقدية:</span>
+              <strong>-{lastClosedShift.expensesTotal} ج.م</strong>
+            </div>
+          </div>
+
+          <div className="text-[12px] space-y-1 border-b-2 border-black pb-2 mb-2 font-black">
+            <div className="flex justify-between">
+              <span>النقدية المتوقعة بالدرج:</span>
+              <span className="font-mono">{lastClosedShift.expectedCash} ج.م</span>
+            </div>
+            <div className="flex justify-between">
+              <span>النقدية الفعلية المسلمة:</span>
+              <span className="font-mono text-base">{lastClosedShift.actualCash} ج.م</span>
+            </div>
+            <div className="flex justify-between">
+              <span>الفارق (مطابقة / عجز / زيادة):</span>
+              <span className="font-mono">
+                {lastClosedShift.difference === 0
+                  ? "متطابق تماماً (0 ج.م) ✅"
+                  : `${lastClosedShift.difference} ج.م`}
+              </span>
+            </div>
+          </div>
+
+          <div className="text-[11px] space-y-2 border-b border-black pb-2 mb-2">
+            <div>
+              <span className="block font-bold">تم تسليم النقدية إلى:</span>
+              <span className="font-black text-xs block mt-0.5">
+                👑 {lastClosedShift.handedTo || "أ/ حمزة عباس (المايسترو)"}
+              </span>
+            </div>
+            {lastClosedShift.notes && (
+              <div>
+                <span className="block font-bold text-[10px]">ملاحظات الإقفال:</span>
+                <span className="text-[10px] block">{lastClosedShift.notes}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="text-[10px] grid grid-cols-2 gap-4 pt-3 pb-4">
+            <div className="text-center space-y-6">
+              <p className="font-bold">توقيع الكاشير المسلّم</p>
+              <p className="border-t border-black pt-1">.........................</p>
+            </div>
+            <div className="text-center space-y-6">
+              <p className="font-bold">توقيع المستلم (المالك)</p>
+              <p className="border-t border-black pt-1">.........................</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          8. LUXURY VIP FLOATING TOAST NOTIFICATION (NO WINDOWS ALERTS!)
+         ───────────────────────────────────────────────────────────── */}
+      {posToast && (
+        <div
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] sm:w-auto animate-fade-in font-sans no-print"
+          dir="rtl"
+        >
+          <div
+            className={`py-3 px-5 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3 text-xs font-black ${
+              posToast.type === "success"
+                ? "bg-emerald-950/90 border-emerald-500/60 text-emerald-200 shadow-emerald-950/50"
+                : posToast.type === "error"
+                ? "bg-rose-950/90 border-rose-500/60 text-rose-200 shadow-rose-950/50"
+                : "bg-amber-950/90 border-amber-500/60 text-amber-200 shadow-amber-950/50"
+            }`}
+          >
+            <span className="text-base">
+              {posToast.type === "success" ? "✅" : posToast.type === "error" ? "⚠️" : "👑"}
+            </span>
+            <span className="flex-1 leading-relaxed">{posToast.message}</span>
+            <button
+              onClick={() => setPosToast(null)}
+              className="p-1 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}

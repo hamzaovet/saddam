@@ -303,7 +303,22 @@ export async function PATCH(req: Request) {
                 branchId: ticket.branchId,
                 type: "COMMISSION_EARNED",
                 amount: commAmount,
-                notes: `عمولة تذكرة رقم #${ticket.ticketNumber} للعميل (${ticket.customerName})`,
+                notes: `عمولة تذكرة رقم #${ticket.ticketNumber} للعميل (${ticket.customerName}) - خدمات ${ticket.servicesTotal} ج.م بنسبة (${commRate}%)`,
+                recordedBy: cashierName || "الكاشير",
+              },
+            });
+          } catch {}
+        }
+
+        if (tipNum > 0) {
+          try {
+            await prisma.specialistLedger.create({
+              data: {
+                specialistId: ticket.specialistId,
+                branchId: ticket.branchId,
+                type: "TIP_EARNED",
+                amount: tipNum,
+                notes: `إكرامية / Tip من العميل (${ticket.customerName}) لتذكرة #${ticket.ticketNumber}`,
                 recordedBy: cashierName || "الكاشير",
               },
             });

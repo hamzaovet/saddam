@@ -28,6 +28,8 @@ model Branch {
   ledgers         SpecialistLedger[]
   offers          Offer[]
   chatMessages    ChatMessage[]
+  shifts          CashShift[]
+  expenses        TreasuryExpense[]
 }
 
 // ----------------------------------------------------
@@ -274,4 +276,58 @@ model ChatMessage {
   isRead          Boolean            @default(false)
   createdAt       DateTime           @default(now())
 }
+
+// ----------------------------------------------------
+// 13. CASH SHIFTS & DRAWER CLOSING (إقفال الورديات وتسليم النقدية)
+// ----------------------------------------------------
+model CashShift {
+  id                String             @id @default(cuid())
+  shiftNumber       String             @unique // SHIFT-XXXX
+  branchId          String
+  branch            Branch             @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  cashierName       String
+  openedAt          DateTime           @default(now())
+  closedAt          DateTime?
+  status            String             @default("OPEN") // OPEN, CLOSED
+  
+  // Financial breakdown
+  ticketsCount      Int                @default(0)
+  servicesTotal     Float              @default(0) // إجمالي الحلاقة
+  retailTotal       Float              @default(0) // إجمالي مبيعات المنتجات
+  cashCollected     Float              @default(0) // نقدية كاش مقبوضة
+  visaCollected     Float              @default(0) // فيزا وماستر
+  instapayCollected Float              @default(0) // انستاباي
+  vodafoneCollected Float              @default(0) // فودافون كاش
+  
+  advancesPayouts   Float              @default(0) // سلف ومستحقات خرجت نقداً
+  expensesTotal     Float              @default(0) // مصروفات ونثريات خرجت نقداً
+  
+  expectedCash      Float              @default(0) // النقدية الصافية المطلوبة بالدرج
+  actualCash        Float              @default(0) // النقدية الفعلية المسلمة
+  difference        Float              @default(0) // عجز أو زيادة (+/-)
+  
+  handedTo          String             @default("المالك (Maestro)") // تم تسليم الفلوس لمين
+  notes             String?
+  
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+// ----------------------------------------------------
+// 14. GENERAL TREASURY EXPENSES (مصروفات ونثريات الخزينة)
+// ----------------------------------------------------
+model TreasuryExpense {
+  id              String             @id @default(cuid())
+  branchId        String?
+  branch          Branch?            @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  category        String             // SUPPLIES, UTILITIES, RENT, REFRESHMENTS, MAINTENANCE, OTHER
+  amount          Float
+  paymentMethod   String             @default("CASH") // CASH, CARD, INSTAPAY, VODAFONE_CASH
+  description     String
+  recipientName   String?            // اسم المستلم / المورد
+  recordedBy      String             @default("الكاشير")
+  date            DateTime           @default(now())
+  createdAt       DateTime           @default(now())
+}
+
 

@@ -49,6 +49,12 @@ import {
   Tag,
   Eye,
   Upload,
+  FileText,
+  Printer,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Receipt,
+  Wallet,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -61,6 +67,7 @@ export default function AdminPage() {
   // Active Tab
   const [activeTab, setActiveTab] = useState<
     | "overview"
+    | "treasury"
     | "specialists"
     | "services"
     | "offers"
@@ -86,6 +93,37 @@ export default function AdminPage() {
   const [tickets, setTickets] = useState<any[]>([]);
   const [ledgers, setLedgers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Treasury, Cash Accounts & Shifts States
+  const [treasuryPeriod, setTreasuryPeriod] = useState<string>("TODAY");
+  const [treasurySummary, setTreasurySummary] = useState<any>(null);
+  const [treasuryTransactions, setTreasuryTransactions] = useState<any[]>([]);
+  const [shifts, setShifts] = useState<any[]>([]);
+  const [specialistsSummary, setSpecialistsSummary] = useState<any[]>([]);
+  const [specialistStatement, setSpecialistStatement] = useState<any>(null);
+  const [selectedLedgerSpecialistId, setSelectedLedgerSpecialistId] = useState<string>("");
+  const [specialistSubView, setSpecialistSubView] = useState<"CARDS" | "STATEMENT">("CARDS");
+
+  // Expense Modal State
+  const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
+  const [expenseForm, setExpenseForm] = useState({
+    amount: 0,
+    category: "SUPPLIES",
+    paymentMethod: "CASH",
+    description: "",
+    recipientName: "",
+    branchId: "",
+  });
+
+  // Shift Close Modal in Admin
+  const [showAdminCloseShiftModal, setShowAdminCloseShiftModal] = useState<boolean>(false);
+  const [adminShiftStats, setAdminShiftStats] = useState<any>(null);
+  const [adminOpenShift, setAdminOpenShift] = useState<any>(null);
+  const [adminShiftForm, setAdminShiftForm] = useState({
+    actualCash: 0,
+    handedTo: "أ/ حمزة عباس (المايسترو - المالك) 👑",
+    notes: "",
+  });
 
   // Audio Alarm State for Bookings
   const [alarmBooking, setAlarmBooking] = useState<any>(null);
@@ -328,6 +366,8 @@ export default function AdminPage() {
         resT,
         resL,
         resChat,
+        resTreasury,
+        resShifts,
       ] = await Promise.all([
         fetch("/api/settings"),
         fetch("/api/branches"),
@@ -339,8 +379,10 @@ export default function AdminPage() {
         fetch("/api/customers"),
         fetch("/api/users"),
         fetch("/api/tickets"),
-        fetch("/api/ledgers"),
+        fetch(`/api/ledgers?specialistId=${selectedLedgerSpecialistId || ""}&branchId=${selectedBranchId}`),
         fetch("/api/chat?limit=50"),
+        fetch(`/api/treasury?period=${treasuryPeriod}&branchId=${selectedBranchId}`),
+        fetch(`/api/shifts?branchId=${selectedBranchId}`),
       ]);
 
       const [
@@ -356,6 +398,8 @@ export default function AdminPage() {
         dataT,
         dataL,
         dataChat,
+        dataTreasury,
+        dataShifts,
       ] = await Promise.all([
         resSet.json(),
         resB.json(),
@@ -369,6 +413,8 @@ export default function AdminPage() {
         resT.json(),
         resL.json(),
         resChat.json(),
+        resTreasury.json(),
+        resShifts.json(),
       ]);
 
       if (dataSet.success && dataSet.settings) setSettings(dataSet.settings);
@@ -378,14 +424,30 @@ export default function AdminPage() {
           setSpecForm((prev) => ({ ...prev, branchId: dataB.branches[0].id }));
         }
       }
-      if (dataSpec.success && dataSpec.specialists) setSpecialists(dataSpec.specialists);
+      if (dataSpec.success && dataSpec.specialists) {
+        setSpecialists(dataSpec.specialists);
+        if (!selectedLedgerSpecialistId && dataSpec.specialists.length > 0) {
+          setSelectedLedgerSpecialistId(dataSpec.specialists[0].id);
+        }
+      }
       if (dataS.success && dataS.services) setServices(dataS.services);
       if (dataO.success && dataO.offers) setOffers(dataO.offers);
       if (dataP.success && dataP.products) setProducts(dataP.products);
       if (dataCust.success && dataCust.customers) setCustomers(dataCust.customers);
       if (dataU.success && dataU.users) setUsers(dataU.users);
       if (dataT.success && dataT.tickets) setTickets(dataT.tickets);
-      if (dataL.success && dataL.ledgers) setLedgers(dataL.ledgers);
+      if (dataL.success && dataL.ledgers) {
+        setLedgers(dataL.ledgers);
+        if (dataL.statement) setSpecialistStatement(dataL.statement);
+        if (dataL.specialistsSummary) setSpecialistsSummary(dataL.specialistsSummary);
+      }
+      if (dataTreasury.success && dataTreasury.summary) {
+        setTreasurySummary(dataTreasury.summary);
+        setTreasuryTransactions(dataTreasury.transactions || []);
+      }
+      if (dataShifts.success && dataShifts.shifts) {
+        setShifts(dataShifts.shifts);
+      }
 
       // Bookings & Audio Alarm Check
       if (dataBk.success && dataBk.bookings) {
@@ -423,6 +485,20 @@ export default function AdminPage() {
     }
   };
 
+  const fetchSpecialistStatement = async (specId: string) => {
+    if (!specId) return;
+    try {
+      const res = await fetch(`/api/ledgers?specialistId=${specId}&branchId=${selectedBranchId}`);
+      const data = await res.json();
+      if (data.success) {
+        if (data.statement) setSpecialistStatement(data.statement);
+        if (data.ledgers) setLedgers(data.ledgers);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     if (currentUser) {
       loadAllData();
@@ -434,7 +510,7 @@ export default function AdminPage() {
   // Master Kill Switch Toggle
   const handleToggleKillSwitch = async () => {
     if (currentUser?.role !== "owner") {
-      alert("عفواً، خاصية تعطيل النظام بالكامل مخصصة للمالك فقط (Maestro)");
+      showToast("error", "عفواً، خاصية تعطيل النظام بالكامل مخصصة للمالك فقط (Maestro)");
       return;
     }
 
@@ -457,14 +533,15 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         setSettings(data.settings);
-        alert(
+        showToast(
+          "success",
           data.settings.systemLocked
             ? "تم قفل النظام بالكامل بنجاح 🔒"
             : "تم فتح النظام وإلغاء القفل بنجاح 🔓"
         );
       }
     } catch {
-      alert("فشل تحديث حالة القفل");
+      showToast("error", "فشل تحديث حالة القفل");
     }
   };
 
@@ -521,7 +598,7 @@ export default function AdminPage() {
           prev.map((u) => (u.id === userId ? { ...u, isActive: !currentStatus } : u))
         );
       } else {
-        alert(data.error || "فشل تعديل حالة الحساب");
+        showToast("error", data.error || "فشل تعديل حالة الحساب");
       }
     } catch (err) {
       console.error(err);
@@ -600,9 +677,9 @@ export default function AdminPage() {
           );
           setShowUserModal(false);
           setEditingUser(null);
-          alert("تم حفظ وتحديث بيانات المستخدم بنجاح! ✅");
+          showToast("success", "تم حفظ وتحديث بيانات المستخدم بنجاح! ✅");
         } else {
-          alert(data.error || "فشل تعديل المستخدم");
+          showToast("error", data.error || "فشل تعديل المستخدم");
         }
       } else {
         const res = await fetch("/api/users", {
@@ -614,13 +691,13 @@ export default function AdminPage() {
         if (data.success) {
           await loadAllData();
           setShowUserModal(false);
-          alert("تم إضافة المستخدم بنجاح! ✅");
+          showToast("success", "تم إضافة المستخدم بنجاح! ✅");
         } else {
-          alert(data.error || "فشل إضافة المستخدم");
+          showToast("error", data.error || "فشل إضافة المستخدم");
         }
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -704,9 +781,9 @@ export default function AdminPage() {
           );
           setShowOfferModal(false);
           setEditingOffer(null);
-          alert("تم تعديل العرض الملكي بنجاح! 👑");
+          showToast("success", "تم تعديل العرض الملكي بنجاح! 👑");
         } else {
-          alert(data.error || "فشل تعديل العرض");
+          showToast("error", data.error || "فشل تعديل العرض");
         }
       } else {
         const res = await fetch("/api/offers", {
@@ -718,13 +795,13 @@ export default function AdminPage() {
         if (data.success) {
           setOffers((prev) => [...prev, data.offer]);
           setShowOfferModal(false);
-          alert("تم إضافة العرض الملكي الجديد بنجاح! 👑");
+          showToast("success", "تم إضافة العرض الملكي الجديد بنجاح! 👑");
         } else {
-          alert(data.error || "فشل إضافة العرض");
+          showToast("error", data.error || "فشل إضافة العرض");
         }
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -735,11 +812,12 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         setOffers((prev) => prev.filter((o) => o.id !== id));
+        showToast("success", "تم حذف العرض بنجاح 🗑️");
       } else {
-        alert(data.error || "فشل الحذف");
+        showToast("error", data.error || "فشل الحذف");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -811,7 +889,7 @@ export default function AdminPage() {
         setChatReplyText("");
       }
     } catch {
-      alert("فشل إرسال الرد");
+      showToast("error", "فشل إرسال الرد");
     } finally {
       setChatSending(false);
     }
@@ -838,11 +916,12 @@ export default function AdminPage() {
         await loadAllData();
         setShowSpecialistModal(false);
         setEditingSpecialist(null);
+        showToast("success", "تم حفظ بيانات المتخصص بنجاح ✂️");
       } else {
-        alert(data.error || "فشل حفظ بيانات المتخصص");
+        showToast("error", data.error || "فشل حفظ بيانات المتخصص");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -853,11 +932,12 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         await loadAllData();
+        showToast("success", `تم حذف المتخصص "${name}" بنجاح 🗑️`);
       } else {
-        alert(data.error || "فشل حذف المتخصص");
+        showToast("error", data.error || "فشل حذف المتخصص");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -886,11 +966,12 @@ export default function AdminPage() {
         await loadAllData();
         setShowShiftStatusModal(false);
         setStatusTargetSpecialist(null);
+        showToast("success", "تم تحديث حالة الوردية والحضور بنجاح 🟢");
       } else {
-        alert(data.error || "فشل تحديث حالة الوردية");
+        showToast("error", data.error || "فشل تحديث حالة الوردية");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -934,12 +1015,12 @@ export default function AdminPage() {
       if (data.success) {
         await loadAllData();
         setShowPayoutModal(false);
-        alert("تم تسجيل المعاملة المالية في سجل المتخصص بنجاح! 💵");
+        showToast("success", "تم تسجيل المعاملة المالية في سجل المتخصص والخزينة بنجاح! 💵");
       } else {
-        alert(data.error || "فشل تسجيل الحركة المالية");
+        showToast("error", data.error || "فشل تسجيل الحركة المالية");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -962,11 +1043,12 @@ export default function AdminPage() {
         await loadAllData();
         setShowServiceModal(false);
         setEditingService(null);
+        showToast("success", "تم حفظ بيانات الخدمة بنجاح 💈");
       } else {
-        alert(data.error || "فشل حفظ الخدمة");
+        showToast("error", data.error || "فشل حفظ الخدمة");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -992,10 +1074,10 @@ export default function AdminPage() {
       if (data.success && data.url) {
         onSuccess(data.url);
       } else {
-        alert(data.error || "فشل رفع الصورة على ImgBB");
+        showToast("error", data.error || "فشل رفع الصورة على ImgBB");
       }
     } catch {
-      alert("تعذر الاتصال بخادم رفع الصور");
+      showToast("error", "تعذر الاتصال بخادم رفع الصور");
     } finally {
       setUploadingImage(false);
       e.target.value = "";
@@ -1024,11 +1106,12 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success) {
         await loadAllData();
+        showToast("success", `تم حذف الخدمة "${name}" بنجاح 🗑️`);
       } else {
-        alert(data.error || "فشل حذف الخدمة");
+        showToast("error", data.error || "فشل حذف الخدمة");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -1155,6 +1238,106 @@ export default function AdminPage() {
     }
   };
 
+  // ─────────────────────────────────────────────────────────────
+  // Treasury & Expense Handlers
+  // ─────────────────────────────────────────────────────────────
+  const handleSaveExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!expenseForm.amount || !expenseForm.description.trim()) {
+      showToast("error", "المبلغ والبيان مطلوبان لتسجيل المصروف");
+      return;
+    }
+    try {
+      const res = await fetch("/api/treasury", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...expenseForm,
+          recordedBy: currentUser?.name || "المالك (Maestro)",
+          branchId: expenseForm.branchId || (selectedBranchId !== "ALL" ? selectedBranchId : branches[0]?.id),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", "تم تسجيل المصروف بالخزينة بنجاح 🧾");
+        setShowExpenseModal(false);
+        setExpenseForm({
+          amount: 0,
+          category: "SUPPLIES",
+          paymentMethod: "CASH",
+          description: "",
+          recipientName: "",
+          branchId: "",
+        });
+        await loadAllData();
+      } else {
+        showToast("error", data.error || "فشل تسجيل المصروف");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleOpenAdminCloseShift = async () => {
+    try {
+      const res = await fetch(`/api/shifts?branchId=${selectedBranchId}`);
+      const data = await res.json();
+      if (data.success) {
+        setAdminShiftStats(data.liveStats);
+        setAdminOpenShift(data.openShift);
+        setAdminShiftForm({
+          actualCash: data.liveStats?.expectedCash || 0,
+          handedTo: "أ/ حمزة عباس (المايسترو - المالك) 👑",
+          notes: "",
+        });
+        setShowAdminCloseShiftModal(true);
+      }
+    } catch {
+      showToast("error", "تعذر جلب بيانات الوردية الحالية");
+    }
+  };
+
+  const handleAdminExecuteCloseShift = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminOpenShift) {
+      showToast("error", "لا توجد وردية مفتوحة حالياً لهذا الفرع لتسليمها");
+      return;
+    }
+    try {
+      const res = await fetch("/api/shifts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "CLOSE",
+          shiftId: adminOpenShift.id,
+          actualCash: Number(adminShiftForm.actualCash),
+          handedTo: adminShiftForm.handedTo,
+          notes: adminShiftForm.notes,
+          expectedCash: adminShiftStats?.expectedCash || 0,
+          ticketsCount: adminShiftStats?.ticketsCount || 0,
+          servicesTotal: adminShiftStats?.servicesTotal || 0,
+          retailTotal: adminShiftStats?.retailTotal || 0,
+          cashCollected: adminShiftStats?.cashCollected || 0,
+          visaCollected: adminShiftStats?.visaCollected || 0,
+          instapayCollected: adminShiftStats?.instapayCollected || 0,
+          vodafoneCollected: adminShiftStats?.vodafoneCollected || 0,
+          advancesPayouts: adminShiftStats?.advancesPayouts || 0,
+          expensesTotal: adminShiftStats?.expensesTotal || 0,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", `تم اعتماد وإقفال الوردية بنجاح وتسليم النقدية إلى (${adminShiftForm.handedTo}) 🔒`);
+        setShowAdminCloseShiftModal(false);
+        await loadAllData();
+      } else {
+        showToast("error", data.error || "فشل إقفال الوردية");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    }
+  };
+
   // Branch Actions
   const handleSaveBranch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1175,11 +1358,12 @@ export default function AdminPage() {
           phone: "01121537537",
           whatsapp: "01121537537",
         });
+        showToast("success", "تم إضافة الفرع الجديد بنجاح 📍");
       } else {
-        alert(data.error || "فشل إضافة الفرع");
+        showToast("error", data.error || "فشل إضافة الفرع");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -1350,10 +1534,11 @@ export default function AdminPage() {
         <div className="flex flex-wrap items-center gap-1.5 max-w-7xl mx-auto">
           {[
             { id: "overview", label: "نظرة عامة 📊", icon: LayoutDashboard },
+            { id: "treasury", label: "الخزنة والحسابات 💰", icon: DollarSign },
             { id: "bookings", label: `الحجوزات 📅 ${bookings.filter(b => b.status === "PENDING").length > 0 ? `(${bookings.filter(b => b.status === "PENDING").length})` : ""}`, icon: Calendar },
             { id: "offers", label: "العروض الملكية 👑", icon: Sparkles },
             { id: "chat", label: `شات العملاء 💬 ${unreadChatTotal > 0 ? `(${unreadChatTotal})` : ""}`, icon: MessageSquare },
-            { id: "specialists", label: "المتخصصين والورديات ✂️", icon: Scissors },
+            { id: "specialists", label: "المتخصصين وكشف الأجور ✂️", icon: Scissors },
             { id: "services", label: "الخدمات والأسعار 💈", icon: Award },
             { id: "inventory", label: "المخزن والتجميل 🛍️", icon: ShoppingBag },
             { id: "customers", label: "قاعدة العملاء 👥", icon: Users },
@@ -1463,6 +1648,369 @@ export default function AdminPage() {
                   <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
                   <span>فتح نافذة المحادثات 💬</span>
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB: TREASURY, CASH REGISTER & SHIFT HANDOVERS (الخزنة والحسابات وإقفال الوردية)
+           ======================================================== */}
+        {activeTab === "treasury" && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Treasury Header & Control Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <span>الخزنة والحسابات اليومية وإقفال الورديات 💰</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold border border-amber-500/30">
+                    مباشر لحظي
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  متابعة شاملة لإيرادات الحلاقة، مبيعات المنتجات، النقدية بالدرج، وسجل تسليم الورديات للمالك 👑
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setShowExpenseModal(true)}
+                  className="py-2 px-3.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition flex items-center gap-1.5 border border-white/10 cursor-pointer shadow-sm"
+                >
+                  <Plus className="w-3.5 h-3.5 text-amber-400" />
+                  <span>تسجيل مصروف / نثريات 🧾</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleOpenAdminCloseShift}
+                  className="py-2 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 cursor-pointer"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>إقفال وتسليم الوردية 🔒</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Period Filter Buttons */}
+            <div className="flex items-center gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/10 w-fit flex-wrap">
+              {[
+                { id: "TODAY", label: "اليوم 📅" },
+                { id: "YESTERDAY", label: "أمس ⏪" },
+                { id: "WEEK", label: "هذا الأسبوع 📊" },
+                { id: "MONTH", label: "هذا الشهر 🗓️" },
+                { id: "ALL", label: "كل الفترات ♾️" },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setTreasuryPeriod(p.id)}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    treasuryPeriod === p.id
+                      ? "bg-amber-500 text-slate-950 font-black shadow-md"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {/* 5 Financial Metric Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+              {/* 1. Total Inflow */}
+              <div className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2 relative overflow-hidden shadow-lg">
+                <span className="text-xs text-slate-400 font-bold block">إجمالي الإيرادات (Inflow)</span>
+                <p className="text-2xl font-black text-amber-400 font-mono">
+                  {(treasurySummary?.totalRevenue || 0).toLocaleString()} ج.م
+                </p>
+                <div className="text-[10px] text-slate-400 space-y-0.5 pt-1 border-t border-white/5 font-medium">
+                  <div className="flex justify-between">
+                    <span>حلاقة وبكجات:</span>
+                    <span className="text-amber-300 font-mono font-bold">{treasurySummary?.servicesRevenue || 0} ج</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>مبيعات منتجات:</span>
+                    <span className="text-cyan-300 font-mono font-bold">{treasurySummary?.retailRevenue || 0} ج</span>
+                  </div>
+                  {treasurySummary?.tipsTotal > 0 && (
+                    <div className="flex justify-between text-emerald-400">
+                      <span>إكراميات Tips:</span>
+                      <span className="font-mono font-bold">+{treasurySummary.tipsTotal} ج</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 2. Cash Collected */}
+              <div className="p-4 rounded-3xl bg-[#14141e] border border-emerald-500/30 space-y-2 relative overflow-hidden shadow-lg">
+                <span className="text-xs text-slate-400 font-bold block">النقدية الكاش المحصلة</span>
+                <p className="text-2xl font-black text-emerald-400 font-mono">
+                  {(treasurySummary?.cashRevenue || 0).toLocaleString()} ج.م
+                </p>
+                <span className="text-[10px] text-emerald-300 font-bold block pt-1 border-t border-white/5">
+                  💵 المقبوض نقداً بالدرج
+                </span>
+              </div>
+
+              {/* 3. Electronic Payments */}
+              <div className="p-4 rounded-3xl bg-[#14141e] border border-sky-500/30 space-y-2 relative overflow-hidden shadow-lg">
+                <span className="text-xs text-slate-400 font-bold block">الدفع الإلكتروني (فيزا/محافظ)</span>
+                <p className="text-2xl font-black text-sky-400 font-mono">
+                  {(
+                    (treasurySummary?.visaRevenue || 0) +
+                    (treasurySummary?.instapayRevenue || 0) +
+                    (treasurySummary?.vodafoneRevenue || 0)
+                  ).toLocaleString()}{" "}
+                  ج.م
+                </p>
+                <div className="text-[10px] text-slate-400 space-y-0.5 pt-1 border-t border-white/5 font-medium">
+                  <div className="flex justify-between">
+                    <span>فيزا 💳:</span>
+                    <span className="text-sky-300 font-mono">{treasurySummary?.visaRevenue || 0} ج</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>انستاباي 📱:</span>
+                    <span className="text-purple-300 font-mono">{treasurySummary?.instapayRevenue || 0} ج</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>فودافون كاش 🔴:</span>
+                    <span className="text-rose-300 font-mono">{treasurySummary?.vodafoneRevenue || 0} ج</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Outflows: Advances, Salaries & Expenses */}
+              <div className="p-4 rounded-3xl bg-[#14141e] border border-rose-500/30 space-y-2 relative overflow-hidden shadow-lg">
+                <span className="text-xs text-slate-400 font-bold block">المسحوبات والمصروفات</span>
+                <p className="text-2xl font-black text-rose-400 font-mono">
+                  {(
+                    (treasurySummary?.specialistPayouts || 0) +
+                    (treasurySummary?.specialistAdvances || 0) +
+                    (treasurySummary?.generalExpenses || 0)
+                  ).toLocaleString()}{" "}
+                  ج.م
+                </p>
+                <div className="text-[10px] text-slate-400 space-y-0.5 pt-1 border-t border-white/5 font-medium">
+                  <div className="flex justify-between">
+                    <span>سلف متخصصين:</span>
+                    <span className="text-rose-300 font-mono">{treasurySummary?.specialistAdvances || 0} ج</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>أجور ومستحقات:</span>
+                    <span className="text-amber-300 font-mono">{treasurySummary?.specialistPayouts || 0} ج</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>نثريات وخامات:</span>
+                    <span className="text-slate-300 font-mono">{treasurySummary?.generalExpenses || 0} ج</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Net Cash In Drawer */}
+              <div className="p-4 rounded-3xl bg-gradient-to-b from-amber-500/20 via-[#14141e] to-[#101018] border-2 border-amber-400 space-y-2 relative overflow-hidden shadow-2xl">
+                <span className="text-xs text-amber-300 font-black block">صافي النقدية بالدرج (العهدة)</span>
+                <p className="text-2xl font-black text-amber-300 font-mono">
+                  {(treasurySummary?.netCashInDrawer || 0).toLocaleString()} ج.م
+                </p>
+                <span className="text-[10px] text-slate-300 font-bold block pt-1 border-t border-amber-500/20">
+                  🪙 المطلوب تسليمه عند الإقفال
+                </span>
+              </div>
+            </div>
+
+            {/* Split Sections: 1. Live Financial Transactions / 2. Closed Shifts Handover Register */}
+            <div className="space-y-6">
+              {/* SECTION A: Real-Time Financial Ledger */}
+              <div className="p-5 rounded-3xl bg-[#14141e] border border-amber-500/25 space-y-4 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+                  <div>
+                    <h4 className="text-sm font-black text-white flex items-center gap-2">
+                      <span>سجل حركات الخزينة والإيرادات اللحظية 📑</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-amber-300 font-mono font-bold">
+                        {treasuryTransactions.length} حركة مسجلة
+                      </span>
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      كل إيراد حلاقة، مبيعات منتجات، سلفة أجور، ومصروف نثريات مسجل بالوقت وطريقة الدفع
+                    </p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-white/10 text-slate-400">
+                        <th className="py-2.5 px-3">التاريخ والوقت</th>
+                        <th className="py-2.5 px-3">نوع الحركة</th>
+                        <th className="py-2.5 px-3">البيان والتفاصيل</th>
+                        <th className="py-2.5 px-3">الفرع</th>
+                        <th className="py-2.5 px-3">طريقة الدفع</th>
+                        <th className="py-2.5 px-3 font-mono">المبلغ</th>
+                        <th className="py-2.5 px-3">المسجل بواسطة</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {treasuryTransactions.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-8 text-center text-slate-500 font-bold">
+                            لا توجد حركات مالية مسجلة خلال هذه الفترة
+                          </td>
+                        </tr>
+                      ) : (
+                        treasuryTransactions.map((tx) => (
+                          <tr key={tx.id} className="hover:bg-white/5 transition">
+                            <td className="py-3 px-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+                              {new Date(tx.date).toLocaleDateString("ar-EG", {
+                                month: "numeric",
+                                day: "numeric",
+                              })}{" "}
+                              •{" "}
+                              {new Date(tx.date).toLocaleTimeString("ar-EG", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </td>
+                            <td className="py-3 px-3 whitespace-nowrap">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${
+                                  tx.type === "INCOME_TICKET"
+                                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                                    : tx.type === "SALARY_PAYOUT"
+                                    ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                    : tx.type === "ADVANCE_WITHDRAWAL"
+                                    ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                                    : "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                }`}
+                              >
+                                {tx.badge}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 font-bold text-white max-w-xs truncate">
+                              {tx.title}
+                              {tx.details?.retailTotal > 0 && (
+                                <span className="text-[10px] text-cyan-300 block font-normal">
+                                  منها منتجات: {tx.details.retailTotal} ج.م • حلاقة: {tx.details.servicesTotal} ج.م
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-3 text-slate-400 text-[11px] whitespace-nowrap">
+                              {tx.branchName || "الصالون العام"}
+                            </td>
+                            <td className="py-3 px-3 font-bold text-[11px] whitespace-nowrap">
+                              {tx.paymentMethod === "CASH" && "💵 كاش نقدي"}
+                              {tx.paymentMethod === "CARD" && "💳 فيزا / ماستر"}
+                              {tx.paymentMethod === "INSTAPAY" && "📱 انستاباي"}
+                              {tx.paymentMethod === "VODAFONE_CASH" && "🔴 فودافون كاش"}
+                            </td>
+                            <td className="py-3 px-3 font-mono font-black text-sm whitespace-nowrap">
+                              <span className={tx.isCredit ? "text-emerald-400" : "text-rose-400"}>
+                                {tx.isCredit ? "+" : "-"}
+                                {tx.amount.toLocaleString()} ج.م
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-slate-400 text-[11px] whitespace-nowrap">
+                              {tx.recordedBy}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* SECTION B: Closed Shifts & Cash Handover Archive (مين استلم الفلوس) */}
+              <div className="p-5 rounded-3xl bg-[#14141e] border border-amber-500/25 space-y-4 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+                  <div>
+                    <h4 className="text-sm font-black text-white flex items-center gap-2">
+                      <span>سجل إقفال الورديات وتسليم النقدية 🔒 (مين استلم الفلوس)</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                        {shifts.length} وردية مقفلة
+                      </span>
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      بيان رسمي معتمد بكل وردية أقفلت، المبالغ المسلمة، واسم الشخص الذي استلم النقدية باليد
+                    </p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead>
+                      <tr className="border-b border-white/10 text-slate-400">
+                        <th className="py-2.5 px-3">رقم الوردية</th>
+                        <th className="py-2.5 px-3">الفرع والكاشير</th>
+                        <th className="py-2.5 px-3">وقت الإقفال</th>
+                        <th className="py-2.5 px-3 font-mono">الحلاقة والمنتجات</th>
+                        <th className="py-2.5 px-3 font-mono">الكاش المتوقع</th>
+                        <th className="py-2.5 px-3 font-mono">الكاش الفعلي</th>
+                        <th className="py-2.5 px-3 font-mono">الفارق</th>
+                        <th className="py-2.5 px-3">تم تسليم النقدية إلى</th>
+                        <th className="py-2.5 px-3">الملاحظات</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {shifts.length === 0 ? (
+                        <tr>
+                          <td colSpan={9} className="py-8 text-center text-slate-500 font-bold">
+                            لا توجد ورديات مقفلة ومسلمة حتى الآن
+                          </td>
+                        </tr>
+                      ) : (
+                        shifts.map((s) => (
+                          <tr key={s.id} className="hover:bg-white/5 transition">
+                            <td className="py-3 px-3 font-mono font-black text-amber-300 whitespace-nowrap">
+                              #{s.shiftNumber}
+                            </td>
+                            <td className="py-3 px-3 whitespace-nowrap">
+                              <span className="font-bold text-white block">{s.cashierName}</span>
+                              <span className="text-[10px] text-slate-400">{s.branch?.name}</span>
+                            </td>
+                            <td className="py-3 px-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+                              {s.closedAt
+                                ? new Date(s.closedAt).toLocaleDateString("ar-EG") +
+                                  " • " +
+                                  new Date(s.closedAt).toLocaleTimeString("ar-EG", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "مفتوحة حالياً 🟢"}
+                            </td>
+                            <td className="py-3 px-3 font-mono text-slate-300 text-[11px] whitespace-nowrap">
+                              حلاقة: {s.servicesTotal} ج | منتجات: {s.retailTotal} ج
+                            </td>
+                            <td className="py-3 px-3 font-mono text-slate-300 font-bold whitespace-nowrap">
+                              {s.expectedCash} ج.م
+                            </td>
+                            <td className="py-3 px-3 font-mono font-black text-amber-400 whitespace-nowrap">
+                              {s.actualCash} ج.م
+                            </td>
+                            <td className="py-3 px-3 font-mono font-bold whitespace-nowrap">
+                              {s.difference === 0 ? (
+                                <span className="text-emerald-400">متطابق ✅</span>
+                              ) : s.difference < 0 ? (
+                                <span className="text-rose-400">عجز: {s.difference} ج</span>
+                              ) : (
+                                <span className="text-emerald-300">زيادة: +{s.difference} ج</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-3 whitespace-nowrap">
+                              <span className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-black text-xs inline-block">
+                                👑 {s.handedTo || "أ/ حمزة عباس (المايسترو)"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-slate-400 text-[11px] max-w-xs truncate">
+                              {s.notes || "تم التسليم بالكامل دون ملاحظات"}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -1953,201 +2501,802 @@ export default function AdminPage() {
            ======================================================== */}
         {activeTab === "specialists" && (
           <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            {/* Tab Header & View Switcher */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/10">
               <div>
-                <h3 className="text-base font-black text-white">طاقم المتخصصين والحلاقين وكراسي العمل</h3>
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <Scissors className="w-5 h-5 text-amber-400" />
+                  <span>طاقم المتخصصين والحسابات والمستحقات المالية</span>
+                </h3>
                 <p className="text-xs text-slate-400">
-                  إدارة المتخصصين، حساب الأجور، السلف، ونسب العمولات على الخدمات ✂️
+                  إدارة كراسي العمل، حضور الورديات، كشف الحساب التفصيلي، صرف الأجور، ونسب العمولات والسلف ✂️
                 </p>
               </div>
 
-              <button
-                onClick={() => {
-                  setEditingSpecialist(null);
-                  setSpecForm({
-                    name: "",
-                    phone: "",
-                    title: "خبير حلاقة وتصفيف",
-                    branchId: branches[0]?.id || "",
-                    chairNumber: 1,
-                    payType: "SALARY_PLUS_COMMISSION",
-                    baseSalary: 6000,
-                    commissionRate: 20,
-                    photo: "",
-                    username: "",
-                    password: "",
-                  });
-                  setShowSpecialistModal(true);
-                }}
-                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>إضافة متخصص جديد ✂️</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Sub-view switcher */}
+                <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/60 border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setSpecialistSubView("CARDS")}
+                    className={`py-1.5 px-3.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 ${
+                      specialistSubView === "CARDS"
+                        ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <Scissors className="w-3.5 h-3.5" />
+                    <span>بطاقات الحلاقين والورديات ✂️</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSpecialistSubView("STATEMENT");
+                      if (!selectedLedgerSpecialistId && specialists.length > 0) {
+                        setSelectedLedgerSpecialistId(specialists[0].id);
+                        fetchSpecialistStatement(specialists[0].id);
+                      }
+                    }}
+                    className={`py-1.5 px-3.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 ${
+                      specialistSubView === "STATEMENT"
+                        ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>كشف الحساب والمستحقات 📑</span>
+                  </button>
+                </div>
+
+                {specialistSubView === "CARDS" && (
+                  <button
+                    onClick={() => {
+                      setEditingSpecialist(null);
+                      setSpecForm({
+                        name: "",
+                        phone: "",
+                        title: "خبير حلاقة وتصفيف",
+                        branchId: branches[0]?.id || "",
+                        chairNumber: 1,
+                        payType: "SALARY_PLUS_COMMISSION",
+                        baseSalary: 6000,
+                        commissionRate: 20,
+                        photo: "",
+                        username: "",
+                        password: "",
+                      });
+                      setShowSpecialistModal(true);
+                    }}
+                    className="py-2 px-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>إضافة متخصص جديد ✂️</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {specialists.map((spec) => (
-                <div key={spec.id} className="p-5 rounded-3xl bg-[#14141e] border-2 border-amber-500/30 space-y-4 shadow-xl flex flex-col justify-between hover:border-amber-400 transition">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={spec.photo || "/logo.jpg"} alt={spec.name} className="w-full h-full object-cover" />
+            {/* ─────────────────────────────────────────────────────────────
+                VIEW A: SPECIALIST CARDS & SHIFTS
+               ───────────────────────────────────────────────────────────── */}
+            {specialistSubView === "CARDS" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {specialists.map((spec) => {
+                  const summary = specialistsSummary.find((s) => s.specialist?.id === spec.id);
+                  const balanceDue = summary ? summary.balanceDue : 0;
+
+                  return (
+                    <div
+                      key={spec.id}
+                      className="p-5 rounded-3xl bg-[#14141e] border-2 border-amber-500/30 space-y-4 shadow-xl flex flex-col justify-between hover:border-amber-400 transition"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={spec.photo || "/logo.jpg"}
+                              alt={spec.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-black text-sm text-white truncate">{spec.name}</h4>
+                            <p className="text-[11px] text-slate-400 truncate">{spec.title}</p>
+                            <span className="text-[10px] text-amber-300 font-bold block pt-0.5">
+                              {spec.branch?.name} • كرسي #{spec.chairNumber}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Shift Attendance Status & Reasons */}
+                        <div className="p-3 rounded-2xl bg-black/60 border border-white/5 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-slate-400 font-bold">حالة الوردية والحضور:</span>
+                            <span
+                              className={`text-[10px] font-black py-0.5 px-2.5 rounded-full border ${
+                                spec.status === "AVAILABLE"
+                                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                                  : spec.status === "WITH_CLIENT"
+                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                                  : spec.status === "BREAK"
+                                  ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
+                                  : spec.status === "OFF_DUTY"
+                                  ? "bg-slate-700/80 text-slate-300 border-slate-600"
+                                  : spec.status === "DAY_OFF"
+                                  ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                                  : "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                              }`}
+                            >
+                              {spec.status === "AVAILABLE" && "حاضر وبدأ الوردية 🟢"}
+                              {spec.status === "WITH_CLIENT" && "على الكرسي مع عميل 💺"}
+                              {spec.status === "BREAK" && "استراحة مؤقتة ☕"}
+                              {spec.status === "OFF_DUTY" && "انتهت الوردية ومشي 🏠"}
+                              {spec.status === "DAY_OFF" && "إجازة رسمية 🏖️"}
+                              {spec.status === "ABSENT" && "غائب / معطل 🔴"}
+                            </span>
+                          </div>
+
+                          {spec.statusReason && (
+                            <p className="text-[10px] text-amber-300/90 bg-amber-500/5 px-2.5 py-1 rounded-xl border border-amber-500/15">
+                              📌 السبب: {spec.statusReason}
+                            </p>
+                          )}
+
+                          {/* Quick Shift Controls */}
+                          <div className="flex items-center gap-1 pt-1 border-t border-white/5">
+                            <button
+                              type="button"
+                              onClick={() => handleQuickSetStatus(spec, "AVAILABLE", "حاضر وبدأ الوردية")}
+                              className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
+                                spec.status === "AVAILABLE"
+                                  ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm"
+                                  : "bg-white/5 hover:bg-emerald-500/20 text-emerald-300 border-white/5"
+                              }`}
+                              title="تفعيل وحضور - بدأ الوردية"
+                            >
+                              بدأ 🟢
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickSetStatus(spec, "WITH_CLIENT", "على الكرسي مع عميل")}
+                              className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
+                                spec.status === "WITH_CLIENT"
+                                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-sm"
+                                  : "bg-white/5 hover:bg-amber-500/20 text-amber-300 border-white/5"
+                              }`}
+                              title="على الكرسي حالياً"
+                            >
+                              كرسي 💺
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickSetStatus(spec, "BREAK", "استراحة راحة")}
+                              className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
+                                spec.status === "BREAK"
+                                  ? "bg-sky-500 text-slate-950 border-sky-400 shadow-sm"
+                                  : "bg-white/5 hover:bg-sky-500/20 text-sky-300 border-white/5"
+                              }`}
+                              title="استراحة مؤقتة"
+                            >
+                              استراحة ☕
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenShiftModal(spec)}
+                              className="py-1 px-2 rounded-lg text-[10px] font-bold bg-white/5 hover:bg-white/10 text-amber-300 border border-white/10"
+                              title="تحديد سبب التعطيل أو إجازة أو نهاية الوردية"
+                            >
+                              تعطيل/إجازة ⚙️
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Payroll Breakdown */}
+                        <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">نظام الأجر:</span>
+                            <span className="font-bold text-amber-300">{spec.payType}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">الراتب الأساسي:</span>
+                            <span className="font-mono text-white">{spec.baseSalary} ج.م</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">نسبة العمولة:</span>
+                            <span className="font-mono text-amber-400 font-bold">{spec.commissionRate}%</span>
+                          </div>
+                        </div>
+
+                        {/* Live Balance Due Badge */}
+                        <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
+                          <span className="text-slate-300 text-[11px] font-bold">الرصيد المستحق حالياً:</span>
+                          <span
+                            className={`font-mono font-black text-xs ${
+                              balanceDue > 0
+                                ? "text-emerald-400"
+                                : balanceDue < 0
+                                ? "text-rose-400"
+                                : "text-amber-300"
+                            }`}
+                          >
+                            {balanceDue > 0 ? `+${balanceDue} ج.م` : `${balanceDue} ج.م`}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-black text-sm text-white truncate">{spec.name}</h4>
-                        <p className="text-[11px] text-slate-400 truncate">{spec.title}</p>
-                        <span className="text-[10px] text-amber-300 font-bold block pt-0.5">
-                          {spec.branch?.name} • كرسي {spec.chairNumber}
-                        </span>
+
+                      {/* Actions: Statement Button + Payout, Edit, Delete */}
+                      <div className="space-y-2 pt-2 border-t border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedLedgerSpecialistId(spec.id);
+                            setSpecialistSubView("STATEMENT");
+                            fetchSpecialistStatement(spec.id);
+                          }}
+                          className="w-full py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30 font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>كشف الحساب والمستحقات التفصيلي 📑</span>
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setPayoutSpecialist(spec);
+                              setPayoutType("SALARY_PAYOUT");
+                              setPayoutAmount(balanceDue > 0 ? balanceDue : 500);
+                              setPayoutNotes("صرف وتصفية مستحقات المتخصص");
+                              setShowPayoutModal(true);
+                            }}
+                            className="flex-1 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold text-xs transition"
+                          >
+                            صرف مستحقات 💸
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPayoutSpecialist(spec);
+                              setPayoutType("ADVANCE_WITHDRAWAL");
+                              setPayoutAmount(200);
+                              setPayoutNotes("سلفة كاش تحت الحساب");
+                              setShowPayoutModal(true);
+                            }}
+                            className="py-2 px-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold text-xs transition"
+                            title="تسجيل سلفة نقدية"
+                          >
+                            سلفة 📉
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingSpecialist(spec);
+                              setSpecForm({
+                                name: spec.name,
+                                phone: spec.phone || "",
+                                title: spec.title,
+                                branchId: spec.branchId,
+                                chairNumber: spec.chairNumber,
+                                payType: spec.payType,
+                                baseSalary: spec.baseSalary,
+                                commissionRate: spec.commissionRate,
+                                photo: spec.photo || "",
+                                username: "",
+                                password: "",
+                              });
+                              setShowSpecialistModal(true);
+                            }}
+                            className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition"
+                            title="تعديل بيانات المتخصص"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSpecialist(spec.id, spec.name)}
+                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition"
+                            title="حذف المتخصص نهائياً"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+            )}
 
-                    {/* Shift Attendance Status & Reasons */}
-                    <div className="p-3 rounded-2xl bg-black/60 border border-white/5 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400 font-bold">حالة الوردية والحضور:</span>
-                        <span className={`text-[10px] font-black py-0.5 px-2.5 rounded-full border ${
-                          spec.status === "AVAILABLE"
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                            : spec.status === "WITH_CLIENT"
-                            ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                            : spec.status === "BREAK"
-                            ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
-                            : spec.status === "OFF_DUTY"
-                            ? "bg-slate-700/80 text-slate-300 border-slate-600"
-                            : spec.status === "DAY_OFF"
-                            ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
-                            : "bg-rose-500/20 text-rose-300 border-rose-500/40"
-                        }`}>
-                          {spec.status === "AVAILABLE" && "حاضر وبدأ الوردية 🟢"}
-                          {spec.status === "WITH_CLIENT" && "على الكرسي مع عميل 💺"}
-                          {spec.status === "BREAK" && "استراحة مؤقتة ☕"}
-                          {spec.status === "OFF_DUTY" && "انتهت الوردية ومشي 🏠"}
-                          {spec.status === "DAY_OFF" && "إجازة رسمية 🏖️"}
-                          {spec.status === "ABSENT" && "غائب / معطل 🔴"}
-                        </span>
-                      </div>
+            {/* ─────────────────────────────────────────────────────────────
+                VIEW B: STATEMENT OF ACCOUNT & FINANCIAL LEDGER (كشف الحساب)
+               ───────────────────────────────────────────────────────────── */}
+            {specialistSubView === "STATEMENT" && (
+              <div className="space-y-6">
+                {/* Specialist Selector & Action Bar */}
+                <div className="p-4 rounded-3xl bg-[#14141e] border-2 border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSpecialistSubView("CARDS")}
+                      className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold transition flex items-center gap-1.5 border border-white/5"
+                    >
+                      <span>العودة للبطاقات ✂️</span>
+                    </button>
 
-                      {spec.statusReason && (
-                        <p className="text-[10px] text-amber-300/90 bg-amber-500/5 px-2.5 py-1 rounded-xl border border-amber-500/15">
-                          📌 السبب: {spec.statusReason}
-                        </p>
-                      )}
-
-                      {/* Quick Shift Controls */}
-                      <div className="flex items-center gap-1 pt-1 border-t border-white/5">
-                        <button
-                          type="button"
-                          onClick={() => handleQuickSetStatus(spec, "AVAILABLE", "حاضر وبدأ الوردية")}
-                          className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
-                            spec.status === "AVAILABLE"
-                              ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm"
-                              : "bg-white/5 hover:bg-emerald-500/20 text-emerald-300 border-white/5"
-                          }`}
-                          title="تفعيل وحضور - بدأ الوردية"
-                        >
-                          بدأ 🟢
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleQuickSetStatus(spec, "WITH_CLIENT", "على الكرسي مع عميل")}
-                          className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
-                            spec.status === "WITH_CLIENT"
-                              ? "bg-amber-500 text-slate-950 border-amber-400 shadow-sm"
-                              : "bg-white/5 hover:bg-amber-500/20 text-amber-300 border-white/5"
-                          }`}
-                          title="على الكرسي حالياً"
-                        >
-                          كرسي 💺
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleQuickSetStatus(spec, "BREAK", "استراحة راحة")}
-                          className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-bold transition border ${
-                            spec.status === "BREAK"
-                              ? "bg-sky-500 text-slate-950 border-sky-400 shadow-sm"
-                              : "bg-white/5 hover:bg-sky-500/20 text-sky-300 border-white/5"
-                          }`}
-                          title="استراحة مؤقتة"
-                        >
-                          استراحة ☕
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenShiftModal(spec)}
-                          className="py-1 px-2 rounded-lg text-[10px] font-bold bg-white/5 hover:bg-white/10 text-amber-300 border border-white/10"
-                          title="تحديد سبب التعطيل أو إجازة أو نهاية الوردية"
-                        >
-                          تعطيل/إجازة ⚙️
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Payroll Breakdown */}
-                    <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">نظام الأجر:</span>
-                        <span className="font-bold text-amber-300">{spec.payType}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">الراتب الأساسي:</span>
-                        <span className="font-mono text-white">{spec.baseSalary} ج.م</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">نسبة العمولة:</span>
-                        <span className="font-mono text-amber-400 font-bold">{spec.commissionRate}%</span>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs font-bold text-slate-400">اختر المتخصص:</label>
+                      <select
+                        value={selectedLedgerSpecialistId}
+                        onChange={(e) => {
+                          const id = e.target.value;
+                          setSelectedLedgerSpecialistId(id);
+                          fetchSpecialistStatement(id);
+                        }}
+                        className="py-2 px-3 rounded-xl bg-black/60 border border-amber-500/40 text-amber-300 text-xs font-bold focus:outline-none"
+                      >
+                        {specialists.map((sp) => (
+                          <option key={sp.id} value={sp.id}>
+                            {sp.name} • كرسي #{sp.chairNumber} ({sp.branch?.name})
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
-                  {/* Actions: Payout, Edit, Delete */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
-                      onClick={() => {
-                        setPayoutSpecialist(spec);
-                        setPayoutAmount(500);
-                        setShowPayoutModal(true);
-                      }}
-                      className="flex-1 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold text-xs transition"
+                      type="button"
+                      onClick={() => window.print()}
+                      className="py-2 px-3.5 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition flex items-center gap-1.5 border border-white/10 cursor-pointer shadow-sm"
                     >
-                      صرف سلفة / أجر 💵
+                      <Printer className="w-3.5 h-3.5 text-amber-400" />
+                      <span>طباعة كشف الحساب 🖨️</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        setEditingSpecialist(spec);
-                        setSpecForm({
-                          name: spec.name,
-                          phone: spec.phone || "",
-                          title: spec.title,
-                          branchId: spec.branchId,
-                          chairNumber: spec.chairNumber,
-                          payType: spec.payType,
-                          baseSalary: spec.baseSalary,
-                          commissionRate: spec.commissionRate,
-                          photo: spec.photo || "",
-                          username: "",
-                          password: "",
-                        });
-                        setShowSpecialistModal(true);
-                      }}
-                      className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition"
-                      title="تعديل بيانات المتخصص"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSpecialist(spec.id, spec.name)}
-                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition"
-                      title="حذف المتخصص نهائياً"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                    {(() => {
+                      const curSpec = specialists.find((s) => s.id === selectedLedgerSpecialistId);
+                      if (!curSpec) return null;
+                      const summary = specialistsSummary.find((s) => s.specialist?.id === curSpec.id);
+                      const due = summary ? summary.balanceDue : 0;
+
+                      return (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPayoutSpecialist(curSpec);
+                              setPayoutType("SALARY_PAYOUT");
+                              setPayoutAmount(due > 0 ? due : 500);
+                              setPayoutNotes(`تصفية وصرف مستحقات ${curSpec.name}`);
+                              setShowPayoutModal(true);
+                            }}
+                            className="py-2 px-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer"
+                          >
+                            <Wallet className="w-3.5 h-3.5" />
+                            <span>صرف وتصفية المستحقات 💸</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPayoutSpecialist(curSpec);
+                              setPayoutType("ADVANCE_WITHDRAWAL");
+                              setPayoutAmount(200);
+                              setPayoutNotes(`سلفة نقدية على الحساب لـ ${curSpec.name}`);
+                              setShowPayoutModal(true);
+                            }}
+                            className="py-2 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>سلفة كاش 📉</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPayoutSpecialist(curSpec);
+                              setPayoutType("BONUS");
+                              setPayoutAmount(100);
+                              setPayoutNotes(`مكافأة تميز وإتقان لـ ${curSpec.name}`);
+                              setShowPayoutModal(true);
+                            }}
+                            className="py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>مكافأة 🌟</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPayoutSpecialist(curSpec);
+                              setPayoutType("DEDUCTION");
+                              setPayoutAmount(50);
+                              setPayoutNotes(`خصم أو جزاء على ${curSpec.name}`);
+                              setShowPayoutModal(true);
+                            }}
+                            className="py-2 px-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                            title="تسجيل خصم مالي"
+                          >
+                            <span>خصم ⚠️</span>
+                          </button>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Selected Specialist Profile & Contract Summary */}
+                {(() => {
+                  const curSpec = specialists.find((s) => s.id === selectedLedgerSpecialistId);
+                  if (!curSpec) return null;
+                  const summary = specialistsSummary.find((s) => s.specialist?.id === curSpec.id);
+                  const netDue = summary ? summary.balanceDue : specialistStatement?.netDue || 0;
+
+                  return (
+                    <div className="space-y-4">
+                      {/* Specialist Profile Banner */}
+                      <div className="p-5 rounded-3xl bg-gradient-to-r from-[#161622] via-[#101018] to-[#161622] border-2 border-amber-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xl">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0 shadow-lg">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={curSpec.photo || "/logo.jpg"}
+                              alt={curSpec.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-black text-white">{curSpec.name}</h3>
+                              <span className="py-0.5 px-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black">
+                                كرسي #{curSpec.chairNumber}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-400 font-bold">{curSpec.title} • {curSpec.branch?.name}</p>
+                            <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                              📞 {curSpec.phone || "لا يوجد هاتف مسجل"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Contract Specs Badge */}
+                        <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-black/50 border border-white/5 text-xs">
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">نظام التعاقد:</span>
+                            <span className="font-bold text-amber-300">{curSpec.payType}</span>
+                          </div>
+                          <div className="h-6 w-px bg-white/10 mx-1" />
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">الراتب الأساسي:</span>
+                            <span className="font-mono text-white font-bold">{curSpec.baseSalary} ج.م</span>
+                          </div>
+                          <div className="h-6 w-px bg-white/10 mx-1" />
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">نسبة العمولة:</span>
+                            <span className="font-mono text-amber-400 font-black">{curSpec.commissionRate}%</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 5 Financial Statement KPI Cards */}
+                      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                        {/* 1. Net Balance Due */}
+                        <div className="col-span-2 lg:col-span-1 p-4 rounded-3xl bg-[#14141e] border-2 border-amber-500/40 space-y-1 shadow-lg relative overflow-hidden">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-amber-300">الرصيد الصافي المتبقي له:</span>
+                            <Wallet className="w-4 h-4 text-amber-400" />
+                          </div>
+                          <div className="pt-1">
+                            <span
+                              className={`text-2xl font-mono font-black ${
+                                netDue > 0
+                                  ? "text-emerald-400"
+                                  : netDue < 0
+                                  ? "text-rose-400"
+                                  : "text-slate-300"
+                              }`}
+                            >
+                              {netDue > 0 ? `+${netDue}` : netDue} ج.م
+                            </span>
+                            <span className="block text-[10px] text-slate-400 mt-0.5 font-bold">
+                              {netDue > 0
+                                ? "مستحق له بالذمة المالية 🟢"
+                                : netDue < 0
+                                ? "مديونية / سحب زائد 🔴"
+                                : "تمت التصفية بالكامل ⚖️"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 2. Total Commissions Earned */}
+                        <div className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-1 shadow-md">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-300">عمولات حلاقة وبكجات:</span>
+                            <TrendingUp className="w-4 h-4 text-emerald-400" />
+                          </div>
+                          <div className="pt-1">
+                            <span className="text-xl font-mono font-black text-emerald-300">
+                              +{summary?.totalCommissions || specialistStatement?.totalCommissions || 0} ج.م
+                            </span>
+                            <span className="block text-[10px] text-slate-400 mt-0.5">
+                              مكتسبة من تذاكر الحلاقة
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 3. Tips & Bonuses */}
+                        <div className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-1 shadow-md">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-300">إكراميات ومكافآت:</span>
+                            <Sparkles className="w-4 h-4 text-amber-400" />
+                          </div>
+                          <div className="pt-1">
+                            <span className="text-xl font-mono font-black text-amber-300">
+                              +{((summary?.totalBonuses || 0) + (specialistStatement?.totalTips || 0))} ج.م
+                            </span>
+                            <span className="block text-[10px] text-slate-400 mt-0.5">
+                              Tips زبائن ومكافآت إدارة
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 4. Total Advances Withdrawn */}
+                        <div className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-1 shadow-md">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-300">سلف مسحوبة:</span>
+                            <ArrowDownLeft className="w-4 h-4 text-rose-400" />
+                          </div>
+                          <div className="pt-1">
+                            <span className="text-xl font-mono font-black text-rose-400">
+                              -{summary?.totalAdvances || specialistStatement?.totalAdvances || 0} ج.م
+                            </span>
+                            <span className="block text-[10px] text-slate-400 mt-0.5">
+                              سلف كاش منصرفة من الدرج
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 5. Total Salaries / Payouts Settled */}
+                        <div className="p-4 rounded-3xl bg-[#14141e] border border-white/10 space-y-1 shadow-md">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-300">مستحقات مسددة:</span>
+                            <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                          </div>
+                          <div className="pt-1">
+                            <span className="text-xl font-mono font-black text-sky-300">
+                              -{summary?.totalPayouts || specialistStatement?.totalPayouts || 0} ج.م
+                            </span>
+                            <span className="block text-[10px] text-slate-400 mt-0.5">
+                              رواتب وتصفيات مسلمة له
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Detailed Statement Table with Running Balance */}
+                      <div className="p-5 rounded-3xl bg-[#14141e] border border-white/10 space-y-4 shadow-xl">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-sm font-black text-white flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-amber-400" />
+                              <span>حركات كشف الحساب التفصيلي (Ledger Transactions)</span>
+                            </h4>
+                            <p className="text-[11px] text-slate-400">
+                              سجل كامل لجميع العمولات المستحقة، السلف، المكافآت، والمسدد من الخزينة
+                            </p>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-slate-400">
+                            إجمالي الحركات: {ledgers.filter((l) => l.specialistId === curSpec.id).length}
+                          </span>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-right text-xs">
+                            <thead>
+                              <tr className="border-b border-white/10 text-slate-400 text-[11px]">
+                                <th className="py-2.5 px-3">تاريخ ووقت الحركة</th>
+                                <th className="py-2.5 px-3">نوع العملية</th>
+                                <th className="py-2.5 px-3">البيان ورقم التذكرة</th>
+                                <th className="py-2.5 px-3">دائن (+) له</th>
+                                <th className="py-2.5 px-3">مدين (-) عليه</th>
+                                <th className="py-2.5 px-3">بواسطة</th>
+                                <th className="py-2.5 px-3">ملاحظات</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                              {(() => {
+                                const specLedgers = ledgers.filter((l) => l.specialistId === curSpec.id);
+                                if (specLedgers.length === 0) {
+                                  return (
+                                    <tr>
+                                      <td colSpan={7} className="py-8 text-center text-slate-500 font-bold">
+                                        لا توجد حركات مالية مسجلة في كشف حساب هذا المتخصص حتى الآن 📑
+                                      </td>
+                                    </tr>
+                                  );
+                                }
+
+                                return specLedgers.map((item) => {
+                                  const isCredit =
+                                    item.type === "COMMISSION_EARNED" ||
+                                    item.type === "BONUS" ||
+                                    item.type === "TIP_EARNED";
+
+                                  return (
+                                    <tr key={item.id} className="hover:bg-white/[0.02] transition">
+                                      <td className="py-3 px-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+                                        {new Date(item.date).toLocaleDateString("ar-EG")} •{" "}
+                                        {new Date(item.date).toLocaleTimeString("ar-EG", {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
+                                      </td>
+                                      <td className="py-3 px-3 whitespace-nowrap">
+                                        <span
+                                          className={`py-0.5 px-2.5 rounded-full text-[10px] font-black border inline-block ${
+                                            item.type === "COMMISSION_EARNED"
+                                              ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                                              : item.type === "TIP_EARNED"
+                                              ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                              : item.type === "BONUS"
+                                              ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                              : item.type === "ADVANCE_WITHDRAWAL"
+                                              ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                                              : item.type === "SALARY_PAYOUT"
+                                              ? "bg-sky-500/15 text-sky-300 border-sky-500/30"
+                                              : "bg-orange-500/15 text-orange-300 border-orange-500/30"
+                                          }`}
+                                        >
+                                          {item.type === "COMMISSION_EARNED" && "عمولة حلاقة وبكج ✂️"}
+                                          {item.type === "TIP_EARNED" && "إكرامية زبون 💰"}
+                                          {item.type === "BONUS" && "مكافأة إدارة 🌟"}
+                                          {item.type === "ADVANCE_WITHDRAWAL" && "سلفة نقدية 📉"}
+                                          {item.type === "SALARY_PAYOUT" && "صرف أجر / راتب 💸"}
+                                          {item.type === "DEDUCTION" && "خصم مالي ⚠️"}
+                                        </span>
+                                      </td>
+                                      <td className="py-3 px-3 text-slate-200 font-bold whitespace-nowrap">
+                                        {item.ticketId ? (
+                                          <span className="font-mono text-amber-300">
+                                            تذكرة #{item.ticketId.slice(-6)}
+                                          </span>
+                                        ) : (
+                                          item.notes || "حركة نقدية بالخزينة"
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-3 font-mono font-bold whitespace-nowrap">
+                                        {isCredit ? (
+                                          <span className="text-emerald-400">+{item.amount} ج.م</span>
+                                        ) : (
+                                          <span className="text-slate-600">-</span>
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-3 font-mono font-bold whitespace-nowrap">
+                                        {!isCredit ? (
+                                          <span className="text-rose-400">-{item.amount} ج.م</span>
+                                        ) : (
+                                          <span className="text-slate-600">-</span>
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-3 text-slate-400 text-[11px] whitespace-nowrap">
+                                        {item.recordedBy || "المايسترو (المالك)"}
+                                      </td>
+                                      <td className="py-3 px-3 text-slate-400 text-[11px] max-w-xs truncate">
+                                        {item.notes || "لا توجد ملاحظات"}
+                                      </td>
+                                    </tr>
+                                  );
+                                });
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Staff Comparison Balances Register */}
+                      <div className="p-5 rounded-3xl bg-[#14141e] border border-white/10 space-y-4 shadow-xl">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-sm font-black text-white flex items-center gap-2">
+                              <Users className="w-4 h-4 text-amber-400" />
+                              <span>كشف مقارن لأرصدة ومستحقات جميع المتخصصين</span>
+                            </h4>
+                            <p className="text-[11px] text-slate-400">
+                              نظرة شاملة لرواتب، عمولات، وسلف كافة الحلاقين بالصالون
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-right text-xs">
+                            <thead>
+                              <tr className="border-b border-white/10 text-slate-400 text-[11px]">
+                                <th className="py-2.5 px-3">المتخصص والكرسي</th>
+                                <th className="py-2.5 px-3">الفرع</th>
+                                <th className="py-2.5 px-3">نظام الأجر</th>
+                                <th className="py-2.5 px-3">إجمالي المكتسب (+)</th>
+                                <th className="py-2.5 px-3">إجمالي السلف (-)</th>
+                                <th className="py-2.5 px-3">المسدد والمنصرف (-)</th>
+                                <th className="py-2.5 px-3">صافي المستحق له الآن</th>
+                                <th className="py-2.5 px-3 text-center">إجراءات</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                              {specialistsSummary.length === 0 ? (
+                                <tr>
+                                  <td colSpan={8} className="py-6 text-center text-slate-500">
+                                    جاري تحميل أرصدة المتخصصين...
+                                  </td>
+                                </tr>
+                              ) : (
+                                specialistsSummary.map((row) => (
+                                  <tr
+                                    key={row.specialist?.id}
+                                    className={`hover:bg-white/[0.02] transition ${
+                                      row.specialist?.id === selectedLedgerSpecialistId ? "bg-amber-500/5" : ""
+                                    }`}
+                                  >
+                                    <td className="py-3 px-3 font-bold text-white whitespace-nowrap flex items-center gap-2">
+                                      <div className="w-8 h-8 rounded-xl overflow-hidden border border-amber-400/40 bg-black shrink-0">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                          src={row.specialist?.photo || "/logo.jpg"}
+                                          alt={row.specialist?.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                      <div>
+                                        <span className="block">{row.specialist?.name}</span>
+                                        <span className="text-[10px] text-slate-400">
+                                          كرسي #{row.specialist?.chairNumber}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td className="py-3 px-3 text-slate-300 text-[11px] whitespace-nowrap">
+                                      {row.specialist?.branch?.name || "حدائق القبة"}
+                                    </td>
+                                    <td className="py-3 px-3 text-amber-300 text-[11px] whitespace-nowrap">
+                                      {row.specialist?.payType}
+                                    </td>
+                                    <td className="py-3 px-3 font-mono font-bold text-emerald-400 whitespace-nowrap">
+                                      +{row.totalEarned} ج.م
+                                    </td>
+                                    <td className="py-3 px-3 font-mono font-bold text-rose-400 whitespace-nowrap">
+                                      -{row.totalAdvances} ج.م
+                                    </td>
+                                    <td className="py-3 px-3 font-mono font-bold text-sky-400 whitespace-nowrap">
+                                      -{row.totalPayouts} ج.م
+                                    </td>
+                                    <td className="py-3 px-3 font-mono font-black text-sm whitespace-nowrap">
+                                      <span
+                                        className={
+                                          row.balanceDue > 0
+                                            ? "text-emerald-400"
+                                            : row.balanceDue < 0
+                                            ? "text-rose-400"
+                                            : "text-amber-300"
+                                        }
+                                      >
+                                        {row.balanceDue > 0 ? `+${row.balanceDue}` : row.balanceDue} ج.م
+                                      </span>
+                                    </td>
+                                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setSelectedLedgerSpecialistId(row.specialist?.id);
+                                          fetchSpecialistStatement(row.specialist?.id);
+                                        }}
+                                        className="py-1 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold transition"
+                                      >
+                                        عرض الكشف 📑
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         )}
 
@@ -3698,6 +4847,328 @@ export default function AdminPage() {
                 className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer"
               >
                 {editingProduct ? "حفظ التعديلات على الصنف 💾" : "حفظ وإضافة الصنف للمخزن 🛍️"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          5. TREASURY EXPENSE MODAL (تسجيل مصروف / نثريات)
+         ───────────────────────────────────────────────────────────── */}
+      {showExpenseModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-md bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-amber-400" />
+                <h3 className="text-sm font-black text-white">تسجيل مصروف / نثريات من الخزينة</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowExpenseModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveExpense} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">بند وتصنيف المصروف:</label>
+                <select
+                  value={expenseForm.category}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                >
+                  <option value="SUPPLIES">مستلزمات وخامات حلاقة وعناية 🧴</option>
+                  <option value="REFRESHMENTS">ضيافة وبوفيه ومشروبات زبائن ☕</option>
+                  <option value="RENT_UTILITIES">إيجار وكهرباء ومياه وإنترنت ⚡</option>
+                  <option value="MAINTENANCE">صيانة ونظافة وأدوات صالون 🧹</option>
+                  <option value="MARKETING">تسويق ودعاية وإعلانات 📢</option>
+                  <option value="GENERAL">نثريات ومصروفات عامة 🧾</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">المبلغ (ج.م):</label>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={expenseForm.amount || ""}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, amount: Number(e.target.value) })}
+                    placeholder="0"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">طريقة الصرف:</label>
+                  <select
+                    value={expenseForm.paymentMethod}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, paymentMethod: e.target.value })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                  >
+                    <option value="CASH">كاش من درج الخزينة 💵</option>
+                    <option value="INSTAPAY">انستاباي InstaPay ⚡</option>
+                    <option value="VODAFONE_CASH">فودافون كاش 📱</option>
+                    <option value="CARD">فيزا / بطاقة بنكية 💳</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">البيان والغرض من المصروف:</label>
+                <input
+                  type="text"
+                  required
+                  value={expenseForm.description}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })}
+                  placeholder="مثال: شراء كحول وشفرات حلاقة دوركو تيتانيوم"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  اسم المستلم أو الجهة المصروف لها (اختياري):
+                </label>
+                <input
+                  type="text"
+                  value={expenseForm.recipientName}
+                  onChange={(e) => setExpenseForm({ ...expenseForm, recipientName: e.target.value })}
+                  placeholder="مثال: مندوب شركة الأدوات أو المحاسب"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              {branches.length > 1 && (
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">الفرع المنسوب إليه المصروف:</label>
+                  <select
+                    value={expenseForm.branchId || branches[0]?.id}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, branchId: e.target.value })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                  >
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[11px] text-rose-300">
+                ⚠️ سيتم خصم هذا المبلغ فورياً من رصيد الخزينة والدرج للفرع المختار، وتسجيله في كشف الحسابات العام.
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer"
+              >
+                تأكيد وتسجيل المصروف بالخزينة 🧾
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. ADMIN CLOSE SHIFT MODAL (إقفال واعتماد الوردية وتسليم النقدية)
+         ───────────────────────────────────────────────────────────── */}
+      {showAdminCloseShiftModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-lg bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Lock className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="text-sm font-black text-white">إقفال واعتماد وردية الخزينة والتسليم</h3>
+                  <p className="text-[11px] text-amber-300 font-bold">
+                    وردية #{adminOpenShift?.shiftNumber || 1} • {adminOpenShift?.branch?.name || "الفرع الحالي"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdminCloseShiftModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Live Shift Breakdown Statistics */}
+            <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2 text-xs">
+              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-white/10">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">الكاشير المسؤول:</span>
+                  <span className="text-white font-bold">{adminOpenShift?.openedBy || currentUser?.name}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">وقت بدء الوردية:</span>
+                  <span className="text-amber-300 font-mono text-[11px]">
+                    {adminOpenShift?.openedAt
+                      ? new Date(adminOpenShift.openedAt).toLocaleTimeString("ar-EG", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "الآن"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">إيراد الحلاقة:</span>
+                  <span className="font-mono font-bold text-white">
+                    {adminShiftStats?.servicesTotal || 0} ج
+                  </span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">إيراد المنتجات:</span>
+                  <span className="font-mono font-bold text-white">
+                    {adminShiftStats?.retailTotal || 0} ج
+                  </span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">سلف المختصين:</span>
+                  <span className="font-mono font-bold text-rose-300">
+                    -{adminShiftStats?.advancesPayouts || 0} ج
+                  </span>
+                </div>
+                <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-slate-400 block text-[10px]">المصروفات:</span>
+                  <span className="font-mono font-bold text-rose-300">
+                    -{adminShiftStats?.expensesTotal || 0} ج
+                  </span>
+                </div>
+              </div>
+
+              {/* Payment Methods Breakdown */}
+              <div className="flex items-center justify-between pt-2 border-t border-white/10 text-[11px]">
+                <span className="text-slate-400 font-bold">المقبوضات:</span>
+                <span className="font-mono text-slate-300">
+                  كاش: <strong className="text-amber-300">{adminShiftStats?.cashCollected || 0} ج</strong> • 
+                  إلكتروني:{" "}
+                  <strong className="text-sky-300">
+                    {(adminShiftStats?.visaCollected || 0) +
+                      (adminShiftStats?.instapayCollected || 0) +
+                      (adminShiftStats?.vodafoneCollected || 0)}{" "}
+                    ج
+                  </strong>
+                </span>
+              </div>
+
+              {/* Expected Cash in Drawer */}
+              <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-black text-amber-300 block">النقدية المحسوبة المتوقعة بالدرج:</span>
+                  <span className="text-[10px] text-slate-400">كاش المقبوضات - سلف الكاش - مصروفات الكاش</span>
+                </div>
+                <span className="text-lg font-mono font-black text-amber-400">
+                  {adminShiftStats?.expectedCash || 0} ج.م
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={handleAdminExecuteCloseShift} className="space-y-3 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  النقدية الفعلية بعد الجرد بالدرج (ج.م) *:
+                </label>
+                <input
+                  type="number"
+                  required
+                  value={adminShiftForm.actualCash}
+                  onChange={(e) =>
+                    setAdminShiftForm({ ...adminShiftForm, actualCash: Number(e.target.value) })
+                  }
+                  className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold text-base focus:border-amber-400"
+                />
+              </div>
+
+              {/* Live difference indicator */}
+              {(() => {
+                const diff =
+                  Number(adminShiftForm.actualCash) - Number(adminShiftStats?.expectedCash || 0);
+                return (
+                  <div
+                    className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold ${
+                      diff === 0
+                        ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                        : diff < 0
+                        ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                        : "bg-sky-500/15 border-sky-500/30 text-sky-300"
+                    }`}
+                  >
+                    <span>حالة مطابقة الدرج:</span>
+                    <span className="font-mono font-black">
+                      {diff === 0
+                        ? "النقدية متطابقة تماماً مع الحسابات ✅ (0 ج.م)"
+                        : diff < 0
+                        ? `يوجد عجز نقدي بالدرج: ${diff} ج.م 🔴`
+                        : `يوجد فائض نقدي بالدرج: +${diff} ج.م 🟢`}
+                    </span>
+                  </div>
+                );
+              })()}
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">تم تسليم النقدية إلى *:</label>
+                <div className="space-y-1.5">
+                  <input
+                    type="text"
+                    required
+                    value={adminShiftForm.handedTo}
+                    onChange={(e) => setAdminShiftForm({ ...adminShiftForm, handedTo: e.target.value })}
+                    placeholder="مثال: أ/ حمزة عباس (المايسترو - المالك) 👑"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                  />
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      "أ/ حمزة عباس (المايسترو - المالك) 👑",
+                      "مدير الفرع المناوب 👔",
+                      "الخزنة الرئيسية للصالون 🏦",
+                    ].map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setAdminShiftForm({ ...adminShiftForm, handedTo: opt })}
+                        className="py-0.5 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[10px] border border-white/5 cursor-pointer"
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">ملاحظات الإقفال (اختياري):</label>
+                <input
+                  type="text"
+                  value={adminShiftForm.notes}
+                  onChange={(e) => setAdminShiftForm({ ...adminShiftForm, notes: e.target.value })}
+                  placeholder="أي ملاحظات حول التوريد أو الوردية"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Lock className="w-4 h-4" />
+                <span>إقفال الوردية وتسليم النقدية للمالك 🔒</span>
               </button>
             </form>
           </div>
