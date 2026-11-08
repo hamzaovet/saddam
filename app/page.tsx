@@ -25,6 +25,10 @@ import {
   ExternalLink,
   Flame,
   Award,
+  Check,
+  Heart,
+  Coffee,
+  Sparkle,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -37,7 +41,7 @@ export default function HomePage() {
 
   // Selected Booking Details
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const [selectedSpecialistId, setSelectedSpecialistId] = useState<string>(""); // empty = Any Specialist
+  const [selectedSpecialistId, setSelectedSpecialistId] = useState<string>("");
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("06:00 PM");
@@ -52,9 +56,9 @@ export default function HomePage() {
   const [authStep, setAuthStep] = useState<"INPUT" | "OTP">("INPUT");
   const [regForm, setRegForm] = useState({ name: "", phone: "", email: "" });
   const [otpCode, setOtpCode] = useState("");
-  const [serverOtp, setServerOtp] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [authSuccessMsg, setAuthSuccessMsg] = useState("");
 
   // Confirmed Booking State
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
@@ -82,11 +86,9 @@ export default function HomePage() {
 
   // Initialize Data
   useEffect(() => {
-    // Set default date to today
     const today = new Date().toISOString().split("T")[0];
     setSelectedDate(today);
 
-    // Check saved customer
     try {
       const saved = localStorage.getItem("saddam_customer");
       if (saved) setCustomer(JSON.parse(saved));
@@ -157,11 +159,15 @@ export default function HomePage() {
     });
   };
 
-  // Submit Register / Send OTP
+  // Submit Register / Send OTP via Gmail
   const handleStartAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regForm.name.trim() || !regForm.phone.trim()) {
-      setAuthError("الاسم ورقم الهاتف مطلوبين");
+      setAuthError("الاسم ورقم الهاتف مطلوبان");
+      return;
+    }
+    if (!regForm.email.trim()) {
+      setAuthError("البريد الإلكتروني (Gmail) مطلوب لاستلام كود التفعيل");
       return;
     }
 
@@ -175,13 +181,15 @@ export default function HomePage() {
           action: "REGISTER",
           name: regForm.name.trim(),
           phone: regForm.phone.trim(),
-          email: regForm.email.trim() || null,
+          email: regForm.email.trim(),
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        setServerOtp(data.verificationCode);
+        setAuthSuccessMsg(
+          `تم إرسال كود التفعيل السري المكون من 6 أرقام إلى بريدك الإلكتروني (${regForm.email.trim()}). يرجى فحص صندوق الوارد (أو الـ Spam).`
+        );
         setAuthStep("OTP");
       } else {
         setAuthError(data.error || "فشل إرسال كود التفعيل");
@@ -219,7 +227,6 @@ export default function HomePage() {
         setCustomer(data.customer);
         localStorage.setItem("saddam_customer", JSON.stringify(data.customer));
         setShowAuthModal(false);
-        // Automatically proceed to book if services are selected
         if (selectedServices.length > 0) {
           executeBooking(data.customer.id);
         }
@@ -270,7 +277,6 @@ export default function HomePage() {
       const data = await res.json();
       if (data.success && data.booking) {
         setConfirmedBooking(data.booking);
-        // Reset selections
         setSelectedServices([]);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
@@ -286,47 +292,57 @@ export default function HomePage() {
   const selectedBranch = branches.find((b) => b.id === selectedBranchId);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0e] text-slate-100 flex flex-col font-sans" dir="rtl">
+    <div className="min-h-screen bg-[#07070a] text-slate-100 flex flex-col font-sans" dir="rtl">
       {/* ─────────────────────────────────────────────────────────────
           1. LUXURY TOP NAVIGATION BAR
          ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#0f0f15]/90 backdrop-blur-md border-b border-amber-500/20 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-lg">
-        {/* Logo and Brand Title */}
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-md shadow-amber-500/20 bg-black shrink-0">
+      <header className="sticky top-0 z-40 bg-[#0c0c12]/95 backdrop-blur-md border-b border-amber-500/25 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-2xl">
+        {/* Brand Logo & Name */}
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg shadow-amber-500/20 bg-black shrink-0 group-hover:scale-105 transition">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.jpg" alt="صالون حلاقة صدام" className="w-full h-full object-cover" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="text-base sm:text-lg font-black text-amber-400 tracking-wide">
+              <h1 className="text-base sm:text-xl font-black text-amber-400 tracking-wide">
                 صالون حلاقة صدام
               </h1>
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
             </div>
-            <p className="text-[10px] sm:text-xs text-amber-200/60 font-mono font-bold tracking-wider uppercase">
-              SADDAM BARBER SHOP • VIP LUXURY
+            <p className="text-[10px] sm:text-xs text-amber-200/60 font-mono font-bold tracking-widest uppercase">
+              SADDAM BARBER SHOP • ROYAL EXPERIENCE
             </p>
           </div>
-        </div>
+        </Link>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Action Buttons: Staff Login (Clear & Prominent) + Card QR + Customer */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* PROMINENT STAFF LOGIN BUTTON */}
+          <Link
+            href="/login"
+            className="py-2 px-3.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/50 text-amber-300 hover:text-amber-200 text-xs font-black transition flex items-center gap-1.5 shadow-sm"
+          >
+            <LogIn className="w-4 h-4 text-amber-400" />
+            <span>دخول الطاقم والإدارة 🔒</span>
+          </Link>
+
           {/* Card 2 QR Button */}
           <button
             onClick={() => setShowQrModal(true)}
-            className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-black transition flex items-center gap-1.5 shadow-xs"
+            className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-bold transition flex items-center gap-1.5"
+            title="كارت الـ 2 كيو آر كود"
           >
-            <QrCode className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">كارت الـ 2 QR</span>
+            <QrCode className="w-4 h-4 text-amber-400" />
+            <span className="hidden md:inline">كارت الـ 2 QR 🪪</span>
           </button>
 
           {/* Customer Profile / Login */}
           {customer ? (
-            <div className="flex items-center gap-2 py-1 px-3 rounded-xl bg-white/5 border border-amber-500/30 text-xs">
-              <User className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-bold text-white max-w-[100px] truncate">{customer.name}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-black">
+            <div className="flex items-center gap-2 py-1.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/40 text-xs shadow-xs">
+              <User className="w-4 h-4 text-amber-400" />
+              <span className="font-bold text-white max-w-[110px] truncate">{customer.name}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-black border border-amber-500/30">
                 VIP
               </span>
             </div>
@@ -336,63 +352,82 @@ export default function HomePage() {
                 setAuthStep("INPUT");
                 setShowAuthModal(true);
               }}
-              className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+              className="py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-lg shadow-amber-500/20"
             >
-              <User className="w-3.5 h-3.5" />
-              <span>تسجيل / دخول</span>
+              <User className="w-4 h-4" />
+              <span>تسجيل / حسابي 👤</span>
             </button>
           )}
-
-          {/* Staff Login Direct Shortcut */}
-          <Link
-            href="/login"
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-amber-400 transition"
-            title="دخول الطاقم والإدارة"
-          >
-            <LogIn className="w-4 h-4" />
-          </Link>
         </div>
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. HERO SECTION WITH GOLD ACCENTS
+          2. GRAND VISUAL HERO SECTION (VIP SALON EXPERIENCE)
          ───────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden py-10 px-4 sm:px-8 border-b border-amber-500/15 bg-gradient-to-b from-[#14141c] via-[#0d0d12] to-[#0a0a0e] text-center">
-        {/* Glow Effects */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-amber-500/10 blur-3xl pointer-events-none rounded-full" />
+      <section className="relative overflow-hidden py-14 px-4 sm:px-8 border-b border-amber-500/20">
+        {/* Background Visual Image with Dark Gold Gradient Overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25 scale-105 pointer-events-none filter blur-xs"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1600&auto=format&fit=crop&q=80')",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#07070a]/90 via-[#0a0a0f]/95 to-[#07070a] pointer-events-none" />
 
-        <div className="relative max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 py-1 px-3.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold">
-            <Award className="w-3.5 h-3.5 text-amber-400" />
-            <span>تجربة الحلاقة والعناية الملكية الأولى في مصر 👑</span>
+        <div className="relative max-w-4xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 py-1 px-4 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 text-xs font-black shadow-lg">
+            <span>👑 الفخامة والأناقة في مكان واحد • صالون حلاقة صدام VIP</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
-            ليس مجرد صالون،{" "}
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
+            ليس مجرد صالون، <br className="hidden sm:inline" />
             <span className="gold-gradient-text">بل تجربة ملوك متكاملة</span>
           </h2>
 
-          <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xl mx-auto leading-relaxed">
-            احجز موعدك واختر مصففك المفضل في فرع{" "}
-            <strong className="text-amber-400">حدائق القبة</strong> أو فرع{" "}
-            <strong className="text-amber-400">مدينة نصر</strong> بكل سهولة مع أفضل الخامات الإيطالية والبروتين الأصلي.
+          <p className="text-sm sm:text-base text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed">
+            استمتع بأحدث صيحات قص الشعر العالمية وتحديد اللحية بالبخار والموس الإيطالي، مع جلسات العناية الملكية بالبشرة
+            وفرود البروتين الأصلية على يد نخبة من أمهر المصففين في فرعي{" "}
+            <strong className="text-amber-400">حدائق القبة</strong> و{" "}
+            <strong className="text-amber-400">مدينة نصر</strong>.
           </p>
 
+          {/* Quick Features Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 max-w-3xl mx-auto text-xs">
+            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+              <Award className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold text-white">خامات إيطالية أصلية 100%</span>
+            </div>
+            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold text-white">تعقيم طبي متكامل</span>
+            </div>
+            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold text-white">دقة تامة في المواعيد</span>
+            </div>
+            <div className="p-3 rounded-2xl bg-[#12121a]/90 border border-amber-500/25 flex items-center justify-center gap-2">
+              <Coffee className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold text-white">ضيافة VIP ملكية</span>
+            </div>
+          </div>
+
           {/* Live Branches Switcher Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+            <span className="text-xs font-bold text-slate-400">اختر الفرع الأقرب لك:</span>
             {branches.map((b) => {
               const isSelected = selectedBranchId === b.id;
               return (
                 <button
                   key={b.id}
                   onClick={() => setSelectedBranchId(b.id)}
-                  className={`py-2 px-4 rounded-2xl text-xs font-black transition flex items-center gap-2 ${
+                  className={`py-2.5 px-5 rounded-2xl text-xs font-black transition flex items-center gap-2 ${
                     isSelected
-                      ? "bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 ring-2 ring-amber-400"
-                      : "bg-[#181822] hover:bg-[#20202c] text-slate-300 border border-amber-500/20"
+                      ? "bg-amber-500 text-slate-950 shadow-xl shadow-amber-500/20 ring-2 ring-amber-400 scale-105"
+                      : "bg-[#14141e] hover:bg-[#1a1a28] text-slate-300 border border-amber-500/30"
                   }`}
                 >
-                  <MapPin className="w-3.5 h-3.5" />
+                  <MapPin className="w-4 h-4 text-amber-400" />
                   <span>{b.name}</span>
                 </button>
               );
@@ -406,7 +441,7 @@ export default function HomePage() {
          ───────────────────────────────────────────────────────────── */}
       {confirmedBooking && (
         <section className="max-w-xl mx-auto p-4 sm:p-6 w-full animate-fade-in">
-          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#1a1a24] to-[#121218] border-2 border-emerald-500/50 shadow-2xl text-center space-y-4">
+          <div className="p-6 rounded-3xl bg-gradient-to-b from-[#181824] to-[#101016] border-2 border-emerald-500/60 shadow-2xl text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 flex items-center justify-center mx-auto text-2xl font-bold shadow-lg">
               <CheckCircle2 className="w-8 h-8" />
             </div>
@@ -420,7 +455,7 @@ export default function HomePage() {
               </h3>
             </div>
 
-            <div className="p-4 rounded-2xl bg-black/50 border border-amber-500/20 text-right space-y-2 text-xs">
+            <div className="p-4 rounded-2xl bg-black/60 border border-amber-500/20 text-right space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-slate-400">الفرع:</span>
                 <span className="font-bold text-amber-300">{confirmedBooking.branch?.name}</span>
@@ -460,41 +495,44 @@ export default function HomePage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          3. MAIN BOOKING WORKFLOW (BRANCH -> SPECIALIST -> SERVICES)
+          3. MAIN BOOKING WORKFLOW (SPECIALISTS & VISUAL SERVICES)
          ───────────────────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 space-y-10">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 space-y-12">
         {/* STEP 1: CHOOSE SPECIALIST */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-sm">
+        <section className="space-y-5">
+          <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-sm">
                 1
               </div>
-              <h3 className="text-base sm:text-lg font-black text-white">
-                اختر المصفف / المتخصص
-              </h3>
+              <div>
+                <h3 className="text-lg font-black text-white">اختر المصفف / المتخصص المفضل</h3>
+                <p className="text-xs text-slate-400">
+                  شاهد صورة الحلاق، تقييمه، رقم الكرسي، وحالته اللحظية
+                </p>
+              </div>
             </div>
-            <span className="text-xs text-amber-300/80 font-bold">
-              {filteredSpecialists.length} متخصصين متاحين
+            <span className="text-xs text-amber-400 font-bold bg-amber-500/10 py-1 px-3 rounded-full border border-amber-500/30">
+              {filteredSpecialists.length} متخصصين بالفرع
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {/* Any Specialist Card */}
             <div
               onClick={() => setSelectedSpecialistId("")}
-              className={`cursor-pointer p-4 rounded-2xl border transition text-center space-y-2 flex flex-col items-center justify-center ${
+              className={`cursor-pointer p-4 rounded-3xl border transition text-center space-y-2 flex flex-col items-center justify-center ${
                 selectedSpecialistId === ""
-                  ? "bg-amber-500/15 border-amber-400 ring-2 ring-amber-400 shadow-md shadow-amber-500/10"
-                  : "bg-[#14141c] hover:bg-[#1a1a24] border-white/10"
+                  ? "bg-amber-500/20 border-amber-400 ring-2 ring-amber-400 shadow-xl shadow-amber-500/10"
+                  : "bg-[#101018] hover:bg-[#161622] border-white/10"
               }`}
             >
-              <div className="w-14 h-14 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center text-xl font-black">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center text-2xl font-black">
                 ⚡
               </div>
               <div>
                 <p className="font-black text-xs sm:text-sm text-white">أي متخصص متاح</p>
-                <span className="text-[10px] text-amber-300 font-bold">أول كرسي خالي</span>
+                <span className="text-[10px] text-amber-300 font-bold">أول كرسي خالي بالفرع</span>
               </div>
             </div>
 
@@ -507,10 +545,10 @@ export default function HomePage() {
                 <div
                   key={spec.id}
                   onClick={() => setSelectedSpecialistId(spec.id)}
-                  className={`cursor-pointer p-3.5 rounded-2xl border transition text-center space-y-2 flex flex-col items-center relative ${
+                  className={`cursor-pointer p-3.5 rounded-3xl border transition text-center space-y-2.5 flex flex-col items-center relative group ${
                     isSelected
-                      ? "bg-amber-500/15 border-amber-400 ring-2 ring-amber-400 shadow-md shadow-amber-500/10"
-                      : "bg-[#14141c] hover:bg-[#1a1a24] border-white/10"
+                      ? "bg-amber-500/20 border-amber-400 ring-2 ring-amber-400 shadow-xl shadow-amber-500/15"
+                      : "bg-[#101018] hover:bg-[#161622] border-white/10"
                   }`}
                 >
                   {/* Status Indicator Pill */}
@@ -521,11 +559,11 @@ export default function HomePage() {
                         : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
                     }`}
                   >
-                    {isWithClient ? "على الكرسي 💺" : "متاح 🟢"}
+                    {isWithClient ? "على الكرسي 💺" : "متاح الآن 🟢"}
                   </span>
 
                   {/* Specialist Photo */}
-                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400/50 shadow-md bg-black">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-md bg-black shrink-0 group-hover:scale-105 transition">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={spec.photo || "/logo.jpg"}
@@ -534,14 +572,14 @@ export default function HomePage() {
                     />
                   </div>
 
-                  <div>
-                    <h4 className="font-black text-xs text-white truncate max-w-[120px]">
+                  <div className="space-y-0.5">
+                    <h4 className="font-black text-xs sm:text-sm text-white truncate max-w-[130px]">
                       {spec.name}
                     </h4>
-                    <p className="text-[10px] text-slate-400 truncate max-w-[120px]">{spec.title}</p>
+                    <p className="text-[10px] text-slate-400 truncate max-w-[130px]">{spec.title}</p>
                   </div>
 
-                  <div className="flex items-center gap-1 text-[10px] text-amber-400 font-bold">
+                  <div className="flex items-center gap-1.5 text-[10px] text-amber-400 font-bold bg-black/40 py-0.5 px-2 rounded-full border border-white/5">
                     <Star className="w-3 h-3 fill-amber-400" />
                     <span>{spec.rating}</span>
                     <span className="text-slate-500">• ك {spec.chairNumber}</span>
@@ -552,16 +590,19 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* STEP 2: CHOOSE SERVICES */}
-        <section className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-sm">
+        {/* STEP 2: CHOOSE SERVICES WITH HIGH-RES PHOTOS */}
+        <section className="space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/20 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-sm">
                 2
               </div>
-              <h3 className="text-base sm:text-lg font-black text-white">
-                اختر الخدمات المطلوبة
-              </h3>
+              <div>
+                <h3 className="text-lg font-black text-white">اختر الخدمات التجميلية والعناية المطلوبة</h3>
+                <p className="text-xs text-slate-400">
+                  شاهد صور كل خدمة، مدتها بالدقائق، وسعرها الواضح
+                </p>
+              </div>
             </div>
 
             {/* Category Filter Pills */}
@@ -581,7 +622,7 @@ export default function HomePage() {
                   className={`py-1.5 px-3 rounded-xl whitespace-nowrap font-bold transition text-xs ${
                     activeCategory === c.id
                       ? "bg-amber-500 text-slate-950 font-black shadow-xs"
-                      : "bg-[#181822] text-slate-400 hover:text-white border border-white/5"
+                      : "bg-[#14141e] text-slate-400 hover:text-white border border-white/5"
                   }`}
                 >
                   {c.label}
@@ -590,47 +631,81 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Services Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {/* VISUAL SERVICES GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredServices.map((srv) => {
               const isSelected = selectedServices.some((item) => item.id === srv.id);
               return (
                 <div
                   key={srv.id}
                   onClick={() => toggleService(srv)}
-                  className={`cursor-pointer p-4 rounded-2xl border transition flex items-center justify-between gap-3 ${
+                  className={`cursor-pointer rounded-3xl border overflow-hidden transition flex flex-col justify-between group ${
                     isSelected
-                      ? "bg-amber-500/15 border-amber-400 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400"
-                      : "bg-[#14141c] hover:bg-[#181824] border-white/10"
+                      ? "bg-amber-500/15 border-amber-400 shadow-xl shadow-amber-500/15 ring-2 ring-amber-400"
+                      : "bg-[#101018] hover:bg-[#161622] border-white/10"
                   }`}
                 >
-                  <div className="space-y-1 flex-1">
-                    <h4 className="font-black text-sm text-white">{srv.nameAr}</h4>
-                    {srv.description && (
-                      <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
-                        {srv.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 pt-1 text-[11px]">
-                      <span className="font-mono text-amber-400 font-black text-sm">
-                        {srv.price} ج.م
-                      </span>
-                      <span className="text-slate-500">•</span>
-                      <span className="text-slate-400 font-bold flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-amber-500" />
-                        <span>{srv.durationMinutes} دقيقة</span>
-                      </span>
-                    </div>
+                  {/* Service Photo Banner */}
+                  <div className="relative h-36 w-full overflow-hidden bg-black">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={
+                        srv.image ||
+                        "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&auto=format&fit=crop&q=80"
+                      }
+                      alt={srv.nameAr}
+                      className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#101018] via-transparent to-black/30" />
+
+                    {/* Category Badge & Duration */}
+                    <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300">
+                      {srv.category}
+                    </span>
+
+                    <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-bold text-slate-300 flex items-center gap-1 font-mono">
+                      <Clock className="w-3 h-3 text-amber-400" />
+                      <span>{srv.durationMinutes} دقيقة</span>
+                    </span>
                   </div>
 
-                  <div
-                    className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 transition ${
-                      isSelected
-                        ? "bg-amber-500 text-slate-950"
-                        : "bg-white/10 text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {isSelected ? "✓" : "+"}
+                  {/* Service Content */}
+                  <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-black text-sm text-white group-hover:text-amber-300 transition">
+                        {srv.nameAr}
+                      </h4>
+                      {srv.description && (
+                        <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mt-1">
+                          {srv.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                      <span className="font-mono text-amber-400 font-black text-lg">
+                        {srv.price} ج.م
+                      </span>
+
+                      <div
+                        className={`py-1.5 px-3 rounded-xl flex items-center gap-1.5 font-bold text-xs transition ${
+                          isSelected
+                            ? "bg-amber-500 text-slate-950 font-black shadow-md"
+                            : "bg-white/10 text-slate-300 hover:text-white"
+                        }`}
+                      >
+                        {isSelected ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>تم الاختيار</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>+ إضافة للحجز</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
@@ -640,16 +715,17 @@ export default function HomePage() {
 
         {/* STEP 3: DATE & TIME SLOT SELECTION */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-sm">
+          <div className="flex items-center gap-2.5 border-b border-amber-500/20 pb-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-sm">
               3
             </div>
-            <h3 className="text-base sm:text-lg font-black text-white">
-              تحديد التاريخ وموعد الحضور
-            </h3>
+            <div>
+              <h3 className="text-lg font-black text-white">تحديد التاريخ وموعد الحضور</h3>
+              <p className="text-xs text-slate-400">احجز مسبقاً وتفادى أوقات الزحمة بالفرع</p>
+            </div>
           </div>
 
-          <div className="p-5 rounded-3xl bg-[#14141c] border border-white/10 space-y-4">
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#101018] border border-amber-500/25 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Date Input */}
               <div className="space-y-1.5">
@@ -675,7 +751,7 @@ export default function HomePage() {
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="مثال: تجهيز عريس، حلاقة مناسبة خاصة..."
+                  placeholder="مثال: حلاقة عريس، قصة مخصصة..."
                   className="w-full py-2.5 px-3.5 rounded-2xl bg-black/60 border border-amber-500/30 text-xs font-bold text-white focus:outline-none focus:border-amber-400 placeholder:text-slate-600"
                 />
               </div>
@@ -698,8 +774,8 @@ export default function HomePage() {
                       onClick={() => setSelectedTimeSlot(slot)}
                       className={`py-1.5 px-3 rounded-xl text-xs font-mono font-bold transition ${
                         isSelected
-                          ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
-                          : "bg-black/40 text-slate-300 hover:text-white border border-white/5"
+                          ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20 scale-105"
+                          : "bg-black/50 text-slate-300 hover:text-white border border-white/5"
                       }`}
                     >
                       {slot}
@@ -716,7 +792,7 @@ export default function HomePage() {
           4. FLOATING SUMMARY & CONFIRMATION BAR
          ───────────────────────────────────────────────────────────── */}
       {selectedServices.length > 0 && (
-        <aside className="sticky bottom-0 z-40 bg-[#0f0f15]/95 backdrop-blur-md border-t border-amber-500/30 p-4 shadow-2xl">
+        <aside className="sticky bottom-0 z-40 bg-[#0c0c12]/98 backdrop-blur-md border-t border-amber-500/40 p-4 shadow-2xl">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5 text-slate-300">
@@ -772,9 +848,9 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto text-xl font-bold">
                 👑
               </div>
-              <h3 className="text-lg font-black text-white">تسجيل حساب عميل صالون صدام</h3>
+              <h3 className="text-lg font-black text-white">تسجيل وتأكيد حساب عميل صدام</h3>
               <p className="text-xs text-amber-200/70">
-                سجل حسابك الدائم لتفعيل الحجز والحصول على نقاط وخصومات الـ VIP
+                يصلك كود التفعيل مباشرة عبر رسالة بريد إلكتروني على Gmail
               </p>
             </div>
 
@@ -813,13 +889,14 @@ export default function HomePage() {
 
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">
-                    البريد الإلكتروني (Gmail لاستلام كود التفعيل):
+                    البريد الإلكتروني (Gmail لإرسال كود التفعيل):
                   </label>
                   <input
                     type="email"
+                    required
                     value={regForm.email}
                     onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                    placeholder="example@gmail.com"
+                    placeholder="your-name@gmail.com"
                     className="w-full py-2.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/30 text-xs text-white font-mono focus:outline-none focus:border-amber-400 text-left"
                   />
                 </div>
@@ -829,18 +906,17 @@ export default function HomePage() {
                   disabled={authLoading}
                   className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-50"
                 >
-                  <span>{authLoading ? "جارٍ الإرسال..." : "إرسال كود التفعيل 📩"}</span>
+                  <Mail className="w-4 h-4" />
+                  <span>{authLoading ? "جارٍ إرسال كود الجي ميل..." : "إرسال كود التفعيل على Gmail 📩"}</span>
                 </button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp} className="space-y-3.5">
-                <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-1 text-xs text-amber-200">
-                  <p>تم إرسال كود التفعيل بنجاح!</p>
-                  {serverOtp && (
-                    <p className="font-mono text-sm font-black text-amber-400">
-                      كود التفعيل للتجربة الفورية: {serverOtp}
-                    </p>
-                  )}
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-1.5 text-xs text-amber-200">
+                  <p className="font-bold">{authSuccessMsg}</p>
+                  <p className="text-[11px] text-slate-400">
+                    أرسلنا الكود إلى: <strong className="text-white font-mono">{regForm.email}</strong>
+                  </p>
                 </div>
 
                 <div className="space-y-1">
@@ -851,7 +927,7 @@ export default function HomePage() {
                     maxLength={6}
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
-                    placeholder="123456"
+                    placeholder="••••••"
                     className="w-full py-3 px-4 rounded-xl bg-black/60 border border-amber-500/40 text-center font-mono text-xl tracking-widest text-amber-400 font-black focus:outline-none focus:border-amber-400"
                   />
                 </div>
@@ -871,7 +947,116 @@ export default function HomePage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          6. LUXURY CARD 2 QR MODAL
+          6. SIGNATURE GRAND ORCA FOOTER
+         ───────────────────────────────────────────────────────────── */}
+      <footer className="mt-auto border-t-2 border-amber-500/30 bg-[#050508] text-slate-300 font-sans">
+        {/* Main Footer Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Column 1: Brand Info */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-md bg-black">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <h4 className="text-base font-black text-amber-400">صالون حلاقة صدام VIP</h4>
+                <p className="text-[10px] text-amber-200/60 font-mono tracking-widest uppercase">
+                  SADDAM BARBER SHOP
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              الوجهة الأولى للرجل العصري الباحث عن الأناقة الملكية والتميز. نقدم أحدث صيحات قص الشعر العالمية وتحديد اللحية
+              وحمامات البخار والبروتين بأعلى معايير النظافة والتعقيم الطبي.
+            </p>
+
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-amber-400">
+              <Phone className="w-4 h-4" />
+              <span>الخط الساخن: {settings?.hotline || "19888"}</span>
+            </div>
+          </div>
+
+          {/* Column 2: Branches & Working Hours */}
+          <div className="space-y-3 text-xs">
+            <h4 className="text-sm font-black text-white border-b border-amber-500/20 pb-2 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-amber-400" />
+              <span>فروعنا في القاهرة</span>
+            </h4>
+
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+              <strong className="text-amber-300 block font-black">📍 فرع حدائق القبة (الرئيسي):</strong>
+              <p className="text-slate-400">17 شارع مصر والسودان، بجوار دير الملاك</p>
+              <p className="font-mono text-slate-400">هاتف: {settings?.hadayekPhone || "01018671000"}</p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+              <strong className="text-amber-300 block font-black">📍 فرع مدينة نصر (VIP):</strong>
+              <p className="text-slate-400">تقاطع مكرم عبيد مع عباس العقاد</p>
+              <p className="font-mono text-slate-400">هاتف: {settings?.nasrCityPhone || "01118400150"}</p>
+            </div>
+
+            <p className="text-[11px] text-amber-200/80 pt-1">
+              ⏰ مواعيد العمل: يومياً من 12:00 ظهراً حتى 02:00 بعد منتصف الليل
+            </p>
+          </div>
+
+          {/* Column 3: Quick Links & Apps */}
+          <div className="space-y-3 text-xs">
+            <h4 className="text-sm font-black text-white border-b border-amber-500/20 pb-2 flex items-center gap-2">
+              <Scissors className="w-4 h-4 text-amber-400" />
+              <span>بوابات المنظومة السحابية</span>
+            </h4>
+
+            <ul className="space-y-2">
+              <li>
+                <Link href="/login" className="hover:text-amber-400 transition flex items-center gap-1.5 font-bold">
+                  <span>🔒 بوابة دخول طاقم العمل والإدارة</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/chair" className="hover:text-amber-400 transition flex items-center gap-1.5 font-bold">
+                  <span>💺 شاشة المتخصص على الكرسي (Live Chair)</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/pos" className="hover:text-amber-400 transition flex items-center gap-1.5 font-bold">
+                  <span>💰 نقطة بيع الكاشير ومستحضرات التجميل (POS)</span>
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={() => setShowQrModal(true)}
+                  className="hover:text-amber-400 transition flex items-center gap-1.5 font-bold text-right"
+                >
+                  <span>🪪 استعراض وطباعة كارت الـ 2 كيو آر كود</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Orca Tech Signature Bottom Bar */}
+        <div className="border-t border-amber-500/20 bg-black/60 py-5 px-4 sm:px-8 text-center space-y-2">
+          <p className="text-xs text-slate-400 font-bold">
+            جميع الحقوق محفوظة © {new Date().getFullYear()} لـ <span className="text-amber-400">صالون حلاقة صدام VIP</span>
+          </p>
+
+          <p className="text-[11px] text-amber-300/90 font-medium">
+            تصميم وتطوير المنظومة الذكية:{" "}
+            <strong className="text-white font-black">م / حمزة عباس</strong> — شركة{" "}
+            <strong className="text-amber-400 font-black">أوركا للحلول البرمجية والذكاء الاصطناعي (Orca Tech) 🐬</strong>
+          </p>
+
+          <p className="text-[10px] text-slate-500 font-mono">
+            خدمة الدعم الفني المباشر وتطوير الأنظمة: 01018671000
+          </p>
+        </div>
+      </footer>
+
+      {/* ─────────────────────────────────────────────────────────────
+          7. LUXURY CARD 2 QR MODAL
          ───────────────────────────────────────────────────────────── */}
       <CardQRModal
         isOpen={showQrModal}
