@@ -57,6 +57,33 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check Weekly Day Off (e.g. MONDAY)
+    const settings = await prisma.systemSettings.findFirst();
+    if (settings?.isDayOffEnabled && settings.weeklyDayOff && settings.weeklyDayOff !== "NONE") {
+      const d = new Date(bookingDate + "T12:00:00Z");
+      const dayOfWeek = d.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+      const dayMap: Record<string, number> = {
+        SUNDAY: 0,
+        MONDAY: 1,
+        TUESDAY: 2,
+        WEDNESDAY: 3,
+        THURSDAY: 4,
+        FRIDAY: 5,
+        SATURDAY: 6,
+      };
+      if (dayMap[settings.weeklyDayOff] === dayOfWeek) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              settings.dayOffMessage ||
+              "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     let finalCustomerId = customerId;
 
     // If customerId not provided, find or create from phone
@@ -121,7 +148,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, status, notes, timeSlot, bookingDate } = body;
+    const { id, status, notes, timeSlot, bookingDate, notifyCustomer } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "معرف الحجز مطلوب" }, { status: 400 });
@@ -135,7 +162,30 @@ export async function PATCH(req: Request) {
         ...(timeSlot && { timeSlot }),
         ...(bookingDate && { bookingDate }),
       },
+      include: {
+        customer: true,
+        branch: true,
+        specialist: true,
+      },
     });
+
+    // If rescheduled or notified, send automated chat message to customer
+    if (notifyCustomer && booking.customer?.phone) {
+      const msgText =
+        status === "CANCELLED"
+          ? `عفواً يا فندم، تم إلغاء حجزك رقم (#${booking.bookingNumber}) في صالون صدام (${booking.branch?.name}). سبب الإلغاء: ${notes || "عدم توفر موعد متاح"}. نتشرف باختيار موعد بديل في أي وقت 💈`
+          : `👑 مرحباً بك يا فندم! بخصوص حجزك في صالون صدام (#${booking.bookingNumber})، تم تأكيد وتعديل موعد الحضور إلى: يوم (${booking.bookingDate}) الساعة (${booking.timeSlot}) ⏰ بفرع (${booking.branch?.name})${booking.specialist ? ` مع ${booking.specialist.name}` : ""}. ننتظر تشريفك لتجربة استثنائية!`;
+
+      await prisma.chatMessage.create({
+        data: {
+          sender: "SALON",
+          customerPhone: booking.customer.phone,
+          customerName: booking.customer.name,
+          branchId: booking.branchId,
+          message: msgText,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true, booking });
   } catch (error: any) {

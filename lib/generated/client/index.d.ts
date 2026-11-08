@@ -13603,8 +13603,20 @@ export namespace Prisma {
 
   export type AggregateSystemSettings = {
     _count: SystemSettingsCountAggregateOutputType | null
+    _avg: SystemSettingsAvgAggregateOutputType | null
+    _sum: SystemSettingsSumAggregateOutputType | null
     _min: SystemSettingsMinAggregateOutputType | null
     _max: SystemSettingsMaxAggregateOutputType | null
+  }
+
+  export type SystemSettingsAvgAggregateOutputType = {
+    bookingSlotInterval: number | null
+    reminderMinutesBefore: number | null
+  }
+
+  export type SystemSettingsSumAggregateOutputType = {
+    bookingSlotInterval: number | null
+    reminderMinutesBefore: number | null
   }
 
   export type SystemSettingsMinAggregateOutputType = {
@@ -13622,6 +13634,12 @@ export namespace Prisma {
     instagramUrl: string | null
     defaultOpenHour: string | null
     defaultCloseHour: string | null
+    weeklyDayOff: string | null
+    isDayOffEnabled: boolean | null
+    dayOffMessage: string | null
+    bookingSlotInterval: number | null
+    reminderMinutesBefore: number | null
+    receiptFooterNotes: string | null
     updatedAt: Date | null
   }
 
@@ -13640,6 +13658,12 @@ export namespace Prisma {
     instagramUrl: string | null
     defaultOpenHour: string | null
     defaultCloseHour: string | null
+    weeklyDayOff: string | null
+    isDayOffEnabled: boolean | null
+    dayOffMessage: string | null
+    bookingSlotInterval: number | null
+    reminderMinutesBefore: number | null
+    receiptFooterNotes: string | null
     updatedAt: Date | null
   }
 
@@ -13658,10 +13682,26 @@ export namespace Prisma {
     instagramUrl: number
     defaultOpenHour: number
     defaultCloseHour: number
+    weeklyDayOff: number
+    isDayOffEnabled: number
+    dayOffMessage: number
+    bookingSlotInterval: number
+    reminderMinutesBefore: number
+    receiptFooterNotes: number
     updatedAt: number
     _all: number
   }
 
+
+  export type SystemSettingsAvgAggregateInputType = {
+    bookingSlotInterval?: true
+    reminderMinutesBefore?: true
+  }
+
+  export type SystemSettingsSumAggregateInputType = {
+    bookingSlotInterval?: true
+    reminderMinutesBefore?: true
+  }
 
   export type SystemSettingsMinAggregateInputType = {
     id?: true
@@ -13678,6 +13718,12 @@ export namespace Prisma {
     instagramUrl?: true
     defaultOpenHour?: true
     defaultCloseHour?: true
+    weeklyDayOff?: true
+    isDayOffEnabled?: true
+    dayOffMessage?: true
+    bookingSlotInterval?: true
+    reminderMinutesBefore?: true
+    receiptFooterNotes?: true
     updatedAt?: true
   }
 
@@ -13696,6 +13742,12 @@ export namespace Prisma {
     instagramUrl?: true
     defaultOpenHour?: true
     defaultCloseHour?: true
+    weeklyDayOff?: true
+    isDayOffEnabled?: true
+    dayOffMessage?: true
+    bookingSlotInterval?: true
+    reminderMinutesBefore?: true
+    receiptFooterNotes?: true
     updatedAt?: true
   }
 
@@ -13714,6 +13766,12 @@ export namespace Prisma {
     instagramUrl?: true
     defaultOpenHour?: true
     defaultCloseHour?: true
+    weeklyDayOff?: true
+    isDayOffEnabled?: true
+    dayOffMessage?: true
+    bookingSlotInterval?: true
+    reminderMinutesBefore?: true
+    receiptFooterNotes?: true
     updatedAt?: true
     _all?: true
   }
@@ -13756,6 +13814,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: SystemSettingsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SystemSettingsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: SystemSettingsMinAggregateInputType
@@ -13786,6 +13856,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: SystemSettingsCountAggregateInputType | true
+    _avg?: SystemSettingsAvgAggregateInputType
+    _sum?: SystemSettingsSumAggregateInputType
     _min?: SystemSettingsMinAggregateInputType
     _max?: SystemSettingsMaxAggregateInputType
   }
@@ -13805,8 +13877,16 @@ export namespace Prisma {
     instagramUrl: string | null
     defaultOpenHour: string
     defaultCloseHour: string
+    weeklyDayOff: string
+    isDayOffEnabled: boolean
+    dayOffMessage: string
+    bookingSlotInterval: number
+    reminderMinutesBefore: number
+    receiptFooterNotes: string
     updatedAt: Date
     _count: SystemSettingsCountAggregateOutputType | null
+    _avg: SystemSettingsAvgAggregateOutputType | null
+    _sum: SystemSettingsSumAggregateOutputType | null
     _min: SystemSettingsMinAggregateOutputType | null
     _max: SystemSettingsMaxAggregateOutputType | null
   }
@@ -13840,6 +13920,12 @@ export namespace Prisma {
     instagramUrl?: boolean
     defaultOpenHour?: boolean
     defaultCloseHour?: boolean
+    weeklyDayOff?: boolean
+    isDayOffEnabled?: boolean
+    dayOffMessage?: boolean
+    bookingSlotInterval?: boolean
+    reminderMinutesBefore?: boolean
+    receiptFooterNotes?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -13858,6 +13944,12 @@ export namespace Prisma {
     instagramUrl?: boolean
     defaultOpenHour?: boolean
     defaultCloseHour?: boolean
+    weeklyDayOff?: boolean
+    isDayOffEnabled?: boolean
+    dayOffMessage?: boolean
+    bookingSlotInterval?: boolean
+    reminderMinutesBefore?: boolean
+    receiptFooterNotes?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -13876,6 +13968,12 @@ export namespace Prisma {
     instagramUrl?: boolean
     defaultOpenHour?: boolean
     defaultCloseHour?: boolean
+    weeklyDayOff?: boolean
+    isDayOffEnabled?: boolean
+    dayOffMessage?: boolean
+    bookingSlotInterval?: boolean
+    reminderMinutesBefore?: boolean
+    receiptFooterNotes?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -13894,10 +13992,16 @@ export namespace Prisma {
     instagramUrl?: boolean
     defaultOpenHour?: boolean
     defaultCloseHour?: boolean
+    weeklyDayOff?: boolean
+    isDayOffEnabled?: boolean
+    dayOffMessage?: boolean
+    bookingSlotInterval?: boolean
+    reminderMinutesBefore?: boolean
+    receiptFooterNotes?: boolean
     updatedAt?: boolean
   }
 
-  export type SystemSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "salonNameAr" | "salonNameEn" | "logoUrl" | "systemLocked" | "lockMessage" | "hadayekPhone" | "nasrCityPhone" | "hotline" | "whatsappNumber" | "facebookUrl" | "instagramUrl" | "defaultOpenHour" | "defaultCloseHour" | "updatedAt", ExtArgs["result"]["systemSettings"]>
+  export type SystemSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "salonNameAr" | "salonNameEn" | "logoUrl" | "systemLocked" | "lockMessage" | "hadayekPhone" | "nasrCityPhone" | "hotline" | "whatsappNumber" | "facebookUrl" | "instagramUrl" | "defaultOpenHour" | "defaultCloseHour" | "weeklyDayOff" | "isDayOffEnabled" | "dayOffMessage" | "bookingSlotInterval" | "reminderMinutesBefore" | "receiptFooterNotes" | "updatedAt", ExtArgs["result"]["systemSettings"]>
 
   export type $SystemSettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SystemSettings"
@@ -13917,6 +14021,12 @@ export namespace Prisma {
       instagramUrl: string | null
       defaultOpenHour: string
       defaultCloseHour: string
+      weeklyDayOff: string
+      isDayOffEnabled: boolean
+      dayOffMessage: string
+      bookingSlotInterval: number
+      reminderMinutesBefore: number
+      receiptFooterNotes: string
       updatedAt: Date
     }, ExtArgs["result"]["systemSettings"]>
     composites: {}
@@ -14355,6 +14465,12 @@ export namespace Prisma {
     readonly instagramUrl: FieldRef<"SystemSettings", 'String'>
     readonly defaultOpenHour: FieldRef<"SystemSettings", 'String'>
     readonly defaultCloseHour: FieldRef<"SystemSettings", 'String'>
+    readonly weeklyDayOff: FieldRef<"SystemSettings", 'String'>
+    readonly isDayOffEnabled: FieldRef<"SystemSettings", 'Boolean'>
+    readonly dayOffMessage: FieldRef<"SystemSettings", 'String'>
+    readonly bookingSlotInterval: FieldRef<"SystemSettings", 'Int'>
+    readonly reminderMinutesBefore: FieldRef<"SystemSettings", 'Int'>
+    readonly receiptFooterNotes: FieldRef<"SystemSettings", 'String'>
     readonly updatedAt: FieldRef<"SystemSettings", 'DateTime'>
   }
     
@@ -19890,6 +20006,12 @@ export namespace Prisma {
     instagramUrl: 'instagramUrl',
     defaultOpenHour: 'defaultOpenHour',
     defaultCloseHour: 'defaultCloseHour',
+    weeklyDayOff: 'weeklyDayOff',
+    isDayOffEnabled: 'isDayOffEnabled',
+    dayOffMessage: 'dayOffMessage',
+    bookingSlotInterval: 'bookingSlotInterval',
+    reminderMinutesBefore: 'reminderMinutesBefore',
+    receiptFooterNotes: 'receiptFooterNotes',
     updatedAt: 'updatedAt'
   };
 
@@ -21027,6 +21149,12 @@ export namespace Prisma {
     instagramUrl?: StringNullableFilter<"SystemSettings"> | string | null
     defaultOpenHour?: StringFilter<"SystemSettings"> | string
     defaultCloseHour?: StringFilter<"SystemSettings"> | string
+    weeklyDayOff?: StringFilter<"SystemSettings"> | string
+    isDayOffEnabled?: BoolFilter<"SystemSettings"> | boolean
+    dayOffMessage?: StringFilter<"SystemSettings"> | string
+    bookingSlotInterval?: IntFilter<"SystemSettings"> | number
+    reminderMinutesBefore?: IntFilter<"SystemSettings"> | number
+    receiptFooterNotes?: StringFilter<"SystemSettings"> | string
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }
 
@@ -21045,6 +21173,12 @@ export namespace Prisma {
     instagramUrl?: SortOrderInput | SortOrder
     defaultOpenHour?: SortOrder
     defaultCloseHour?: SortOrder
+    weeklyDayOff?: SortOrder
+    isDayOffEnabled?: SortOrder
+    dayOffMessage?: SortOrder
+    bookingSlotInterval?: SortOrder
+    reminderMinutesBefore?: SortOrder
+    receiptFooterNotes?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -21066,6 +21200,12 @@ export namespace Prisma {
     instagramUrl?: StringNullableFilter<"SystemSettings"> | string | null
     defaultOpenHour?: StringFilter<"SystemSettings"> | string
     defaultCloseHour?: StringFilter<"SystemSettings"> | string
+    weeklyDayOff?: StringFilter<"SystemSettings"> | string
+    isDayOffEnabled?: BoolFilter<"SystemSettings"> | boolean
+    dayOffMessage?: StringFilter<"SystemSettings"> | string
+    bookingSlotInterval?: IntFilter<"SystemSettings"> | number
+    reminderMinutesBefore?: IntFilter<"SystemSettings"> | number
+    receiptFooterNotes?: StringFilter<"SystemSettings"> | string
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }, "id">
 
@@ -21084,10 +21224,18 @@ export namespace Prisma {
     instagramUrl?: SortOrderInput | SortOrder
     defaultOpenHour?: SortOrder
     defaultCloseHour?: SortOrder
+    weeklyDayOff?: SortOrder
+    isDayOffEnabled?: SortOrder
+    dayOffMessage?: SortOrder
+    bookingSlotInterval?: SortOrder
+    reminderMinutesBefore?: SortOrder
+    receiptFooterNotes?: SortOrder
     updatedAt?: SortOrder
     _count?: SystemSettingsCountOrderByAggregateInput
+    _avg?: SystemSettingsAvgOrderByAggregateInput
     _max?: SystemSettingsMaxOrderByAggregateInput
     _min?: SystemSettingsMinOrderByAggregateInput
+    _sum?: SystemSettingsSumOrderByAggregateInput
   }
 
   export type SystemSettingsScalarWhereWithAggregatesInput = {
@@ -21108,6 +21256,12 @@ export namespace Prisma {
     instagramUrl?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
     defaultOpenHour?: StringWithAggregatesFilter<"SystemSettings"> | string
     defaultCloseHour?: StringWithAggregatesFilter<"SystemSettings"> | string
+    weeklyDayOff?: StringWithAggregatesFilter<"SystemSettings"> | string
+    isDayOffEnabled?: BoolWithAggregatesFilter<"SystemSettings"> | boolean
+    dayOffMessage?: StringWithAggregatesFilter<"SystemSettings"> | string
+    bookingSlotInterval?: IntWithAggregatesFilter<"SystemSettings"> | number
+    reminderMinutesBefore?: IntWithAggregatesFilter<"SystemSettings"> | number
+    receiptFooterNotes?: StringWithAggregatesFilter<"SystemSettings"> | string
     updatedAt?: DateTimeWithAggregatesFilter<"SystemSettings"> | Date | string
   }
 
@@ -22616,6 +22770,12 @@ export namespace Prisma {
     instagramUrl?: string | null
     defaultOpenHour?: string
     defaultCloseHour?: string
+    weeklyDayOff?: string
+    isDayOffEnabled?: boolean
+    dayOffMessage?: string
+    bookingSlotInterval?: number
+    reminderMinutesBefore?: number
+    receiptFooterNotes?: string
     updatedAt?: Date | string
   }
 
@@ -22634,6 +22794,12 @@ export namespace Prisma {
     instagramUrl?: string | null
     defaultOpenHour?: string
     defaultCloseHour?: string
+    weeklyDayOff?: string
+    isDayOffEnabled?: boolean
+    dayOffMessage?: string
+    bookingSlotInterval?: number
+    reminderMinutesBefore?: number
+    receiptFooterNotes?: string
     updatedAt?: Date | string
   }
 
@@ -22652,6 +22818,12 @@ export namespace Prisma {
     instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
     defaultOpenHour?: StringFieldUpdateOperationsInput | string
     defaultCloseHour?: StringFieldUpdateOperationsInput | string
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    dayOffMessage?: StringFieldUpdateOperationsInput | string
+    bookingSlotInterval?: IntFieldUpdateOperationsInput | number
+    reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
+    receiptFooterNotes?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -22670,6 +22842,12 @@ export namespace Prisma {
     instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
     defaultOpenHour?: StringFieldUpdateOperationsInput | string
     defaultCloseHour?: StringFieldUpdateOperationsInput | string
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    dayOffMessage?: StringFieldUpdateOperationsInput | string
+    bookingSlotInterval?: IntFieldUpdateOperationsInput | number
+    reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
+    receiptFooterNotes?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -22688,6 +22866,12 @@ export namespace Prisma {
     instagramUrl?: string | null
     defaultOpenHour?: string
     defaultCloseHour?: string
+    weeklyDayOff?: string
+    isDayOffEnabled?: boolean
+    dayOffMessage?: string
+    bookingSlotInterval?: number
+    reminderMinutesBefore?: number
+    receiptFooterNotes?: string
     updatedAt?: Date | string
   }
 
@@ -22706,6 +22890,12 @@ export namespace Prisma {
     instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
     defaultOpenHour?: StringFieldUpdateOperationsInput | string
     defaultCloseHour?: StringFieldUpdateOperationsInput | string
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    dayOffMessage?: StringFieldUpdateOperationsInput | string
+    bookingSlotInterval?: IntFieldUpdateOperationsInput | number
+    reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
+    receiptFooterNotes?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -22724,6 +22914,12 @@ export namespace Prisma {
     instagramUrl?: NullableStringFieldUpdateOperationsInput | string | null
     defaultOpenHour?: StringFieldUpdateOperationsInput | string
     defaultCloseHour?: StringFieldUpdateOperationsInput | string
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    dayOffMessage?: StringFieldUpdateOperationsInput | string
+    bookingSlotInterval?: IntFieldUpdateOperationsInput | number
+    reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
+    receiptFooterNotes?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -24102,7 +24298,18 @@ export namespace Prisma {
     instagramUrl?: SortOrder
     defaultOpenHour?: SortOrder
     defaultCloseHour?: SortOrder
+    weeklyDayOff?: SortOrder
+    isDayOffEnabled?: SortOrder
+    dayOffMessage?: SortOrder
+    bookingSlotInterval?: SortOrder
+    reminderMinutesBefore?: SortOrder
+    receiptFooterNotes?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type SystemSettingsAvgOrderByAggregateInput = {
+    bookingSlotInterval?: SortOrder
+    reminderMinutesBefore?: SortOrder
   }
 
   export type SystemSettingsMaxOrderByAggregateInput = {
@@ -24120,6 +24327,12 @@ export namespace Prisma {
     instagramUrl?: SortOrder
     defaultOpenHour?: SortOrder
     defaultCloseHour?: SortOrder
+    weeklyDayOff?: SortOrder
+    isDayOffEnabled?: SortOrder
+    dayOffMessage?: SortOrder
+    bookingSlotInterval?: SortOrder
+    reminderMinutesBefore?: SortOrder
+    receiptFooterNotes?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -24138,7 +24351,18 @@ export namespace Prisma {
     instagramUrl?: SortOrder
     defaultOpenHour?: SortOrder
     defaultCloseHour?: SortOrder
+    weeklyDayOff?: SortOrder
+    isDayOffEnabled?: SortOrder
+    dayOffMessage?: SortOrder
+    bookingSlotInterval?: SortOrder
+    reminderMinutesBefore?: SortOrder
+    receiptFooterNotes?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type SystemSettingsSumOrderByAggregateInput = {
+    bookingSlotInterval?: SortOrder
+    reminderMinutesBefore?: SortOrder
   }
 
   export type FloatNullableFilter<$PrismaModel = never> = {

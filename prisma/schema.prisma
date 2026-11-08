@@ -227,14 +227,23 @@ model SystemSettings {
   logoUrl         String             @default("/logo.jpg")
   systemLocked    Boolean            @default(false)
   lockMessage     String             @default("النظام مغلق مؤقتاً لأعمال الصيانة والتحديث.")
-  hadayekPhone    String             @default("01000000001")
-  nasrCityPhone   String             @default("01000000002")
-  hotline         String             @default("19000")
-  whatsappNumber  String             @default("01000000001")
+  hadayekPhone    String             @default("01121537537")
+  nasrCityPhone   String             @default("01121537537")
+  hotline         String             @default("01121537537")
+  whatsappNumber  String             @default("01121537537")
   facebookUrl     String             @default("https://www.facebook.com/SaddamSalon/")
   instagramUrl    String?
   defaultOpenHour String             @default("12:00 PM")
   defaultCloseHour String            @default("02:00 AM")
+  
+  // Weekly Day Off & Booking Policies
+  weeklyDayOff    String             @default("MONDAY") // MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY, NONE
+  isDayOffEnabled Boolean            @default(true)
+  dayOffMessage   String             @default("عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️")
+  bookingSlotInterval Int            @default(30) // in minutes
+  reminderMinutesBefore Int          @default(15) // reminder 15 min before
+  receiptFooterNotes String          @default("شكراً لزيارتكم صالون صدام الملكي 👑 تجربة استثنائية لأناقة الرجل")
+  
   updatedAt       DateTime           @updatedAt
 }
 

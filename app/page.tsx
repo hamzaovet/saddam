@@ -23,6 +23,8 @@ import {
   ChevronLeft,
   X,
   AlertCircle,
+  AlertTriangle,
+  Bell,
   ExternalLink,
   Flame,
   Award,
@@ -88,29 +90,126 @@ export default function HomePage() {
     showToast("info", "تم تسجيل خروجك من الحساب بنجاح 🚪");
   };
 
-  // Confirmed Booking State
+  // Confirmed Booking & Schedule Modal State
   const [confirmedBooking, setConfirmedBooking] = useState<any>(null);
   const [submittingBooking, setSubmittingBooking] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+
+  // 15-Minute Upcoming Appointment Reminder State
+  const [activeAppointmentReminder, setActiveAppointmentReminder] = useState<any>(null);
 
   // QR Modal
   const [showQrModal, setShowQrModal] = useState(false);
 
+  // Day Off Checker (Barbers Weekly Day Off e.g. MONDAY)
+  const checkIsDayOff = (dateStr: string) => {
+    if (!dateStr || !settings?.isDayOffEnabled) return false;
+    try {
+      const d = new Date(dateStr + "T12:00:00Z");
+      const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+      const dayName = dayNames[d.getUTCDay()];
+      return dayName === (settings?.weeklyDayOff || "MONDAY");
+    } catch {
+      return false;
+    }
+  };
+
+  // Customer Royal Reminder Audio Chime
+  const playCustomerReminderChime = () => {
+    try {
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
+      const ctx = new AC();
+      if (ctx.state === "suspended") ctx.resume();
+      const now = ctx.currentTime;
+      [[659.25, 0], [880, 0.25], [1318.51, 0.5]].forEach(([freq, delay]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.4, now + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + delay);
+        osc.stop(now + delay + 0.45);
+      });
+    } catch {}
+  };
+
   // Available Time Slots
   const timeSlots = [
+    "12:00 PM",
+    "12:30 PM",
     "01:00 PM",
+    "01:30 PM",
     "02:00 PM",
+    "02:30 PM",
     "03:00 PM",
+    "03:30 PM",
     "04:00 PM",
+    "04:30 PM",
     "05:00 PM",
+    "05:30 PM",
     "06:00 PM",
+    "06:30 PM",
     "07:00 PM",
+    "07:30 PM",
     "08:00 PM",
+    "08:30 PM",
     "09:00 PM",
+    "09:30 PM",
     "10:00 PM",
+    "10:30 PM",
     "11:00 PM",
+    "11:30 PM",
     "12:00 AM",
+    "12:30 AM",
     "01:00 AM",
+    "01:30 AM",
   ];
+
+  // 15-Minute Reminder Polling
+  useEffect(() => {
+    if (!customer?.id) return;
+
+    const checkUpcomingAppointment = async () => {
+      try {
+        const res = await fetch(`/api/bookings?customerId=${customer.id}&status=CONFIRMED`);
+        const data = await res.json();
+        if (data.success && data.bookings && data.bookings.length > 0) {
+          const today = new Date().toISOString().split("T")[0];
+          const todayBookings = data.bookings.filter((b: any) => b.bookingDate === today);
+          if (todayBookings.length > 0) {
+            const b = todayBookings[0];
+            const parts = (b.timeSlot || "").trim().split(" ");
+            if (parts.length === 2) {
+              let [h, m] = parts[0].split(":").map(Number);
+              const period = parts[1];
+              if (period === "PM" && h < 12) h += 12;
+              if (period === "AM" && h === 12) h = 0;
+              const slotMin = h * 60 + m;
+              const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+              const diff = slotMin - nowMin;
+              const reminderLead = settings?.reminderMinutesBefore || 15;
+              if (diff >= -15 && diff <= reminderLead + 10) {
+                setActiveAppointmentReminder({ ...b, diffMinutes: diff });
+                const remindedKey = `saddam_reminded_${b.id}`;
+                if (!sessionStorage.getItem(remindedKey)) {
+                  sessionStorage.setItem(remindedKey, "1");
+                  playCustomerReminderChime();
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+    };
+
+    checkUpcomingAppointment();
+    const interval = setInterval(checkUpcomingAppointment, 60000);
+    return () => clearInterval(interval);
+  }, [customer, settings]);
 
   // Initialize Data
   useEffect(() => {
@@ -315,12 +414,24 @@ export default function HomePage() {
   const executeBooking = async (customerIdToUse?: string) => {
     const custId = customerIdToUse || customer?.id;
     if (!custId) {
+      setShowBookingModal(false);
       setShowAuthModal(true);
+      showToast("info", "يرجى تسجيل الدخول أو إدخال بريدك لاستلام كود التفعيل وتأكيد الحجز 🔑");
       return;
     }
 
     if (selectedServices.length === 0) {
       showToast("error", "برجاء اختيار خدمة واحدة على الأقل لإتمام الحجز");
+      return;
+    }
+
+    // Day Off Validation (e.g. MONDAY)
+    if (checkIsDayOff(selectedDate)) {
+      showToast(
+        "error",
+        settings?.dayOffMessage ||
+          "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"
+      );
       return;
     }
 
@@ -349,6 +460,8 @@ export default function HomePage() {
       if (data.success && data.booking) {
         setConfirmedBooking(data.booking);
         setSelectedServices([]);
+        setShowBookingModal(false);
+        showToast("success", "تم استلام وتأكيد طلب حجزك الملكي بنجاح! 👑🎉");
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         showToast("error", data.error || "فشل إتمام الحجز");
@@ -364,6 +477,61 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#07070a] text-slate-100 flex flex-col font-sans" dir="rtl">
+      {/* ─────────────────────────────────────────────────────────────
+          0. UPCOMING APPOINTMENT 15-MINUTE ROYAL REMINDER BANNER
+         ───────────────────────────────────────────────────────────── */}
+      {activeAppointmentReminder && (
+        <aside
+          className="sticky top-0 z-50 bg-gradient-to-r from-amber-950 via-[#261505] to-amber-950 border-b-2 border-amber-400 p-3 sm:px-8 text-white font-sans shadow-2xl animate-fade-in"
+          dir="rtl"
+        >
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-base shadow-lg animate-bounce shrink-0">
+                👑
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-amber-300 text-sm">
+                    تذكير بموعدك الملكي في صالون صدام
+                  </span>
+                  <span className="py-0.5 px-2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-mono font-bold">
+                    حجز #{activeAppointmentReminder.bookingNumber}
+                  </span>
+                </div>
+                <p className="text-slate-200 text-[11px] leading-relaxed pt-0.5">
+                  موعدك اليوم في تمام الساعة{" "}
+                  <strong className="text-white font-mono font-bold text-xs">
+                    {activeAppointmentReminder.timeSlot}
+                  </strong>{" "}
+                  بفرع{" "}
+                  <strong className="text-amber-300">
+                    {activeAppointmentReminder.branch?.name || "صالون صدام"}
+                  </strong>
+                  {activeAppointmentReminder.diffMinutes > 0
+                    ? ` (متبقي حوالي ${activeAppointmentReminder.diffMinutes} دقيقة على موعدك)`
+                    : " (حان موعدك الآن بالفرع)"}
+                  {activeAppointmentReminder.specialist
+                    ? ` • مع كابتن ${activeAppointmentReminder.specialist.name}`
+                    : ""}{" "}
+                  — طاقم العمل بانتظارك لتقديم أرقى خدمة وأعلى درجات الفخامة! 💈✂️
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveAppointmentReminder(null)}
+                className="py-1.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-md cursor-pointer"
+              >
+                أنا في الطريق 🚗
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
       {/* ─────────────────────────────────────────────────────────────
           1. LUXURY TOP NAVIGATION BAR (RESPONSIVE & AIRY ON MOBILE)
          ───────────────────────────────────────────────────────────── */}
@@ -1040,6 +1208,35 @@ export default function HomePage() {
                   <Calendar className="w-3.5 h-3.5 text-amber-400" />
                   <span>تاريخ الموعد:</span>
                 </label>
+
+                {/* Quick Date Pills */}
+                <div className="flex items-center gap-2 pb-1">
+                  {[
+                    { label: "اليوم 📅", val: new Date().toISOString().split("T")[0] },
+                    {
+                      label: "غداً ☀️",
+                      val: new Date(Date.now() + 86400000).toISOString().split("T")[0],
+                    },
+                    {
+                      label: "بعد غد 💈",
+                      val: new Date(Date.now() + 86400000 * 2).toISOString().split("T")[0],
+                    },
+                  ].map((d) => (
+                    <button
+                      key={d.label}
+                      type="button"
+                      onClick={() => setSelectedDate(d.val)}
+                      className={`py-1 px-2.5 rounded-lg text-[11px] font-bold border transition ${
+                        selectedDate === d.val
+                          ? "bg-amber-500 text-slate-950 border-amber-400 font-black"
+                          : "bg-black/40 text-slate-300 border-white/10 hover:border-amber-500/30"
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+
                 <input
                   type="date"
                   value={selectedDate}
@@ -1047,6 +1244,22 @@ export default function HomePage() {
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full py-2.5 px-3.5 rounded-2xl bg-black/60 border border-amber-500/30 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
                 />
+
+                {/* Day off warning in Step 3 */}
+                {checkIsDayOff(selectedDate) && (
+                  <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs space-y-1 animate-pulse">
+                    <div className="flex items-center gap-2 font-black text-rose-300">
+                      <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>
+                        عطلة الصالون الأسبوعية ({settings?.weeklyDayOff === "MONDAY" ? "يوم الإثنين" : settings?.weeklyDayOff}) 💈
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-200 leading-relaxed">
+                      {settings?.dayOffMessage ||
+                        "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Notes Input */}
@@ -1125,14 +1338,278 @@ export default function HomePage() {
             </div>
 
             <button
-              onClick={() => executeBooking()}
+              onClick={() => setShowBookingModal(true)}
               disabled={submittingBooking}
-              className="w-full sm:w-auto py-3 px-8 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 disabled:opacity-50"
+              className="w-full sm:w-auto py-3 px-8 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
             >
-              <span>{submittingBooking ? "جارٍ تسجيل الحجز..." : "تأكيد حجز الموعد الآن 👑"}</span>
+              <Calendar className="w-4 h-4" />
+              <span>متابعة وتأكيد موعد الحجز الملكي 📅👑</span>
             </button>
           </div>
         </aside>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          4.5. SCHEDULE & BOOKING CONFIRMATION MODAL (ROYAL VIP)
+         ───────────────────────────────────────────────────────────── */}
+      {showBookingModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fade-in"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-xl bg-gradient-to-b from-[#161622] via-[#12121a] to-[#0c0c12] border-2 border-amber-500/50 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4">
+            <button
+              onClick={() => setShowBookingModal(false)}
+              className="absolute left-4 top-4 p-2 rounded-xl text-slate-400 hover:text-white bg-white/5 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center space-y-1">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto text-xl font-bold shadow-lg shadow-amber-500/10">
+                👑
+              </div>
+              <h3 className="text-lg font-black text-white">تأكيد تفاصيل وموعد حجزك الملكي</h3>
+              <p className="text-xs text-slate-400">
+                اختر الفرع، المتخصص، واليوم والساعة المناسبة لك قبل اعتماد الحجز
+              </p>
+            </div>
+
+            {/* Branch Selector */}
+            <div className="space-y-1.5 text-xs">
+              <label className="font-bold text-slate-300 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                <span>الفرع المطلوب:</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {branches.map((b) => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => setSelectedBranchId(b.id)}
+                    className={`p-2.5 rounded-xl border text-xs font-bold transition text-right cursor-pointer ${
+                      selectedBranchId === b.id
+                        ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black"
+                        : "bg-black/50 text-slate-300 border-white/10 hover:border-amber-500/30"
+                    }`}
+                  >
+                    <div className="font-bold">{b.name}</div>
+                    <div className="text-[10px] opacity-80 font-normal truncate">{b.address}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Specialist Selector */}
+            <div className="space-y-1.5 text-xs">
+              <label className="font-bold text-slate-300 flex items-center gap-1.5">
+                <Scissors className="w-3.5 h-3.5 text-amber-400" />
+                <span>المتخصص المفضل:</span>
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedSpecialistId("")}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
+                    !selectedSpecialistId
+                      ? "bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm"
+                      : "bg-black/50 text-slate-300 border-white/10 hover:border-amber-500/30"
+                  }`}
+                >
+                  ⚡ أي متخصص متاح (أول كرسي خالي)
+                </button>
+                {specialists
+                  .filter((s) => !selectedBranchId || s.branchId === selectedBranchId)
+                  .map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSelectedSpecialistId(s.id)}
+                      className={`py-1.5 px-3 rounded-xl text-xs font-bold transition border flex items-center gap-1.5 cursor-pointer ${
+                        selectedSpecialistId === s.id
+                          ? "bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm"
+                          : "bg-black/50 text-slate-300 border-white/10 hover:border-amber-500/30"
+                      }`}
+                    >
+                      <span>{s.name}</span>
+                      {s.chairNumber && (
+                        <span className="text-[10px] opacity-75 font-mono">#{s.chairNumber}</span>
+                      )}
+                    </button>
+                  ))}
+              </div>
+            </div>
+
+            {/* Date Selector & Weekly Day Off Check */}
+            <div className="space-y-2 text-xs">
+              <label className="font-bold text-slate-300 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                <span>تاريخ الموعد:</span>
+              </label>
+
+              {/* Quick Date Pills */}
+              <div className="flex items-center gap-2">
+                {[
+                  { label: "اليوم 📅", val: new Date().toISOString().split("T")[0] },
+                  {
+                    label: "غداً ☀️",
+                    val: new Date(Date.now() + 86400000).toISOString().split("T")[0],
+                  },
+                  {
+                    label: "بعد غد 💈",
+                    val: new Date(Date.now() + 86400000 * 2).toISOString().split("T")[0],
+                  },
+                ].map((d) => (
+                  <button
+                    key={d.label}
+                    type="button"
+                    onClick={() => setSelectedDate(d.val)}
+                    className={`py-1 px-2.5 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
+                      selectedDate === d.val
+                        ? "bg-amber-500 text-slate-950 border-amber-400 font-black"
+                        : "bg-black/40 text-slate-300 border-white/10 hover:border-amber-500/30"
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                type="date"
+                value={selectedDate}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold focus:border-amber-400"
+              />
+
+              {/* Day off Warning Alert */}
+              {checkIsDayOff(selectedDate) && (
+                <div className="p-3.5 rounded-2xl bg-rose-500/15 border-2 border-rose-500/40 text-rose-200 text-xs space-y-1 animate-pulse">
+                  <div className="flex items-center gap-2 font-black text-rose-300">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>
+                      عطلة الصالون الأسبوعية ({settings?.weeklyDayOff === "MONDAY" ? "يوم الإثنين" : settings?.weeklyDayOff}) 💈
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-200 leading-relaxed">
+                    {settings?.dayOffMessage ||
+                      "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"}
+                  </p>
+                  <p className="text-[10px] text-amber-300 font-bold">
+                    💡 يرجى اختيار تاريخ آخر (مثل غداً أو بعد غد) لإتمام وتأكيد الحجز.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Time Slot Selector */}
+            <div className="space-y-1.5 text-xs">
+              <label className="font-bold text-slate-300 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>اختر وقت الحضور المناسب لك:</span>
+              </label>
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-32 overflow-y-auto p-2 rounded-xl bg-black/40 border border-white/10">
+                {timeSlots.map((slot) => {
+                  const isSelected = selectedTimeSlot === slot;
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => setSelectedTimeSlot(slot)}
+                      className={`py-1 px-1.5 rounded-lg text-[10px] font-mono font-bold transition cursor-pointer ${
+                        isSelected
+                          ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20 scale-105"
+                          : "bg-white/5 text-slate-300 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selected Services Summary */}
+            <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 space-y-2 text-xs">
+              <div className="flex items-center justify-between text-slate-300 font-bold border-b border-white/10 pb-1.5">
+                <span>الخدمات المحددة ({selectedServices.length}):</span>
+                <span className="font-mono text-amber-400">
+                  {totalDuration} دقيقة تقريباً
+                </span>
+              </div>
+              <div className="max-h-24 overflow-y-auto space-y-1">
+                {selectedServices.map((s, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-[11px] text-slate-300">
+                    <span className="truncate max-w-[200px]">{s.nameAr}</span>
+                    <span className="font-mono text-amber-300 font-bold">{s.price} ج.م</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between border-t border-white/10 pt-1.5 font-black text-sm">
+                <span className="text-white">المبلغ الإجمالي المستحق:</span>
+                <span className="font-mono text-amber-400 text-base">{totalAmount} ج.م</span>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-1 text-xs">
+              <label className="text-slate-300 font-bold block">ملاحظات أو طلبات خاصة (اختياري):</label>
+              <input
+                type="text"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="أي ملاحظة تود إبلاغ الصالون بها مسبقاً..."
+                className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white text-xs focus:border-amber-400 placeholder:text-slate-600"
+              />
+            </div>
+
+            {/* Customer Status Banner */}
+            {customer ? (
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs">
+                <span className="text-slate-300">
+                  الحجز مسجل باسم: <strong className="text-white">{customer.name}</strong>
+                </span>
+                <span className="font-mono text-emerald-400 font-bold">{customer.phone}</span>
+              </div>
+            ) : (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 shrink-0" />
+                <span>
+                  عند الضغط على تأكيد، سيُطلب منك إدخال بريدك/هاتفك لاستلام كود التفعيل وحفظ الموعد في حسابك الدائم.
+                </span>
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowBookingModal(false)}
+                className="flex-1 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs transition cursor-pointer"
+              >
+                تعديل الخدمات
+              </button>
+              <button
+                type="button"
+                onClick={() => executeBooking()}
+                disabled={submittingBooking || checkIsDayOff(selectedDate)}
+                className="flex-2 py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-xl shadow-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {submittingBooking ? (
+                  <span>جارٍ تسجيل الحجز الملكي...</span>
+                ) : checkIsDayOff(selectedDate) ? (
+                  <span>عفواً، الصالون مغلق في هذا اليوم ✂️</span>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>تأكيد حجز الموعد الآن 👑</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ─────────────────────────────────────────────────────────────
@@ -1380,6 +1857,7 @@ export default function HomePage() {
         customer={customer}
         branches={branches}
         selectedBranchId={selectedBranchId}
+        hasActiveSelection={selectedServices.length > 0}
       />
 
       {/* ─────────────────────────────────────────────────────────────

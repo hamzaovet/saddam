@@ -42,6 +42,7 @@ export default function CashierPosPage() {
   const [tickets, setTickets] = useState<any[]>([]);
   const [retailProducts, setRetailProducts] = useState<any[]>([]);
   const [specialists, setSpecialists] = useState<any[]>([]);
+  const [settings, setSettings] = useState<any>(null);
   const [showShiftModal, setShowShiftModal] = useState<boolean>(false);
   const [showAdmitModal, setShowAdmitModal] = useState<boolean>(false);
   const [admitCustomerName, setAdmitCustomerName] = useState<string>("");
@@ -125,19 +126,25 @@ export default function CashierPosPage() {
   // Load Data
   const fetchPosData = async () => {
     try {
-      const [resB, resT, resP, resSpec] = await Promise.all([
+      const [resB, resT, resP, resSpec, resSet] = await Promise.all([
         fetch("/api/branches", { cache: "no-store" }),
         fetch(`/api/tickets?branchId=${selectedBranchId || "ALL"}&activeOnly=true`, { cache: "no-store" }),
         fetch(`/api/products?branchId=${selectedBranchId || "ALL"}`, { cache: "no-store" }),
         fetch(`/api/specialists?branchId=${selectedBranchId || "ALL"}`, { cache: "no-store" }),
+        fetch("/api/settings", { cache: "no-store" }),
       ]);
 
-      const [dataB, dataT, dataP, dataSpec] = await Promise.all([
+      const [dataB, dataT, dataP, dataSpec, dataSet] = await Promise.all([
         resB.json(),
         resT.json(),
         resP.json(),
         resSpec.json(),
+        resSet.json(),
       ]);
+
+      if (dataSet.success && dataSet.settings) {
+        setSettings(dataSet.settings);
+      }
 
       if (dataB.success && dataB.branches) {
         setBranches(dataB.branches);
@@ -1061,18 +1068,32 @@ export default function CashierPosPage() {
             </p>
           </div>
 
-          <div className="text-[11px] space-y-1 border-b border-black pb-2 mb-2">
+          <div className="text-[11px] space-y-1.5 border-b border-black pb-2 mb-2">
             <div className="flex justify-between">
               <span>العميل:</span>
               <strong>{lastPrintedTicket.customerName}</strong>
             </div>
             <div className="flex justify-between">
-              <span>المتخصص:</span>
-              <strong>{lastPrintedTicket.specialist?.name} (ك #{lastPrintedTicket.chairNumber})</strong>
+              <span>المتخصص والكرسي:</span>
+              <strong className="text-right">
+                {lastPrintedTicket.specialist?.name || "كابتن صدام"} • كرسي #{lastPrintedTicket.chairNumber || 1}
+              </strong>
+            </div>
+            <div className="flex justify-between">
+              <span>الكاشير:</span>
+              <strong>{lastPrintedTicket.cashierName || currentUser?.name || "المايسترو"}</strong>
             </div>
             <div className="flex justify-between">
               <span>طريقة الدفع:</span>
-              <strong>{lastPrintedTicket.paymentMethod}</strong>
+              <strong>
+                {lastPrintedTicket.paymentMethod === "CASH"
+                  ? "نقداً (كاش) 💵"
+                  : lastPrintedTicket.paymentMethod === "CARD"
+                  ? "بطاقة بنكية (فيزا) 💳"
+                  : lastPrintedTicket.paymentMethod === "INSTAPAY"
+                  ? "انستاباي InstaPay ⚡"
+                  : "فودافون كاش 📱"}
+              </strong>
             </div>
           </div>
 
@@ -1113,9 +1134,14 @@ export default function CashierPosPage() {
             </div>
           </div>
 
-          <div className="text-center text-[10px] space-y-1 pt-1">
-            <p className="font-bold">شكراً لزيارتكم صالون صدام الملكي 👑</p>
-            <p className="font-mono">الخط الساخن: 19888</p>
+          <div className="text-center text-[10px] space-y-1 pt-1.5 border-t border-black">
+            <p className="font-bold">{settings?.receiptFooterNotes || "شكراً لزيارتكم صالون صدام الملكي 👑"}</p>
+            <p className="font-mono font-black text-[11px]">
+              خدمة العملاء والحجز: {settings?.hotline || "01121537537"}
+            </p>
+            <p className="text-[9px] text-gray-700">
+              📍 حدائق القبة: 87 شارع مصر والسودان • 📍 مدينة نصر: 28 شارع مصطفى حمام
+            </p>
           </div>
         </div>
       )}

@@ -125,6 +125,40 @@ export default function AdminPage() {
     notes: "",
   });
 
+  // Dynamic Settings Form State
+  const [settingsForm, setSettingsForm] = useState({
+    salonNameAr: "صالون حلاقة صدام VIP",
+    salonNameEn: "SADDAM BARBER SHOP",
+    logoUrl: "/logo.jpg",
+    hadayekPhone: "01121537537",
+    nasrCityPhone: "01121537537",
+    hotline: "01121537537",
+    whatsappNumber: "01121537537",
+    facebookUrl: "https://www.facebook.com/SaddamSalon/",
+    instagramUrl: "https://www.instagram.com/saddamsalon/",
+    defaultOpenHour: "12:00 PM",
+    defaultCloseHour: "02:00 AM",
+    weeklyDayOff: "MONDAY",
+    isDayOffEnabled: true,
+    dayOffMessage: "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️",
+    bookingSlotInterval: 30,
+    reminderMinutesBefore: 15,
+    receiptFooterNotes: "شكراً لزيارتكم صالون صدام الملكي 👑 تجربة استثنائية لأناقة الرجل",
+    systemLocked: false,
+    lockMessage: "النظام مغلق مؤقتاً لأعمال الصيانة والتطوير الدوري.",
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  // Reschedule Booking Modal State
+  const [showRescheduleModal, setShowRescheduleModal] = useState<boolean>(false);
+  const [rescheduleTargetBooking, setRescheduleTargetBooking] = useState<any>(null);
+  const [rescheduleForm, setRescheduleForm] = useState({
+    bookingDate: "",
+    timeSlot: "06:00 PM",
+    notes: "تم اقتراح موعد بديل لتفادي الزحمة وضمان أفضل خدمة لك 💈",
+    notifyCustomer: true,
+  });
+
   // Audio Alarm State for Bookings
   const [alarmBooking, setAlarmBooking] = useState<any>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -417,7 +451,10 @@ export default function AdminPage() {
         resShifts.json(),
       ]);
 
-      if (dataSet.success && dataSet.settings) setSettings(dataSet.settings);
+      if (dataSet.success && dataSet.settings) {
+        setSettings(dataSet.settings);
+        setSettingsForm((prev) => ({ ...prev, ...dataSet.settings }));
+      }
       if (dataB.success && dataB.branches) {
         setBranches(dataB.branches);
         if (dataB.branches.length > 0 && !specForm.branchId) {
@@ -542,6 +579,73 @@ export default function AdminPage() {
       }
     } catch {
       showToast("error", "فشل تحديث حالة القفل");
+    }
+  };
+
+  // Save General System Settings
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingSettings(true);
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settingsForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSettings(data.settings);
+        showToast("success", "تم حفظ وتحديث إعدادات الصالون والمنظومة بنجاح 👑💾");
+      } else {
+        showToast("error", data.error || "فشل حفظ الإعدادات");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  // Open Reschedule Modal
+  const handleOpenRescheduleModal = (bk: any) => {
+    setRescheduleTargetBooking(bk);
+    setRescheduleForm({
+      bookingDate: bk.bookingDate || new Date().toISOString().split("T")[0],
+      timeSlot: bk.timeSlot || "06:00 PM",
+      notes: "تم اقتراح موعد بديل لتفادي الزحمة وضمان أفضل خدمة لك 💈",
+      notifyCustomer: true,
+    });
+    setShowRescheduleModal(true);
+  };
+
+  // Execute Reschedule Booking
+  const handleExecuteReschedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rescheduleTargetBooking) return;
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: rescheduleTargetBooking.id,
+          status: "CONFIRMED",
+          bookingDate: rescheduleForm.bookingDate,
+          timeSlot: rescheduleForm.timeSlot,
+          notes: rescheduleForm.notes,
+          notifyCustomer: rescheduleForm.notifyCustomer,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", `تم اعتماد الموعد الجديد بنجاح وإشعار العميل عبر الشات ⏰`);
+        setShowRescheduleModal(false);
+        setRescheduleTargetBooking(null);
+        await loadAllData();
+      } else {
+        showToast("error", data.error || "فشل تعديل الموعد");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
     }
   };
 
@@ -2110,23 +2214,43 @@ export default function AdminPage() {
                       <td className="p-3.5">
                         <div className="flex items-center justify-center gap-1.5 flex-wrap">
                           {bk.status === "PENDING" && (
-                            <button
-                              onClick={() => handleUpdateBookingStatus(bk.id, "CONFIRMED")}
-                              className="py-1 px-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] transition flex items-center gap-1"
-                            >
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>تأكيد الموعد ✅</span>
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleUpdateBookingStatus(bk.id, "CONFIRMED")}
+                                className="py-1 px-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] transition flex items-center gap-1"
+                              >
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>تأكيد الموعد ✅</span>
+                              </button>
+                              <button
+                                onClick={() => handleOpenRescheduleModal(bk)}
+                                className="py-1 px-2.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 font-black text-[10px] transition flex items-center gap-1 cursor-pointer"
+                                title="اقتراح أو تعديل موعد بديل للعميل وإشعاره بالشات"
+                              >
+                                <Clock className="w-3 h-3" />
+                                <span>موعد بديل ⏱️</span>
+                              </button>
+                            </>
                           )}
 
                           {bk.status === "CONFIRMED" && (
-                            <button
-                              onClick={() => handleUpdateBookingStatus(bk.id, "IN_CHAIR")}
-                              className="py-1 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] transition flex items-center gap-1"
-                            >
-                              <Scissors className="w-3 h-3" />
-                              <span>بدء بالكرسي 💺</span>
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleUpdateBookingStatus(bk.id, "IN_CHAIR")}
+                                className="py-1 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] transition flex items-center gap-1"
+                              >
+                                <Scissors className="w-3 h-3" />
+                                <span>بدء بالكرسي 💺</span>
+                              </button>
+                              <button
+                                onClick={() => handleOpenRescheduleModal(bk)}
+                                className="py-1 px-2 rounded-lg bg-white/5 hover:bg-white/10 text-sky-300 border border-sky-500/30 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer"
+                                title="تعديل وقت الموعد بناءً على طلب العميل"
+                              >
+                                <Clock className="w-3 h-3" />
+                                <span>تعديل الموعد ⏱️</span>
+                              </button>
+                            </>
                           )}
 
                           {bk.status === "IN_CHAIR" && (
@@ -3850,14 +3974,444 @@ export default function AdminPage() {
             TAB 11: SYSTEM SETTINGS
            ======================================================== */}
         {activeTab === "settings" && (
-          <div className="max-w-xl mx-auto p-6 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4 animate-fade-in text-xs">
-            <h3 className="text-base font-black text-amber-400">إعدادات المنظومة العامة</h3>
-            <div className="space-y-2 text-slate-300">
-              <p>اسم الصالون: <strong className="text-white">{settings?.salonNameAr}</strong></p>
-              <p>الهاتف والواتساب الموحد: <strong className="text-amber-300 font-mono">{settings?.hadayekPhone || "01121537537"}</strong></p>
-              <p>صفحة الفيسبوك الرسمية: <a href={settings?.facebookUrl || "https://www.facebook.com/SaddamSalon/"} target="_blank" rel="noreferrer" className="text-amber-400 underline">{settings?.facebookUrl || "https://www.facebook.com/SaddamSalon/"}</a></p>
-              <p>مواعيد العمل: يومياً من {settings?.defaultOpenHour} حتى {settings?.defaultCloseHour}</p>
+          <div className="space-y-6 animate-fade-in font-sans text-xs" dir="rtl">
+            {/* Header with Title and Quick Save Button */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl bg-[#14141e] border border-amber-500/30">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Settings className="w-6 h-6 animate-spin-slow" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white flex items-center gap-2">
+                    <span>مركز التحكم في إعدادات المنظومة وهوية الصالون</span>
+                    <span className="py-0.5 px-2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono">
+                      VIP SYSTEM
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    التحكم في الهوية، الخط الساخن، العطلة الأسبوعية للحلاقين، ومواعيد العمل ونصوص الفواتير
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveSettings}
+                disabled={savingSettings}
+                className="py-2.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+              >
+                {savingSettings ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>جارٍ الحفظ...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>حفظ كافة الإعدادات 💾</span>
+                  </>
+                )}
+              </button>
             </div>
+
+            <form onSubmit={handleSaveSettings} className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* 1. BRAND & IDENTITY */}
+                <div className="p-6 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4 shadow-xl">
+                  <div className="flex items-center gap-2 pb-3 border-b border-white/10 text-amber-400 font-black text-sm">
+                    <Sparkles className="w-4 h-4" />
+                    <h4>الهوية الملكية واسم الصالون والشعار</h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">اسم الصالون (عربي):</label>
+                      <input
+                        type="text"
+                        value={settingsForm.salonNameAr}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, salonNameAr: e.target.value })}
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">اسم الصالون (إنجليزي):</label>
+                      <input
+                        type="text"
+                        value={settingsForm.salonNameEn}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, salonNameEn: e.target.value })}
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Logo Upload & Preview */}
+                  <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                    <label className="text-slate-300 font-bold block">شعار الصالون (Logo):</label>
+                    <div className="flex items-center gap-4">
+                      {settingsForm.logoUrl && (
+                        <div className="w-16 h-16 rounded-2xl bg-[#0c0c12] border-2 border-amber-500/40 p-1 shrink-0 overflow-hidden shadow-lg flex items-center justify-center">
+                          <img
+                            src={settingsForm.logoUrl}
+                            alt="Logo Preview"
+                            className="w-full h-full object-cover rounded-xl"
+                            onError={(e: any) => {
+                              e.currentTarget.src = "/logo.jpg";
+                            }}
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <label className="cursor-pointer py-2 px-3.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center gap-1.5">
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>رفع شعار جديد عبر ImgBB 📷</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) =>
+                                handleUploadFile(e, (url: string) =>
+                                  setSettingsForm((prev) => ({ ...prev, logoUrl: url }))
+                                )
+                              }
+                            />
+                          </label>
+                          {uploadingImage && (
+                            <span className="text-[11px] text-amber-300 animate-pulse flex items-center gap-1">
+                              <RefreshCw className="w-3 h-3 animate-spin" /> جارٍ الرفع...
+                            </span>
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          value={settingsForm.logoUrl}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, logoUrl: e.target.value })}
+                          placeholder="أو ضع رابط الشعار المباشر هنا..."
+                          className="w-full py-1.5 px-3 rounded-xl bg-black/60 border border-white/10 text-slate-300 font-mono text-[11px] focus:border-amber-400"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. CONTACTS, HOTLINE & SOCIAL */}
+                <div className="p-6 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4 shadow-xl">
+                  <div className="flex items-center gap-2 pb-3 border-b border-white/10 text-amber-400 font-black text-sm">
+                    <Phone className="w-4 h-4" />
+                    <h4>أرقام التواصل والخط الساخن والروابط</h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">الخط الساخن الموحد (Hotline):</label>
+                      <input
+                        type="text"
+                        value={settingsForm.hotline}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, hotline: e.target.value })}
+                        placeholder="01121537537"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-amber-300 font-mono font-bold focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">رقم الواتساب الرسمي المعتمد:</label>
+                      <input
+                        type="text"
+                        value={settingsForm.whatsappNumber}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, whatsappNumber: e.target.value })}
+                        placeholder="01121537537"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-emerald-300 font-mono font-bold focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">هاتف فرع حدائق القبة:</label>
+                      <input
+                        type="text"
+                        value={settingsForm.hadayekPhone}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, hadayekPhone: e.target.value })}
+                        placeholder="01121537537"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">هاتف فرع مدينة نصر (عباس العقاد):</label>
+                      <input
+                        type="text"
+                        value={settingsForm.nasrCityPhone}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, nasrCityPhone: e.target.value })}
+                        placeholder="01121537537"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">رابط صفحة الفيسبوك الرسمية:</label>
+                      <input
+                        type="text"
+                        value={settingsForm.facebookUrl}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, facebookUrl: e.target.value })}
+                        placeholder="https://www.facebook.com/SaddamSalon/"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-sky-400 font-mono text-[11px] focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">رابط الإنستغرام الرسمي:</label>
+                      <input
+                        type="text"
+                        value={settingsForm.instagramUrl}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, instagramUrl: e.target.value })}
+                        placeholder="https://www.instagram.com/saddamsalon/"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-pink-400 font-mono text-[11px] focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. BARBER WEEKLY DAY OFF & WORKING HOURS */}
+                <div className="p-6 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4 shadow-xl">
+                  <div className="flex items-center gap-2 pb-3 border-b border-white/10 text-amber-400 font-black text-sm">
+                    <Scissors className="w-4 h-4" />
+                    <h4>العطلة الأسبوعية للحلاقين ومواعيد العمل الرسمية 💈</h4>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-white text-xs block">
+                          تفعيل الإجازة الأسبوعية للصالون
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          إغلاق الحجوزات وإعلام الزبائن بأن الصالون في عطلة أسبوعية
+                        </span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={settingsForm.isDayOffEnabled}
+                          onChange={(e) =>
+                            setSettingsForm({ ...settingsForm, isDayOffEnabled: e.target.checked })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      <div>
+                        <label className="text-slate-300 font-bold block mb-1">
+                          يوم العطلة الأسبوعية للحلاقين:
+                        </label>
+                        <select
+                          value={settingsForm.weeklyDayOff}
+                          onChange={(e) =>
+                            setSettingsForm({ ...settingsForm, weeklyDayOff: e.target.value })
+                          }
+                          className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-amber-300 font-bold focus:border-amber-400"
+                        >
+                          <option value="MONDAY">الإثنين (الإجازة الرسمية لصالونات الحلاقة 💈 - موصى بها)</option>
+                          <option value="SUNDAY">الأحد</option>
+                          <option value="TUESDAY">الثلاثاء</option>
+                          <option value="WEDNESDAY">الأربعاء</option>
+                          <option value="THURSDAY">الخميس</option>
+                          <option value="FRIDAY">الجمعة</option>
+                          <option value="SATURDAY">السبت</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-slate-300 font-bold block mb-1">
+                          فترات المواعيد (Slot Interval):
+                        </label>
+                        <select
+                          value={settingsForm.bookingSlotInterval}
+                          onChange={(e) =>
+                            setSettingsForm({
+                              ...settingsForm,
+                              bookingSlotInterval: Number(e.target.value),
+                            })
+                          }
+                          className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono focus:border-amber-400"
+                        >
+                          <option value={15}>كل 15 دقيقة</option>
+                          <option value={20}>كل 20 دقيقة</option>
+                          <option value={30}>كل 30 دقيقة (الافتراضي الملكي)</option>
+                          <option value={45}>كل 45 دقيقة</option>
+                          <option value={60}>كل 60 دقيقة (ساعة كاملة)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">
+                        رسالة التنبيه التي تظهر للعميل في يوم الإجازة:
+                      </label>
+                      <input
+                        type="text"
+                        value={settingsForm.dayOffMessage}
+                        onChange={(e) =>
+                          setSettingsForm({ ...settingsForm, dayOffMessage: e.target.value })
+                        }
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-amber-200 text-xs focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">وقت فتح الصالون (بدء الدوام):</label>
+                      <input
+                        type="text"
+                        value={settingsForm.defaultOpenHour}
+                        onChange={(e) =>
+                          setSettingsForm({ ...settingsForm, defaultOpenHour: e.target.value })
+                        }
+                        placeholder="12:00 PM"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">وقت الإغلاق (انتهاء الدوام):</label>
+                      <input
+                        type="text"
+                        value={settingsForm.defaultCloseHour}
+                        onChange={(e) =>
+                          setSettingsForm({ ...settingsForm, defaultCloseHour: e.target.value })
+                        }
+                        placeholder="02:00 AM"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. RECEIPT CUSTOMIZATION & 15-MIN REMINDER */}
+                <div className="p-6 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-4 shadow-xl">
+                  <div className="flex items-center gap-2 pb-3 border-b border-white/10 text-amber-400 font-black text-sm">
+                    <Receipt className="w-4 h-4" />
+                    <h4>إعدادات بون الحساب ونظام التذكير الذكي (15 دقيقة)</h4>
+                  </div>
+
+                  {/* 15-Minute Reminder Policy */}
+                  <div className="p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-sky-400" />
+                        <span className="font-bold text-white text-xs">
+                          نظام التنبيه التلقائي قبل الموعد الملكي
+                        </span>
+                      </div>
+                      <span className="py-0.5 px-2.5 rounded-full bg-sky-500/20 text-sky-300 font-mono text-[11px] font-bold">
+                        {settingsForm.reminderMinutesBefore} دقيقة قبل الموعد
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      يقوم السيستم بإطلاق تنبيه صوتي وشريط ملكي في واجهة العميل عند اقتراب موعده بـ {settingsForm.reminderMinutesBefore} دقيقة لتذكيره بالوصول في الموعد المحدد.
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <label className="text-slate-300 font-bold text-xs">تعديل زمن التذكير:</label>
+                      <select
+                        value={settingsForm.reminderMinutesBefore}
+                        onChange={(e) =>
+                          setSettingsForm({
+                            ...settingsForm,
+                            reminderMinutesBefore: Number(e.target.value),
+                          })
+                        }
+                        className="py-1 px-3 rounded-xl bg-black/60 border border-white/10 text-sky-300 font-mono text-xs focus:border-amber-400"
+                      >
+                        <option value={10}>قبل الموعد بـ 10 دقائق</option>
+                        <option value={15}>قبل الموعد بـ 15 دقيقة (الموصى به)</option>
+                        <option value={20}>قبل الموعد بـ 20 دقيقة</option>
+                        <option value={30}>قبل الموعد بـ 30 دقيقة</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Receipt Footer Notes */}
+                  <div className="space-y-1.5">
+                    <label className="text-slate-300 font-bold block">
+                      ديباجة وتذييل الإيصال الحراري المطبوع (Thermal Receipt Footer):
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={settingsForm.receiptFooterNotes}
+                      onChange={(e) =>
+                        setSettingsForm({ ...settingsForm, receiptFooterNotes: e.target.value })
+                      }
+                      placeholder="شكراً لزيارتكم صالون صدام الملكي 👑 تجربة استثنائية لأناقة الرجل"
+                      className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-amber-300 text-xs focus:border-amber-400 leading-relaxed"
+                    />
+                    <p className="text-[10px] text-slate-500">
+                      ملاحظة: الفاتورة تطبع تلقائياً اسم المتخصص، رقم الكرسي، اسم العميل، عنوان الفرع، والخط الساخن.
+                    </p>
+                  </div>
+
+                  {/* Emergency Lock */}
+                  <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-rose-300 font-bold">
+                        <Lock className="w-4 h-4" />
+                        <span>قفل المنظومة للصيانة أو الطوارئ</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={settingsForm.systemLocked}
+                          onChange={(e) =>
+                            setSettingsForm({ ...settingsForm, systemLocked: e.target.checked })
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+                      </label>
+                    </div>
+                    {settingsForm.systemLocked && (
+                      <input
+                        type="text"
+                        value={settingsForm.lockMessage}
+                        onChange={(e) =>
+                          setSettingsForm({ ...settingsForm, lockMessage: e.target.value })
+                        }
+                        placeholder="رسالة تظهر للعملاء أثناء الصيانة..."
+                        className="w-full py-1.5 px-3 rounded-xl bg-black/60 border border-rose-500/40 text-rose-200 text-xs focus:border-rose-400"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Sticky-like Action Bar */}
+              <div className="p-5 rounded-3xl bg-gradient-to-r from-[#161622] via-[#1a1a28] to-[#161622] border-2 border-amber-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
+                    👑
+                  </div>
+                  <div>
+                    <h4 className="font-black text-white text-sm">حفظ كافة التغييرات على المنظومة</h4>
+                    <p className="text-slate-400 text-xs">
+                      يتم تفعيل المواعيد والإعدادات فوراً في واجهة العملاء ونقطة البيع (POS).
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={savingSettings}
+                  className="w-full sm:w-auto py-3 px-8 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 disabled:opacity-50 cursor-pointer"
+                >
+                  {savingSettings ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>جارٍ حفظ الإعدادات...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>اعتماد وحفظ كافة الإعدادات الملكية 💾</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </main>
@@ -5170,6 +5724,218 @@ export default function AdminPage() {
                 <Lock className="w-4 h-4" />
                 <span>إقفال الوردية وتسليم النقدية للمالك 🔒</span>
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          6. RESCHEDULE / ALTERNATIVE APPOINTMENT MODAL
+         ───────────────────────────────────────────────────────────── */}
+      {showRescheduleModal && rescheduleTargetBooking && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fade-in"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-lg bg-gradient-to-b from-[#161622] via-[#12121a] to-[#0e0e14] border-2 border-amber-500/50 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">
+                    اقتراح / تعديل موعد الحجز للعميل ⏱️📅
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    تحديد تاريخ وساعة بديلة مع إشعار فوري للعميل في الشات
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowRescheduleModal(false);
+                  setRescheduleTargetBooking(null);
+                }}
+                className="text-slate-400 hover:text-white p-1 rounded-lg bg-white/5 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Current Booking Info Card */}
+            <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-mono font-bold text-amber-400">
+                  حجز #{rescheduleTargetBooking.bookingNumber}
+                </span>
+                <span className="py-0.5 px-2 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 font-bold text-[10px]">
+                  {rescheduleTargetBooking.branch?.name || "فرع الصالون"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span>
+                  العميل:{" "}
+                  <strong className="text-white">
+                    {rescheduleTargetBooking.customer?.name || rescheduleTargetBooking.customerName || "عميل VIP"}
+                  </strong>
+                </span>
+                <span className="font-mono text-slate-400">
+                  {rescheduleTargetBooking.customer?.phone || rescheduleTargetBooking.customerPhone || ""}
+                </span>
+              </div>
+              <div className="text-slate-400 text-[11px] pt-1 border-t border-white/5 flex items-center justify-between">
+                <span>الموعد المطلوب حالياً:</span>
+                <span className="font-bold text-rose-300 font-mono">
+                  {rescheduleTargetBooking.bookingDate} • {rescheduleTargetBooking.timeSlot}
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={handleExecuteReschedule} className="space-y-4 text-xs">
+              {/* Date Input */}
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-bold block flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                  <span>التاريخ الجديد المقترح للموعد *:</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={rescheduleForm.bookingDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) =>
+                    setRescheduleForm({ ...rescheduleForm, bookingDate: e.target.value })
+                  }
+                  className="w-full py-2.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono font-bold focus:border-amber-400"
+                />
+
+                {/* Day off warning if user picks day off */}
+                {(() => {
+                  if (!rescheduleForm.bookingDate) return null;
+                  const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+                  const selectedDayName = dayNames[new Date(rescheduleForm.bookingDate).getDay()];
+                  if (settings?.isDayOffEnabled && selectedDayName === settings?.weeklyDayOff) {
+                    return (
+                      <div className="p-2 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[11px] flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <span>
+                          تنبيه: هذا اليوم يوافق العطلة الأسبوعية للصالون ({settings?.dayOffMessage || "يوم الإثنين عطلة"})!
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+
+              {/* Time Slot Picker */}
+              <div className="space-y-1.5">
+                <label className="text-slate-300 font-bold block flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>الساعة والموعد البديل *:</span>
+                </label>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-36 overflow-y-auto p-2 rounded-xl bg-black/40 border border-white/10">
+                  {[
+                    "12:00 PM",
+                    "12:30 PM",
+                    "01:00 PM",
+                    "01:30 PM",
+                    "02:00 PM",
+                    "02:30 PM",
+                    "03:00 PM",
+                    "03:30 PM",
+                    "04:00 PM",
+                    "04:30 PM",
+                    "05:00 PM",
+                    "05:30 PM",
+                    "06:00 PM",
+                    "06:30 PM",
+                    "07:00 PM",
+                    "07:30 PM",
+                    "08:00 PM",
+                    "08:30 PM",
+                    "09:00 PM",
+                    "09:30 PM",
+                    "10:00 PM",
+                    "10:30 PM",
+                    "11:00 PM",
+                    "11:30 PM",
+                    "12:00 AM",
+                    "12:30 AM",
+                    "01:00 AM",
+                    "01:30 AM",
+                  ].map((slot) => {
+                    const isSelected = rescheduleForm.timeSlot === slot;
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setRescheduleForm({ ...rescheduleForm, timeSlot: slot })}
+                        className={`py-1 px-1.5 rounded-lg text-[10px] font-mono font-bold transition ${
+                          isSelected
+                            ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20 scale-105"
+                            : "bg-white/5 text-slate-300 hover:text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Reason / Notes */}
+              <div className="space-y-1">
+                <label className="text-slate-300 font-bold block">
+                  سبب التعديل أو رسالة للعميل:
+                </label>
+                <input
+                  type="text"
+                  value={rescheduleForm.notes}
+                  onChange={(e) =>
+                    setRescheduleForm({ ...rescheduleForm, notes: e.target.value })
+                  }
+                  placeholder="مثال: تم اختيار موعد جديد تفادياً للزحمة ولراحتك"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white focus:border-amber-400"
+                />
+              </div>
+
+              {/* Notify Customer via Chat Checkbox */}
+              <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <input
+                  type="checkbox"
+                  checked={rescheduleForm.notifyCustomer}
+                  onChange={(e) =>
+                    setRescheduleForm({ ...rescheduleForm, notifyCustomer: e.target.checked })
+                  }
+                  className="w-4 h-4 accent-amber-500 rounded"
+                />
+                <span className="text-slate-200 text-[11px] font-bold">
+                  إرسال رسالة شات فورية للعميل لإعلامه بالموعد الجديد المعتمد 💬
+                </span>
+              </label>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRescheduleModal(false);
+                    setRescheduleTargetBooking(null);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold transition cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  className="flex-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>اعتماد الموعد الجديد وإشعار العميل ⏰</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>

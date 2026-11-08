@@ -7,12 +7,14 @@ interface CustomerChatWidgetProps {
   customer?: any;
   branches?: any[];
   selectedBranchId?: string;
+  hasActiveSelection?: boolean;
 }
 
 export default function CustomerChatWidget({
   customer,
   branches = [],
   selectedBranchId,
+  hasActiveSelection = false,
 }: CustomerChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
@@ -22,6 +24,7 @@ export default function CustomerChatWidget({
   const [guestPhone, setGuestPhone] = useState("");
   const [targetBranchId, setTargetBranchId] = useState<string>("");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [chatError, setChatError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -81,9 +84,10 @@ export default function CustomerChatWidget({
     if (!text) return;
 
     if (!activePhone) {
-      alert("يرجى إدخال اسمك ورقم هاتفك أولاً لبدء المحادثة المباشرة مع الصالون");
+      setChatError("يرجى كتابة رقم الهاتف واسمك الكريم أولاً لبدء المحادثة مع الصالون 💬");
       return;
     }
+    setChatError(null);
 
     try {
       setSending(true);
@@ -112,7 +116,7 @@ export default function CustomerChatWidget({
         setNewMessage("");
       }
     } catch {
-      alert("تعذر إرسال الرسالة، يرجى المحاولة مرة أخرى");
+      setChatError("تعذر إرسال الرسالة، يرجى المحاولة مرة أخرى ⚠️");
     } finally {
       setSending(false);
     }
@@ -134,7 +138,7 @@ export default function CustomerChatWidget({
             setIsOpen(true);
             setUnreadCount(0);
           }}
-          className="fixed bottom-5 left-5 z-40 p-3 sm:py-3 sm:px-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition flex items-center gap-2 border-2 border-amber-300 cursor-pointer"
+          className={`fixed ${hasActiveSelection ? "bottom-24 sm:bottom-20" : "bottom-5"} left-5 z-40 p-3 sm:py-3 sm:px-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition flex items-center gap-2 border-2 border-amber-300 cursor-pointer`}
           dir="rtl"
           title="محادثة مباشرة مع صالون صدام"
         >
@@ -185,6 +189,14 @@ export default function CustomerChatWidget({
             </button>
           </div>
 
+          {/* Validation Warning Alert (No native browser alert!) */}
+          {chatError && (
+            <div className="p-3 bg-rose-500/20 border-b border-rose-500/40 text-rose-200 text-xs font-bold flex items-center justify-between">
+              <span>⚠️ {chatError}</span>
+              <button onClick={() => setChatError(null)} className="text-white hover:text-rose-200 font-bold">✕</button>
+            </div>
+          )}
+
           {/* Guest Info Form (if not logged in and no phone saved) */}
           {!customer && !guestPhone && (
             <div className="p-4 bg-amber-500/10 border-b border-amber-500/20 space-y-2 text-xs">
@@ -196,14 +208,20 @@ export default function CustomerChatWidget({
                   type="text"
                   placeholder="اسمك الكريم"
                   value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
+                  onChange={(e) => {
+                    setGuestName(e.target.value);
+                    if (chatError) setChatError(null);
+                  }}
                   className="py-1.5 px-2.5 rounded-xl bg-black/60 border border-amber-500/30 text-white text-xs focus:outline-none focus:border-amber-400"
                 />
                 <input
                   type="tel"
                   placeholder="رقم الهاتف / الواتساب"
                   value={guestPhone}
-                  onChange={(e) => setGuestPhone(e.target.value)}
+                  onChange={(e) => {
+                    setGuestPhone(e.target.value);
+                    if (chatError) setChatError(null);
+                  }}
                   className="py-1.5 px-2.5 rounded-xl bg-black/60 border border-amber-500/30 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
                 />
               </div>
