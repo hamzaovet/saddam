@@ -158,7 +158,7 @@ export default function AdminPage() {
     sortOrder: 1,
   });
 
-  // Product Modal (Create/Edit)
+  // Product & Raw Materials Modal (Create/Edit)
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
@@ -167,8 +167,24 @@ export default function AdminPage() {
     price: 180,
     costPrice: 100,
     stockQty: 50,
+    minStockAlert: 10,
+    image: "",
+    barcode: "",
     branchId: "",
+    isActive: true,
   });
+  const [productTypeFilter, setProductTypeFilter] = useState<"ALL" | "RETAIL" | "SUPPLIES">("ALL");
+  const [productCategoryFilter, setProductCategoryFilter] = useState<string>("ALL");
+  const [productSearch, setProductSearch] = useState("");
+
+  // VIP Admin Toast Notification (No Native Windows Alerts!)
+  const [adminToast, setAdminToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+  const showToast = (type: "success" | "error" | "info", message: string) => {
+    setAdminToast({ type, message });
+    setTimeout(() => {
+      setAdminToast((prev) => (prev?.message === message ? null : prev));
+    }, 4500);
+  };
 
   // Branch Modal
   const [showBranchModal, setShowBranchModal] = useState(false);
@@ -1028,6 +1044,115 @@ export default function AdminPage() {
         await loadAllData();
       }
     } catch {}
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // Product & Raw Materials Handlers (CRUD & Live ImgBB)
+  // ─────────────────────────────────────────────────────────────
+  const handleOpenAddProduct = () => {
+    setEditingProduct(null);
+    setProductForm({
+      nameAr: "",
+      category: "STYLING",
+      price: 180,
+      costPrice: 100,
+      stockQty: 50,
+      minStockAlert: 10,
+      image: "",
+      barcode: "",
+      branchId: selectedBranchId !== "ALL" ? selectedBranchId : "",
+      isActive: true,
+    });
+    setShowProductModal(true);
+  };
+
+  const handleOpenEditProduct = (prod: any) => {
+    setEditingProduct(prod);
+    setProductForm({
+      nameAr: prod.nameAr || "",
+      category: prod.category || "STYLING",
+      price: prod.price || 0,
+      costPrice: prod.costPrice || 0,
+      stockQty: prod.stockQty !== undefined ? prod.stockQty : 50,
+      minStockAlert: prod.minStockAlert !== undefined ? prod.minStockAlert : 10,
+      image: prod.image || "",
+      barcode: prod.barcode || "",
+      branchId: prod.branchId || "",
+      isActive: prod.isActive !== false,
+    });
+    setShowProductModal(true);
+  };
+
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productForm.nameAr.trim()) {
+      showToast("error", "اسم المنتج أو الخامة مطلوب");
+      return;
+    }
+
+    try {
+      const isEditing = Boolean(editingProduct);
+      const url = "/api/products";
+      const method = isEditing ? "PATCH" : "POST";
+      const payload = isEditing ? { id: editingProduct.id, ...productForm } : productForm;
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast(
+          "success",
+          isEditing ? "تم تحديث بيانات المنتج / الخامة بنجاح ✅" : "تمت إضافة المنتج / الخامة بنجاح إلى المخزن 🛍️"
+        );
+        setShowProductModal(false);
+        setEditingProduct(null);
+        await loadAllData();
+      } else {
+        showToast("error", data.error || "فشل حفظ المنتج");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (!confirm(`هل أنت متأكد من حذف الصنف "${name}" نهائياً من المخزن؟`)) return;
+    try {
+      const res = await fetch(`/api/products?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        showToast("success", `تم حذف الصنف "${name}" بنجاح 🗑️`);
+        await loadAllData();
+      } else {
+        showToast("error", data.error || "فشل حذف الصنف");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleAdjustStock = async (prod: any, diff: number) => {
+    const newQty = Math.max(0, (prod.stockQty || 0) + diff);
+    try {
+      const res = await fetch("/api/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: prod.id, stockQty: newQty }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProducts((prev) =>
+          prev.map((p) => (p.id === prod.id ? { ...p, stockQty: newQty } : p))
+        );
+        showToast("info", `تم تحديث رصيد (${prod.nameAr}) إلى ${newQty} عبوة`);
+      }
+    } catch {
+      showToast("error", "فشل تحديث المخزون");
+    }
   };
 
   // Branch Actions
@@ -2136,22 +2261,266 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 7: RETAIL BEAUTY PRODUCTS
+            TAB 7: PRODUCTS & SALON SUPPLIES (INVENTORY & RAW MATERIALS)
            ======================================================== */}
         {activeTab === "inventory" && (
           <div className="space-y-6 animate-fade-in">
-            <h3 className="text-base font-black text-white">مستحضرات التجميل والعناية (المخزن والكرسي)</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {products.map((prod) => (
-                <div key={prod.id} className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-amber-300 font-bold">{prod.category}</span>
-                    <span className="text-xs font-mono font-black text-amber-400">{prod.price} ج.م</span>
-                  </div>
-                  <h4 className="font-black text-sm text-white">{prod.nameAr}</h4>
-                  <p className="text-xs text-slate-400 font-mono">المتاح بالمخزن: {prod.stockQty} عبوة</p>
-                </div>
-              ))}
+            {/* Tab Header & Action */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <span>بضاعة التجميل والمخزن والخامات التشغيلية 🛍️</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold border border-amber-500/30">
+                    {products.length} صنف مسجل
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  إدارة شاملة لمنتجات البيع المباشر للزبائن وخامات ومستلزمات الحلاقة والتشغيل بالصالون 💈
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenAddProduct}
+                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>إضافة منتج أو خامة جديدة ➕</span>
+              </button>
+            </div>
+
+            {/* Filter Pills & Search Bar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Type Switcher */}
+              <div className="flex items-center gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/10 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setProductTypeFilter("ALL")}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    productTypeFilter === "ALL"
+                      ? "bg-amber-500 text-slate-950 font-black shadow-md"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  الكل ({products.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductTypeFilter("RETAIL")}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                    productTypeFilter === "RETAIL"
+                      ? "bg-amber-500 text-slate-950 font-black shadow-md"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <span>🛍️ منتجات بيع للعملاء</span>
+                  <span className="font-mono text-[10px]">
+                    ({products.filter((p) => !["SUPPLIES", "COLOR_SUPPLIES", "PROTEIN_SUPPLIES", "ACCESSORIES"].includes(p.category)).length})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductTypeFilter("SUPPLIES")}
+                  className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                    productTypeFilter === "SUPPLIES"
+                      ? "bg-amber-500 text-slate-950 font-black shadow-md"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <span>💈 خامات ومستلزمات تشغيل</span>
+                  <span className="font-mono text-[10px]">
+                    ({products.filter((p) => ["SUPPLIES", "COLOR_SUPPLIES", "PROTEIN_SUPPLIES", "ACCESSORIES"].includes(p.category)).length})
+                  </span>
+                </button>
+              </div>
+
+              {/* Search Box */}
+              <div className="relative w-full md:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  placeholder="بحث باسم المنتج، الباركود، الفئة..."
+                  className="w-full py-2 pr-9 pl-3 rounded-xl bg-black/60 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-sans"
+                />
+              </div>
+            </div>
+
+            {/* Products & Supplies Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products
+                .filter((p) => {
+                  const isSupply = ["SUPPLIES", "COLOR_SUPPLIES", "PROTEIN_SUPPLIES", "ACCESSORIES"].includes(p.category);
+                  if (productTypeFilter === "RETAIL" && isSupply) return false;
+                  if (productTypeFilter === "SUPPLIES" && !isSupply) return false;
+                  if (productSearch.trim()) {
+                    const q = productSearch.toLowerCase();
+                    const matchName = p.nameAr?.toLowerCase().includes(q);
+                    const matchCode = p.barcode?.toLowerCase().includes(q);
+                    const matchCat = p.category?.toLowerCase().includes(q);
+                    if (!matchName && !matchCode && !matchCat) return false;
+                  }
+                  return true;
+                })
+                .map((prod) => {
+                  const isSupply = ["SUPPLIES", "COLOR_SUPPLIES", "PROTEIN_SUPPLIES", "ACCESSORIES"].includes(prod.category);
+                  const isLowStock = (prod.stockQty || 0) <= (prod.minStockAlert || 5);
+                  const isOutOfStock = (prod.stockQty || 0) <= 0;
+
+                  return (
+                    <div
+                      key={prod.id}
+                      className="rounded-3xl bg-[#14141e] border border-amber-500/25 overflow-hidden flex flex-col justify-between hover:border-amber-400/50 transition group shadow-lg"
+                    >
+                      {/* Product Image & Badges */}
+                      <div className="relative h-40 w-full bg-black overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={
+                            prod.image ||
+                            (isSupply
+                              ? "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=500&auto=format&fit=crop&q=80"
+                              : "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=500&auto=format&fit=crop&q=80")
+                          }
+                          alt={prod.nameAr}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#14141e] via-transparent to-black/30" />
+
+                        {/* Type & Category Badges */}
+                        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-black border backdrop-blur-md ${
+                              isSupply
+                                ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/40"
+                                : "bg-amber-500/20 text-amber-300 border-amber-400/40"
+                            }`}
+                          >
+                            {isSupply ? "خامة تشغيل 💈" : "منتج زبون 🛍️"}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-black/70 text-[9px] font-bold text-slate-300 border border-white/10">
+                            {prod.category}
+                          </span>
+                        </div>
+
+                        {/* Branch badge */}
+                        {prod.branch && (
+                          <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/80 text-[9px] font-bold text-amber-300 border border-amber-500/30">
+                            📍 {prod.branch.name}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-black text-sm text-white group-hover:text-amber-300 transition leading-snug">
+                            {prod.nameAr}
+                          </h4>
+                          {prod.barcode && (
+                            <span className="font-mono text-[10px] text-slate-400 block mt-0.5">
+                              باركود: {prod.barcode}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Financials: Sell Price & Cost Price */}
+                        <div className="p-2.5 rounded-2xl bg-black/50 border border-white/5 space-y-1.5 text-xs">
+                          {!isSupply ? (
+                            <>
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-400">سعر البيع للزبون:</span>
+                                <span className="font-mono font-black text-amber-400 text-sm">
+                                  {prod.price} ج.م
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center text-[11px] text-slate-400">
+                                <span>التكلفة: {prod.costPrice || 0} ج.م</span>
+                                <span className="text-emerald-400 font-bold">
+                                  الربح: {Math.max(0, (prod.price || 0) - (prod.costPrice || 0))} ج.م
+                                </span>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-400">سعر الشراء / التكلفة:</span>
+                              <span className="font-mono font-black text-cyan-300 text-sm">
+                                {prod.costPrice || 0} ج.م
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Stock Quantity & Quick Adjustment */}
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[11px] text-slate-400">الرصيد بالمخزن:</span>
+                            <span
+                              className={`text-xs font-mono font-black px-2 py-0.5 rounded-lg border ${
+                                isOutOfStock
+                                  ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                                  : isLowStock
+                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                                  : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                              }`}
+                            >
+                              {isOutOfStock ? "نفذ (0 عبوة)" : `${prod.stockQty} عبوة`}
+                            </span>
+                          </div>
+
+                          {/* Quick Adjust Buttons */}
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleAdjustStock(prod, -1)}
+                              className="flex-1 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono font-bold transition border border-white/5 cursor-pointer"
+                              title="سحب عبوة (-1)"
+                            >
+                              -1
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAdjustStock(prod, 1)}
+                              className="flex-1 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-emerald-300 text-xs font-mono font-bold transition border border-white/5 cursor-pointer"
+                              title="إضافة عبوة (+1)"
+                            >
+                              +1
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAdjustStock(prod, 10)}
+                              className="flex-1 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-mono font-bold transition border border-amber-500/20 cursor-pointer"
+                              title="إضافة دستة (+10)"
+                            >
+                              +10
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Card Actions */}
+                        <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditProduct(prod)}
+                            className="flex-1 py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center justify-center gap-1.5 transition cursor-pointer"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                            <span>تعديل الصنف ✏️</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProduct(prod.id, prod.nameAr)}
+                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition cursor-pointer"
+                            title="حذف الصنف من المخزن"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         )}
@@ -3121,7 +3490,7 @@ export default function AdminPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition cursor-pointer"
               >
                 حفظ وإضافة الفرع 📍
               </button>
@@ -3130,7 +3499,243 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 7. CARD 2 QR MODAL */}
+      {/* ─────────────────────────────────────────────────────────────
+          6. PRODUCT & RAW MATERIALS MODAL (CREATE / EDIT & LIVE IMGBB)
+         ───────────────────────────────────────────────────────────── */}
+      {showProductModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-lg bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-sm font-black text-white flex items-center gap-2">
+                <span>🛍️</span>
+                <span>{editingProduct ? `تعديل الصنف (${editingProduct.nameAr})` : "إضافة منتج أو خامة جديدة للمخزن"}</span>
+              </h3>
+              <button
+                onClick={() => {
+                  setShowProductModal(false);
+                  setEditingProduct(null);
+                }}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProduct} className="space-y-3.5 text-xs">
+              {/* Category with Optgroups */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">نوع وتصنيف الصنف:</label>
+                <select
+                  value={productForm.category}
+                  onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold"
+                >
+                  <optgroup label="🛍️ منتجات بيع للعملاء">
+                    <option value="STYLING">تصفيف شعر وواكس ومات (STYLING)</option>
+                    <option value="BEARD_CARE">عناية باللحية وزيوت وسيروم (BEARD_CARE)</option>
+                    <option value="SKIN_CARE">عناية بالبشرة وماسكات وغسول (SKIN_CARE)</option>
+                    <option value="PERFUMES">عطور رجالي صدام VIP أو دي بارفيوم (PERFUMES)</option>
+                  </optgroup>
+                  <optgroup label="💈 خامات ومستلزمات تشغيل الصالون">
+                    <option value="SUPPLIES">خامات حلاقة وتشغيل (شفرات، قطن، فازلين، شمع)</option>
+                    <option value="COLOR_SUPPLIES">خامات صبغات وتلوين وأكسجين (COLOR)</option>
+                    <option value="PROTEIN_SUPPLIES">خامات بروتين ومعالجات وكيراتين (PROTEIN)</option>
+                    <option value="ACCESSORIES">مناشف ومستلزمات تعقيم وأدوات صالون</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              {/* Name */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">اسم الصنف أو الخامة بالعربي:</label>
+                <input
+                  type="text"
+                  required
+                  value={productForm.nameAr}
+                  onChange={(e) => setProductForm({ ...productForm, nameAr: e.target.value })}
+                  placeholder="مثال: شمع شعر عنبر تثبيت 24 ساعة أو شفرات حلاقة دوركو تيتانيوم"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
+              {/* Branch */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">الفرع المتاح به الصنف:</label>
+                <select
+                  value={productForm.branchId}
+                  onChange={(e) => setProductForm({ ...productForm, branchId: e.target.value })}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                >
+                  <option value="">متاح بجميع الفروع (عام للمنظومة)</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Price & Cost */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">
+                    سعر البيع للزبون (ج.م):
+                    <span className="text-[10px] text-amber-300 mr-1">(0 للخامات)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={productForm.price}
+                    onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">سعر الشراء / التكلفة (ج.م):</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={productForm.costPrice}
+                    onChange={(e) => setProductForm({ ...productForm, costPrice: Number(e.target.value) })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Stock & Min Alert */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">الكمية المتاحة بالمخزن:</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={productForm.stockQty}
+                    onChange={(e) => setProductForm({ ...productForm, stockQty: Number(e.target.value) })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">حد التنبيه عند نقص المخزون:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={productForm.minStockAlert}
+                    onChange={(e) => setProductForm({ ...productForm, minStockAlert: Number(e.target.value) })}
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Barcode */}
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">الباركود (اختياري):</label>
+                <input
+                  type="text"
+                  value={productForm.barcode}
+                  onChange={(e) => setProductForm({ ...productForm, barcode: e.target.value })}
+                  placeholder="مثال: SUP-001 أو باركود العبوة"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                />
+              </div>
+
+              {/* ImgBB Direct Upload & Preview */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-black/40 border border-white/10">
+                <label className="text-slate-300 font-bold block text-xs">
+                  صورة الصنف (رفع فوري ومباشر عبر ImgBB 📷):
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={
+                        productForm.image ||
+                        "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=500&auto=format&fit=crop&q=80"
+                      }
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="w-full py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-400/30 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>{uploadingImage ? "جاري الرفع على ImgBB..." : "اختر صورة لرفعها من جهازك 📷"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingImage}
+                        onChange={(e) =>
+                          handleUploadFile(e, (url: string) => {
+                            setProductForm((prev) => ({ ...prev, image: url }));
+                            showToast("success", "تم رفع صورة الصنف بنجاح عبر ImgBB 📸");
+                          })
+                        }
+                      />
+                    </label>
+                    <input
+                      type="url"
+                      value={productForm.image}
+                      onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
+                      placeholder="أو اكتب رابط الصورة هنا"
+                      className="w-full py-1.5 px-3 rounded-xl bg-black/60 border border-white/10 text-white text-[11px] font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 cursor-pointer"
+              >
+                {editingProduct ? "حفظ التعديلات على الصنف 💾" : "حفظ وإضافة الصنف للمخزن 🛍️"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          7. LUXURY VIP ADMIN TOAST NOTIFICATION (NO WINDOWS ALERTS!)
+         ───────────────────────────────────────────────────────────── */}
+      {adminToast && (
+        <div
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] sm:w-auto animate-fade-in font-sans"
+          dir="rtl"
+        >
+          <div
+            className={`py-3 px-5 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3 text-xs font-black ${
+              adminToast.type === "success"
+                ? "bg-emerald-950/90 border-emerald-500/60 text-emerald-200 shadow-emerald-950/50"
+                : adminToast.type === "error"
+                ? "bg-rose-950/90 border-rose-500/60 text-rose-200 shadow-rose-950/50"
+                : "bg-amber-950/90 border-amber-500/60 text-amber-200 shadow-amber-950/50"
+            }`}
+          >
+            <span className="text-base">
+              {adminToast.type === "success" ? "✅" : adminToast.type === "error" ? "⚠️" : "👑"}
+            </span>
+            <span className="flex-1 leading-relaxed">{adminToast.message}</span>
+            <button
+              onClick={() => setAdminToast(null)}
+              className="p-1 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 8. CARD 2 QR MODAL */}
       <CardQRModal
         isOpen={showQrModal}
         onClose={() => setShowQrModal(false)}

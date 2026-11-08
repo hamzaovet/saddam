@@ -6,8 +6,12 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const branchId = searchParams.get("branchId");
     const category = searchParams.get("category");
+    const includeInactive = searchParams.get("includeInactive") === "true";
 
-    const where: any = { isActive: true };
+    const where: any = {};
+    if (!includeInactive) {
+      where.isActive = true;
+    }
     if (branchId && branchId !== "ALL") {
       where.OR = [{ branchId }, { branchId: null }];
     }
@@ -17,7 +21,7 @@ export async function GET(req: Request) {
 
     const products = await prisma.product.findMany({
       where,
-      orderBy: { nameAr: "asc" },
+      orderBy: { createdAt: "desc" },
       include: {
         branch: { select: { id: true, name: true } },
       },
@@ -34,9 +38,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { nameAr, category, price, costPrice, stockQty, minStockAlert, image, barcode, branchId } = body;
 
-    if (!nameAr || price === undefined) {
+    if (!nameAr) {
       return NextResponse.json(
-        { success: false, error: "اسم المنتج وسعر البيع مطلوبان" },
+        { success: false, error: "اسم المنتج أو الخامة مطلوب" },
         { status: 400 }
       );
     }
@@ -45,14 +49,17 @@ export async function POST(req: Request) {
       data: {
         nameAr: nameAr.trim(),
         category: category || "STYLING",
-        price: Number(price),
-        costPrice: Number(costPrice || 0),
-        stockQty: Number(stockQty || 50),
-        minStockAlert: Number(minStockAlert || 10),
+        price: Number(price !== undefined && price !== "" ? price : 0),
+        costPrice: Number(costPrice !== undefined && costPrice !== "" ? costPrice : 0),
+        stockQty: Number(stockQty !== undefined && stockQty !== "" ? stockQty : 10),
+        minStockAlert: Number(minStockAlert !== undefined && minStockAlert !== "" ? minStockAlert : 5),
         image: image?.trim() || null,
         barcode: barcode?.trim() || null,
         branchId: branchId || null,
         isActive: true,
+      },
+      include: {
+        branch: { select: { id: true, name: true } },
       },
     });
 
@@ -84,6 +91,9 @@ export async function PATCH(req: Request) {
         ...(barcode !== undefined && { barcode: barcode?.trim() || null }),
         ...(branchId !== undefined && { branchId: branchId || null }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+      },
+      include: {
+        branch: { select: { id: true, name: true } },
       },
     });
 

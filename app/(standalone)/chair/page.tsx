@@ -48,6 +48,17 @@ export default function SpecialistChairPage() {
   const [walkInPhone, setWalkInPhone] = useState("");
   const [startingTicket, setStartingTicket] = useState(false);
 
+  // VIP Finish Confirmation Modal & Toast States (No native Windows alerts!)
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [toast, setToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+
+  const notify = (type: "success" | "error" | "info", message: string) => {
+    setToast({ type, message });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 4500);
+  };
+
   // Elapsed time on chair
   const [elapsedMinutes, setElapsedMinutes] = useState(0);
 
@@ -177,11 +188,12 @@ export default function SpecialistChairPage() {
         setWalkInName("");
         setWalkInPhone("");
         fetchChairData();
+        notify("success", `تم بدء جلسة الحلاقة للعميل (${data.ticket.customerName}) بنجاح ✂️`);
       } else {
-        alert(data.error || "فشل بدء التذكرة");
+        notify("error", data.error || "فشل بدء التذكرة");
       }
     } catch {
-      alert("حدث خطأ أثناء الاتصال بالخادم");
+      notify("error", "حدث خطأ أثناء الاتصال بالخادم");
     } finally {
       setStartingTicket(false);
     }
@@ -220,11 +232,12 @@ export default function SpecialistChairPage() {
       if (data.success && data.ticket) {
         setActiveTicket(data.ticket);
         fetchChairData();
+        notify("success", `تم استقبال العميل (${booking.customer?.name}) على الكرسي بنجاح 💺`);
       } else {
-        alert(data.error || "فشل استقبال العميل");
+        notify("error", data.error || "فشل استقبال العميل");
       }
     } catch {
-      alert("تعذر استقبال العميل");
+      notify("error", "تعذر استقبال العميل");
     } finally {
       setStartingTicket(false);
     }
@@ -312,16 +325,14 @@ export default function SpecialistChairPage() {
     }
   };
 
-  // Finish Chair Styling -> Export to Cashier
-  const handleFinishChair = async () => {
+  // Finish Chair Styling -> Opens Custom VIP Modal (No Native Alerts)
+  const handleFinishChair = () => {
     if (!activeTicket) return;
-    if (
-      !confirm(
-        `هل انتهيت من خدمة العميل (${activeTicket.customerName}) وتريد تصدير التذكرة للكاشير للحساب؟`
-      )
-    )
-      return;
+    setShowFinishModal(true);
+  };
 
+  const executeFinishChair = async () => {
+    if (!activeTicket) return;
     try {
       setActionLoading(true);
       const res = await fetch("/api/tickets", {
@@ -335,16 +346,18 @@ export default function SpecialistChairPage() {
 
       const data = await res.json();
       if (data.success) {
-        alert(
-          `تم تصدير التذكرة بنجاح إلى الكاشير بإجمالي: ${activeTicket.finalAmount} ج.م! تم إخلاء الكرسي.`
+        setShowFinishModal(false);
+        notify(
+          "success",
+          `تم تصدير تذكرة (${activeTicket.customerName}) بنجاح إلى الكاشير بإجمالي: ${activeTicket.finalAmount} ج.م! تم إخلاء الكرسي 🏁`
         );
         setActiveTicket(null);
         fetchChairData();
       } else {
-        alert(data.error || "فشل تصدير التذكرة");
+        notify("error", data.error || "فشل تصدير التذكرة");
       }
     } catch {
-      alert("تعذر الاتصال بالخادم");
+      notify("error", "تعذر الاتصال بالخادم، يرجى إعادة المحاولة");
     } finally {
       setActionLoading(false);
     }
@@ -791,6 +804,110 @@ export default function SpecialistChairPage() {
                 <span>{startingTicket ? "جارٍ الفتح..." : "بدء الجلسة على الكرسي ✂️"}</span>
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. CUSTOM LUXURY FINISH CONFIRMATION MODAL (NO WINDOWS ALERTS!)
+         ───────────────────────────────────────────────────────────── */}
+      {showFinishModal && activeTicket && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fade-in"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-md bg-gradient-to-b from-[#161622] via-[#12121a] to-[#0e0e14] border-2 border-amber-500/50 rounded-3xl p-6 shadow-2xl space-y-5 text-right">
+            {/* Modal Header */}
+            <div className="flex items-center gap-3.5 border-b border-amber-500/20 pb-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-2 border-amber-400 text-amber-400 flex items-center justify-center text-xl shadow-lg shadow-amber-500/10 shrink-0">
+                🏁
+              </div>
+              <div>
+                <h3 className="text-base font-black text-white">إنهاء الحلاقة وتصدير للحساب</h3>
+                <p className="text-xs text-amber-300 font-bold">صالون صدام الملكي VIP 👑</p>
+              </div>
+            </div>
+
+            {/* Ticket & Customer Summary Card */}
+            <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-medium">العميل:</span>
+                <span className="font-black text-amber-300 text-sm">{activeTicket.customerName}</span>
+              </div>
+              {activeTicket.customerPhone && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 font-medium">الهاتف:</span>
+                  <span className="font-mono text-slate-300">{activeTicket.customerPhone}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-medium">رقم التذكرة:</span>
+                <span className="font-mono font-bold text-white">#{activeTicket.ticketNumber}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-medium">الخدمات المنفذة:</span>
+                <span className="text-slate-200 font-bold">{ticketServices.length} خدمات وبكجات</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-white/10 pt-2.5 font-black">
+                <span className="text-slate-300 text-xs">المطلوب تحصيله عند الكاشير:</span>
+                <span className="font-mono text-lg text-amber-400">{activeTicket.finalAmount} ج.م</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              هل انتهيت من كافة متطلبات الحلاقة والعناية للزبون وتريد تصدير التذكرة فوراً لشاشة الكاشير للتحصيل وإعادة حالة الكرسي إلى متاح لاستقبال الزبون التالي؟
+            </p>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={actionLoading}
+                onClick={executeFinishChair}
+                className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                <span>{actionLoading ? "جارٍ التصدير للكاشير..." : "تأكيد وتصدير للكاشير 🚀"}</span>
+              </button>
+              <button
+                type="button"
+                disabled={actionLoading}
+                onClick={() => setShowFinishModal(false)}
+                className="py-3 px-4 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs transition border border-white/10 cursor-pointer"
+              >
+                تراجع / استمرار الحلاقة ❌
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          3. LUXURY VIP FLOATING TOAST NOTIFICATION (NO WINDOWS ALERTS!)
+         ───────────────────────────────────────────────────────────── */}
+      {toast && (
+        <div
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] sm:w-auto animate-fade-in font-sans"
+          dir="rtl"
+        >
+          <div
+            className={`py-3 px-5 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3 text-xs font-black ${
+              toast.type === "success"
+                ? "bg-emerald-950/90 border-emerald-500/60 text-emerald-200 shadow-emerald-950/50"
+                : toast.type === "error"
+                ? "bg-rose-950/90 border-rose-500/60 text-rose-200 shadow-rose-950/50"
+                : "bg-amber-950/90 border-amber-500/60 text-amber-200 shadow-amber-950/50"
+            }`}
+          >
+            <span className="text-base">
+              {toast.type === "success" ? "✅" : toast.type === "error" ? "⚠️" : "ℹ️"}
+            </span>
+            <span className="flex-1 leading-relaxed">{toast.message}</span>
+            <button
+              onClick={() => setToast(null)}
+              className="p-1 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}

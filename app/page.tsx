@@ -64,13 +64,28 @@ export default function HomePage() {
   const [authError, setAuthError] = useState("");
   const [authSuccessMsg, setAuthSuccessMsg] = useState("");
   const [showCustomerMenu, setShowCustomerMenu] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Custom Toast State (No Windows native alerts!)
+  const [pageToast, setPageToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+
+  const showToast = (type: "success" | "error" | "info", message: string) => {
+    setPageToast({ type, message });
+    setTimeout(() => {
+      setPageToast((prev) => (prev?.message === message ? null : prev));
+    }, 4500);
+  };
 
   const handleCustomerLogout = () => {
-    if (confirm("هل تريد بالتأكيد تسجيل الخروج من حسابك؟")) {
-      localStorage.removeItem("saddam_customer");
-      setCustomer(null);
-      setShowCustomerMenu(false);
-    }
+    setShowLogoutModal(true);
+  };
+
+  const executeCustomerLogout = () => {
+    localStorage.removeItem("saddam_customer");
+    setCustomer(null);
+    setShowCustomerMenu(false);
+    setShowLogoutModal(false);
+    showToast("info", "تم تسجيل خروجك من الحساب بنجاح 🚪");
   };
 
   // Confirmed Booking State
@@ -305,7 +320,7 @@ export default function HomePage() {
     }
 
     if (selectedServices.length === 0) {
-      alert("برجاء اختيار خدمة واحدة على الأقل لإتمام الحجز");
+      showToast("error", "برجاء اختيار خدمة واحدة على الأقل لإتمام الحجز");
       return;
     }
 
@@ -336,10 +351,10 @@ export default function HomePage() {
         setSelectedServices([]);
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        alert(data.error || "فشل إتمام الحجز");
+        showToast("error", data.error || "فشل إتمام الحجز");
       }
     } catch {
-      alert("حدث خطأ أثناء إرسال الحجز");
+      showToast("error", "حدث خطأ أثناء إرسال الحجز");
     } finally {
       setSubmittingBooking(false);
     }
@@ -350,75 +365,76 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#07070a] text-slate-100 flex flex-col font-sans" dir="rtl">
       {/* ─────────────────────────────────────────────────────────────
-          1. LUXURY TOP NAVIGATION BAR
+          1. LUXURY TOP NAVIGATION BAR (RESPONSIVE & AIRY ON MOBILE)
          ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#0c0c12]/95 backdrop-blur-md border-b border-amber-500/25 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-2xl">
+      <header className="sticky top-0 z-40 bg-[#0c0c12]/95 backdrop-blur-md border-b border-amber-500/25 px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between shadow-2xl">
         {/* Brand Logo & Name */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg shadow-amber-500/20 bg-black shrink-0 group-hover:scale-105 transition">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg shadow-amber-500/20 bg-black shrink-0 group-hover:scale-105 transition">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.jpg" alt="صالون حلاقة صدام" className="w-full h-full object-cover" />
           </div>
-          <div>
+          <div className="leading-tight">
             <div className="flex items-center gap-1.5">
-              <h1 className="text-base sm:text-xl font-black text-amber-400 tracking-wide">
-                صالون حلاقة صدام
+              <h1 className="text-sm sm:text-lg md:text-xl font-black text-amber-400 tracking-wide whitespace-nowrap">
+                صالون صدام <span className="hidden sm:inline">حلاقة</span> VIP
               </h1>
-              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse hidden sm:block" />
             </div>
-            <p className="text-[10px] sm:text-xs text-amber-200/60 font-mono font-bold tracking-widest uppercase">
+            <p className="text-[9px] sm:text-xs text-amber-200/60 font-mono font-bold tracking-widest uppercase hidden md:block">
               SADDAM BARBER SHOP • ROYAL EXPERIENCE
             </p>
           </div>
         </Link>
 
-        {/* Action Buttons: Staff Login (Clear & Prominent) + Card QR + Customer */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* PROMINENT STAFF LOGIN BUTTON */}
+        {/* Action Buttons: Staff Login + Card QR + Customer */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* STAFF LOGIN BUTTON: Icon on small mobile, full text on larger screens */}
           <Link
             href="/login"
-            className="py-2 px-3.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/50 text-amber-300 hover:text-amber-200 text-xs font-black transition flex items-center gap-1.5 shadow-sm"
+            className="py-1.5 px-2.5 sm:py-2 sm:px-3.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/50 text-amber-300 hover:text-amber-200 text-xs font-black transition flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
+            title="دخول طاقم العمل والإدارة"
           >
-            <LogIn className="w-4 h-4 text-amber-400" />
-            <span>دخول الطاقم والإدارة 🔒</span>
+            <LogIn className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="hidden sm:inline">دخول الطاقم والإدارة 🔒</span>
           </Link>
 
-          {/* Card 2 QR Button */}
+          {/* Card 2 QR Button: Icon on mobile, label on desktop */}
           <button
             onClick={() => setShowQrModal(true)}
-            className="py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-bold transition flex items-center gap-1.5"
+            className="p-2 sm:py-2 sm:px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-bold transition flex items-center gap-1.5 shrink-0"
             title="كارت الـ 2 كيو آر كود"
           >
-            <QrCode className="w-4 h-4 text-amber-400" />
-            <span className="hidden md:inline">كارت الـ 2 QR 🪪</span>
+            <QrCode className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="hidden lg:inline">كارت الـ 2 QR 🪪</span>
           </button>
 
           {/* Customer Profile / Login */}
           {customer ? (
-            <div className="relative">
-              <div className="flex items-center gap-1.5 py-1 px-2.5 rounded-xl bg-black/70 border border-amber-500/40 text-xs shadow-md">
+            <div className="relative shrink-0">
+              <div className="flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-2.5 rounded-xl bg-black/70 border border-amber-500/40 text-xs shadow-md">
                 <button
                   type="button"
                   onClick={() => setShowCustomerMenu(!showCustomerMenu)}
-                  className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+                  className="flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer"
                   title="عرض تفاصيل الحساب"
                 >
-                  <User className="w-4 h-4 text-amber-400" />
-                  <span className="font-bold text-white max-w-[100px] truncate">{customer.name}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-black border border-amber-500/30">
+                  <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="font-bold text-white max-w-[65px] sm:max-w-[100px] truncate">{customer.name}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-black border border-amber-500/30">
                     VIP
                   </span>
                 </button>
 
-                <div className="h-4 w-px bg-white/10 mx-0.5" />
+                <div className="h-3.5 w-px bg-white/10 mx-0.5" />
 
                 <button
                   type="button"
                   onClick={handleCustomerLogout}
-                  className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition"
+                  className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition cursor-pointer"
                   title="تسجيل الخروج من الحساب 🚪"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-3 h-3" />
                 </button>
               </div>
 
@@ -446,7 +462,7 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={handleCustomerLogout}
-                    className="w-full py-2 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-black text-xs transition flex items-center justify-center gap-1.5"
+                    className="w-full py-2 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>تسجيل الخروج من الحساب 🚪</span>
@@ -460,10 +476,10 @@ export default function HomePage() {
                 setAuthStep("INPUT");
                 setShowAuthModal(true);
               }}
-              className="py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-lg shadow-amber-500/20"
+              className="py-1.5 px-3 sm:py-2 sm:px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <User className="w-4 h-4" />
-              <span>تسجيل / حسابي 👤</span>
+              <User className="w-3.5 h-3.5 shrink-0" />
+              <span>تسجيل / حسابي</span>
             </button>
           )}
         </div>
@@ -802,7 +818,10 @@ export default function HomePage() {
                   key={spec.id}
                   onClick={() => {
                     if (isOffDuty) {
-                      alert(`عذراً، المتخصص (${spec.name}) غير متواجد بالصالون حالياً (${spec.statusReason || "إجازة / انتهت الوردية اليوم"}). يُرجى اختيار متخصص آخر متواجد أو "أي متخصص متاح" 💈`);
+                      showToast(
+                        "info",
+                        `عذراً، المتخصص (${spec.name}) غير متواجد بالصالون حالياً (${spec.statusReason || "إجازة / انتهت الوردية اليوم"}). يُرجى اختيار متخصص آخر متواجد أو "أي متخصص متاح" 💈`
+                      );
                       return;
                     }
                     setSelectedSpecialistId(spec.id);
@@ -1362,6 +1381,75 @@ export default function HomePage() {
         branches={branches}
         selectedBranchId={selectedBranchId}
       />
+
+      {/* ─────────────────────────────────────────────────────────────
+          9. CUSTOM LUXURY CUSTOMER LOGOUT MODAL (NO WINDOWS ALERTS!)
+         ───────────────────────────────────────────────────────────── */}
+      {showLogoutModal && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fade-in"
+          dir="rtl"
+        >
+          <div className="relative w-full max-w-sm bg-gradient-to-b from-[#161622] via-[#12121a] to-[#0e0e14] border-2 border-amber-500/50 rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto text-2xl shadow-lg">
+              🚪
+            </div>
+            <div>
+              <h3 className="text-base font-black text-white">تسجيل الخروج من الحساب</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                هل أنت متأكد من رغبتك في تسجيل الخروج من حساب ({customer?.name})؟
+              </p>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={executeCustomerLogout}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs transition shadow-lg shadow-rose-600/30 cursor-pointer"
+              >
+                نعم، تسجيل الخروج
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs transition border border-white/10 cursor-pointer"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          10. LUXURY VIP FLOATING TOAST NOTIFICATION (NO WINDOWS ALERTS!)
+         ───────────────────────────────────────────────────────────── */}
+      {pageToast && (
+        <div
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] sm:w-auto animate-fade-in font-sans"
+          dir="rtl"
+        >
+          <div
+            className={`py-3 px-5 rounded-2xl shadow-2xl border backdrop-blur-xl flex items-center gap-3 text-xs font-black ${
+              pageToast.type === "success"
+                ? "bg-emerald-950/90 border-emerald-500/60 text-emerald-200 shadow-emerald-950/50"
+                : pageToast.type === "error"
+                ? "bg-rose-950/90 border-rose-500/60 text-rose-200 shadow-rose-950/50"
+                : "bg-amber-950/90 border-amber-500/60 text-amber-200 shadow-amber-950/50"
+            }`}
+          >
+            <span className="text-base">
+              {pageToast.type === "success" ? "✅" : pageToast.type === "error" ? "⚠️" : "💈"}
+            </span>
+            <span className="flex-1 leading-relaxed">{pageToast.message}</span>
+            <button
+              onClick={() => setPageToast(null)}
+              className="p-1 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

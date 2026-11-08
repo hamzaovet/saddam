@@ -127,15 +127,16 @@ export default function CustomerChatWidget({
 
   return (
     <>
-      {/* Floating Chat Trigger Button */}
+      {/* Floating Chat Trigger Button - Responsive (FAB on mobile, Pill on desktop) */}
       {!isOpen && (
         <button
           onClick={() => {
             setIsOpen(true);
             setUnreadCount(0);
           }}
-          className="fixed bottom-5 left-5 z-50 py-3 px-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition flex items-center gap-2 border-2 border-amber-300"
+          className="fixed bottom-5 left-5 z-40 p-3 sm:py-3 sm:px-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition flex items-center gap-2 border-2 border-amber-300 cursor-pointer"
           dir="rtl"
+          title="محادثة مباشرة مع صالون صدام"
         >
           <div className="relative">
             <MessageSquare className="w-5 h-5 fill-slate-950" />
@@ -145,7 +146,7 @@ export default function CustomerChatWidget({
               </span>
             )}
           </div>
-          <span>محادثة مباشرة مع الصالون 💬</span>
+          <span className="hidden sm:inline">محادثة مباشرة مع الصالون 💬</span>
         </button>
       )}
 
