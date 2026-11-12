@@ -56,6 +56,8 @@ export default function StaffLoginPage() {
           data.user.role === "manager"
         ) {
           router.push("/admin");
+        } else if (data.user.role === "coordinator") {
+          router.push("/coordinator");
         } else if (data.user.role === "cashier") {
           router.push("/pos");
         } else if (data.user.role === "specialist") {
@@ -118,7 +120,7 @@ export default function StaffLoginPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="مثال: maestro أو saddam-vip"
+              placeholder="مثال: maestro أو coordinator أو cashier-qobba"
               className="w-full py-2.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/30 text-xs text-white font-mono font-bold focus:outline-none focus:border-amber-400"
             />
           </div>

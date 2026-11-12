@@ -1608,6 +1608,14 @@ export default function AdminPage() {
             </button>
           )}
 
+          {/* Coordinator & POS Shortcuts */}
+          <Link
+            href="/coordinator"
+            className="py-1.5 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 font-black text-xs transition hidden sm:inline"
+          >
+            شاشة المنسق 🧭
+          </Link>
+
           {/* POS Shortcut */}
           <Link
             href="/pos"
@@ -3893,7 +3901,19 @@ export default function AdminPage() {
                       <td className="p-3.5 font-mono text-amber-300 font-bold">{u.username}</td>
                       <td className="p-3.5 font-bold">
                         <span className="py-0.5 px-2 rounded-lg bg-white/5 text-[10px] text-slate-300">
-                          {u.role}
+                          {u.role === "coordinator"
+                            ? "المنسق العام (الراوتر) 🧭"
+                            : u.role === "cashier"
+                            ? "كاشير POS 💰"
+                            : u.role === "owner"
+                            ? "المالك (Maestro) 👑"
+                            : u.role === "general_manager"
+                            ? "المدير العام"
+                            : u.role === "manager"
+                            ? "مدير فرع"
+                            : u.role === "specialist"
+                            ? "حساب كرسي فردي"
+                            : u.role}
                         </span>
                       </td>
                       <td className="p-3.5 text-slate-400">{u.branchName}</td>
@@ -4663,8 +4683,9 @@ export default function AdminPage() {
                     <option value="owner">المالك (Maestro)</option>
                     <option value="general_manager">المدير العام</option>
                     <option value="manager">مدير فرع</option>
-                    <option value="cashier">كاشير نقطة البيع POS</option>
-                    <option value="specialist">متخصص حلاقة (كرسي)</option>
+                    <option value="coordinator">المنسق العام (الراوتر - استقبال وحجوزات وكراسي) 🧭</option>
+                    <option value="cashier">كاشير نقطة البيع POS 💰</option>
+                    <option value="specialist">متخصص حلاقة (كرسي فردي)</option>
                     <option value="worker">عامل صالون وضيافة</option>
                   </select>
                 </div>

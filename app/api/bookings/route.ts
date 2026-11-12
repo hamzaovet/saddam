@@ -148,20 +148,22 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, status, notes, timeSlot, bookingDate, notifyCustomer } = body;
+    const { id, status, notes, timeSlot, bookingDate, specialistId, notifyCustomer } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "معرف الحجز مطلوب" }, { status: 400 });
     }
 
+    const updateData: any = {};
+    if (status) updateData.status = status;
+    if (notes !== undefined) updateData.notes = notes;
+    if (timeSlot) updateData.timeSlot = timeSlot;
+    if (bookingDate) updateData.bookingDate = bookingDate;
+    if (specialistId !== undefined) updateData.specialistId = specialistId || null;
+
     const booking = await prisma.booking.update({
       where: { id },
-      data: {
-        ...(status && { status }),
-        ...(notes !== undefined && { notes }),
-        ...(timeSlot && { timeSlot }),
-        ...(bookingDate && { bookingDate }),
-      },
+      data: updateData,
       include: {
         customer: true,
         branch: true,
@@ -174,14 +176,16 @@ export async function PATCH(req: Request) {
       const msgText =
         status === "CANCELLED"
           ? `عفواً يا فندم، تم إلغاء حجزك رقم (#${booking.bookingNumber}) في صالون صدام (${booking.branch?.name}). سبب الإلغاء: ${notes || "عدم توفر موعد متاح"}. نتشرف باختيار موعد بديل في أي وقت 💈`
-          : `👑 مرحباً بك يا فندم! بخصوص حجزك في صالون صدام (#${booking.bookingNumber})، تم تأكيد وتعديل موعد الحضور إلى: يوم (${booking.bookingDate}) الساعة (${booking.timeSlot}) ⏰ بفرع (${booking.branch?.name})${booking.specialist ? ` مع ${booking.specialist.name}` : ""}. ننتظر تشريفك لتجربة استثنائية!`;
+          : `👑 مرحباً بك يا فندم! بخصوص حجزك في صالون صدام (#${booking.bookingNumber})، تم تأكيد وتنسيق موعد الحضور إلى: يوم (${booking.bookingDate}) الساعة (${booking.timeSlot}) ⏰ بفرع (${booking.branch?.name})${booking.specialist ? ` مع ${booking.specialist.name}` : " (على أول كرسي متاح)"}. ننتظر تشريفك لتجربة استثنائية!`;
 
       await prisma.chatMessage.create({
         data: {
           sender: "SALON",
+          senderName: "منسق صالون صدام 🧭",
           customerPhone: booking.customer.phone,
           customerName: booking.customer.name,
           branchId: booking.branchId,
+          bookingId: booking.id,
           message: msgText,
         },
       });

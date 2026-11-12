@@ -138,6 +138,25 @@ async function seed() {
     },
   });
 
+  // Coordinator (الراوتر الموحد)
+  await prisma.user.upsert({
+    where: { username: "coordinator" },
+    update: {
+      role: "coordinator",
+      isActive: true,
+    },
+    create: {
+      name: "منسق الصالون العام (الراوتر)",
+      username: "coordinator",
+      passwordHash: "123456789",
+      pin: "157230",
+      phone: "01121537537",
+      role: "coordinator",
+      branchId: null,
+      isActive: true,
+    },
+  });
+
   // Cashiers
   await prisma.user.upsert({
     where: { username: "cashier-qobba" },

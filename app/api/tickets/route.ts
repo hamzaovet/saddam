@@ -70,11 +70,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "المتخصص غير موجود" }, { status: 404 });
     }
 
+    // Resolve or auto-create customer in CRM if phone provided
+    let resolvedCustomerId = customerId || null;
+    const cleanPhone = customerPhone ? customerPhone.trim().replace(/\s+/g, "") : "";
+    if (!resolvedCustomerId && cleanPhone.length >= 8) {
+      try {
+        let existingCust = await prisma.customer.findUnique({ where: { phone: cleanPhone } });
+        if (!existingCust) {
+          existingCust = await prisma.customer.create({
+            data: {
+              name: customerName.trim(),
+              phone: cleanPhone,
+              isVerified: true,
+            },
+          });
+        }
+        resolvedCustomerId = existingCust.id;
+      } catch {}
+    }
+
     const ticketNumber = `CHAIR-${Math.floor(1000 + Math.random() * 9000)}`;
     const isWaiting = requestedStatus === "WAITING";
 
     // Prepare initial services
-    let servicesList = initialServices || [];
+    let servicesList = Array.isArray(initialServices) ? initialServices : [];
     let servicesTotal = servicesList.reduce((sum: number, s: any) => sum + Number(s.price || 0), 0);
 
     const ticketNotes =
@@ -91,9 +110,9 @@ export async function POST(req: Request) {
         branchId,
         specialistId,
         chairNumber: specialist.chairNumber,
-        customerId: customerId || null,
+        customerId: resolvedCustomerId,
         customerName: customerName.trim(),
-        customerPhone: customerPhone?.trim() || null,
+        customerPhone: cleanPhone || null,
         status: isWaiting ? "WAITING" : "IN_CHAIR",
         services: JSON.stringify(servicesList),
         servicesTotal,
@@ -165,6 +184,14 @@ export async function PATCH(req: Request) {
     }
 
     // 0. SEAT WAITING CLIENT ON CHAIR (Walk-in or Waiting lounge customer admitted to chair)
+    const ticketInclude = {
+      specialist: {
+        select: { id: true, name: true, photo: true, chairNumber: true, status: true, commissionRate: true },
+      },
+      branch: { select: { id: true, name: true, code: true } },
+      customer: { select: { id: true, name: true, phone: true, vipLevel: true } },
+    };
+
     if (action === "SEAT_NOW" || action === "SEAT_WAITING_CLIENT") {
       const targetSpecialistId = body.specialistId || ticket.specialistId;
       const targetSpecialist = await prisma.specialist.findUnique({
@@ -180,13 +207,7 @@ export async function PATCH(req: Request) {
           startTime: new Date(),
           notes: body.notes !== undefined ? body.notes : ticket.notes,
         },
-        include: {
-          specialist: {
-            select: { id: true, name: true, photo: true, chairNumber: true, status: true, commissionRate: true },
-          },
-          branch: { select: { id: true, name: true, code: true } },
-          customer: { select: { id: true, name: true, phone: true } },
-        },
+        include: ticketInclude,
       });
 
       if (targetSpecialistId) {
@@ -194,6 +215,46 @@ export async function PATCH(req: Request) {
           where: { id: targetSpecialistId },
           data: { status: "WITH_CLIENT" },
         });
+      }
+
+      if (body.bookingId) {
+        try {
+          await prisma.booking.update({
+            where: { id: body.bookingId },
+            data: { status: "IN_CHAIR", specialistId: targetSpecialistId },
+          });
+        } catch {}
+      }
+
+      return NextResponse.json({ success: true, ticket: updated });
+    }
+
+    // 0.05 SWITCH SPECIALIST / CHAIR (Move ticket cleanly from one specialist to another)
+    if (action === "SWITCH_SPECIALIST") {
+      const { targetSpecialistId } = body;
+      if (!targetSpecialistId) {
+        return NextResponse.json({ success: false, error: "يرجى اختيار المتخصص الجديد" }, { status: 400 });
+      }
+      const targetSpecialist = await prisma.specialist.findUnique({ where: { id: targetSpecialistId } });
+      if (!targetSpecialist) {
+        return NextResponse.json({ success: false, error: "المتخصص غير موجود" }, { status: 404 });
+      }
+
+      const oldSpecId = ticket.specialistId;
+      const updated = await prisma.ticket.update({
+        where: { id: ticketId },
+        data: {
+          specialistId: targetSpecialist.id,
+          chairNumber: targetSpecialist.chairNumber,
+        },
+        include: ticketInclude,
+      });
+
+      if (ticket.status === "IN_CHAIR") {
+        if (oldSpecId && oldSpecId !== targetSpecialist.id) {
+          await prisma.specialist.update({ where: { id: oldSpecId }, data: { status: "AVAILABLE" } });
+        }
+        await prisma.specialist.update({ where: { id: targetSpecialist.id }, data: { status: "WITH_CLIENT" } });
       }
 
       return NextResponse.json({ success: true, ticket: updated });
@@ -244,6 +305,7 @@ export async function PATCH(req: Request) {
           servicesTotal,
           finalAmount,
         },
+        include: ticketInclude,
       });
 
       return NextResponse.json({ success: true, ticket: updated });
@@ -268,6 +330,7 @@ export async function PATCH(req: Request) {
           servicesTotal,
           finalAmount,
         },
+        include: ticketInclude,
       });
 
       return NextResponse.json({ success: true, ticket: updated });
@@ -327,6 +390,7 @@ export async function PATCH(req: Request) {
           endTime,
           durationMinutes,
         },
+        include: ticketInclude,
       });
 
       // Free chair

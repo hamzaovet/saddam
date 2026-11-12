@@ -67,6 +67,33 @@ export default function CashierPosPage() {
 
   // Sound ref for new ticket alert
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const prevReadyCountRef = useRef<number | null>(null);
+
+  const playCashierChime = () => {
+    try {
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
+      if (!audioCtxRef.current) audioCtxRef.current = new AC();
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+      const now = ctx.currentTime;
+      [
+        [880, 0],
+        [1318.5, 0.16],
+      ].forEach(([freq, delay]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.35, now + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + delay);
+        osc.stop(now + delay + 0.28);
+      });
+    } catch {}
+  };
 
   // VIP Floating Toast State (No Native Windows Alerts!)
   const [posToast, setPosToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
@@ -157,6 +184,13 @@ export default function CashierPosPage() {
 
       if (dataT.success && dataT.tickets) {
         setTickets(dataT.tickets);
+        const readyCnt = dataT.tickets.filter((t: any) => t.status === "READY_FOR_CASHIER").length;
+        if (prevReadyCountRef.current !== null && readyCnt > prevReadyCountRef.current) {
+          playCashierChime();
+          showToast("success", "🔔 وصل شيك جديد جاهز للتحصيل من المنسق والكرسي! 💰");
+        }
+        prevReadyCountRef.current = readyCnt;
+
         // If a ticket is currently selected, keep it updated
         if (selectedTicket) {
           const fresh = dataT.tickets.find((t: any) => t.id === selectedTicket.id);
@@ -558,29 +592,29 @@ export default function CashierPosPage() {
       {/* ─────────────────────────────────────────────────────────────
           1. POS HEADER
          ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#0f0f15]/95 backdrop-blur-md border-b border-amber-500/25 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-lg no-print">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
+      <header className="sticky top-0 z-40 bg-[#0f0f15]/95 backdrop-blur-md border-b border-amber-500/25 px-3 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-2.5 shadow-lg no-print">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl overflow-hidden border-2 border-amber-400 bg-black shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-black text-amber-400">
-                كاشير صالون صدام (نقطة البيع POS)
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-sm sm:text-lg font-black text-amber-400 truncate">
+                كاشير صالون صدام (التحصيل POS)
               </h2>
-              <span className="py-0.5 px-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black">
+              <span className="py-0.5 px-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black shrink-0">
                 نشط 🟢
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-bold">
-              الكاشير: {currentUser?.name}
+            <p className="text-xs text-slate-400 font-bold truncate">
+              الكاشير: {currentUser?.name} • تحصيل الشيكات المنتهية من المنسق
             </p>
           </div>
         </div>
 
-        {/* Branch Switcher & Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Branch Switcher & Cashier Actions */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full lg:w-auto justify-between sm:justify-end">
           {currentUser?.role === "owner" || currentUser?.role === "general_manager" ? (
             <select
               value={selectedBranchId}
@@ -599,19 +633,6 @@ export default function CashierPosPage() {
               {currentUser?.branchName || "الفرع الحالي"}
             </span>
           )}
-
-          <button
-            onClick={() => {
-              setAdmitCustomerName("");
-              setAdmitCustomerPhone("");
-              setAdmitSpecialistId(specialists[0]?.id || "");
-              setShowAdmitModal(true);
-            }}
-            className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>إجلاس زبون 💺</span>
-          </button>
 
           <button
             onClick={() => {
@@ -640,35 +661,39 @@ export default function CashierPosPage() {
             title="إقفال وردية الكاشير وتسليم النقدية للمالك"
           >
             <Lock className="w-3.5 h-3.5 text-amber-400" />
-            <span>إقفال وتسليم الوردية 🔒</span>
-          </button>
-
-          <button
-            onClick={() => setShowShiftModal(true)}
-            className="py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-bold transition flex items-center gap-1 shadow-sm cursor-pointer"
-          >
-            <Users className="w-3.5 h-3.5 text-amber-400" />
-            <span>حضور المختصين 💈</span>
+            <span>إقفال الوردية 🔒</span>
           </button>
 
           <button
             onClick={fetchPosData}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 transition cursor-pointer"
             title="تحديث"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
 
-          <Link
-            href="/admin"
-            className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition hidden sm:inline"
-          >
-            لوحة الإدارة ⚙️
-          </Link>
+          {(currentUser?.role === "owner" ||
+            currentUser?.role === "general_manager" ||
+            currentUser?.role === "manager") && (
+            <>
+              <Link
+                href="/coordinator"
+                className="py-1.5 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/35 text-sky-300 text-xs font-bold transition"
+              >
+                شاشة المنسق 🧭
+              </Link>
+              <Link
+                href="/admin"
+                className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold transition hidden sm:inline"
+              >
+                الإدارة ⚙️
+              </Link>
+            </>
+          )}
 
           <button
             onClick={handleLogout}
-            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition text-xs font-bold"
+            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition text-xs font-bold cursor-pointer"
             title="خروج"
           >
             <LogOut className="w-4 h-4" />
@@ -683,142 +708,87 @@ export default function CashierPosPage() {
         {/* LEFT / MAIN COLUMN: ACTIVE CHAIRS & TICKETS (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {(() => {
-            const waitingTickets = tickets.filter((t) => t.status === "WAITING");
-            const chairTickets = tickets.filter((t) => t.status !== "WAITING");
+            const readyTickets = tickets.filter((t) => t.status === "READY_FOR_CASHIER");
+            const inChairTickets = tickets.filter((t) => t.status === "IN_CHAIR");
+            const waitingCount = tickets.filter((t) => t.status === "WAITING").length;
 
             return (
               <>
                 {/* ─────────────────────────────────────────────────────────────
-                    1. WAITING LOUNGE & QUEUE (صالة الاستراحة وقائمة الانتظار بالصالون)
+                    1. READY FOR CASHIER CHECKOUT QUEUE (الشيكات الجاهزة للتحصيل الآن)
                    ───────────────────────────────────────────────────────────── */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm">
-                        🛋️
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-base">
+                        💰
                       </div>
                       <div>
-                        <h3 className="text-sm font-black text-white flex items-center gap-2">
-                          <span>صالة الاستراحة وقائمة الانتظار بالصالون</span>
-                          <span className="py-0.5 px-2 rounded-full bg-sky-500/20 text-sky-300 font-mono text-[11px] font-black border border-sky-500/30">
-                            {waitingTickets.length} زبائن
+                        <h3 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                          <span>الشيكات الجاهزة للتحصيل الآن</span>
+                          <span className="py-0.5 px-2.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-xs font-black border border-emerald-500/40">
+                            {readyTickets.length}
                           </span>
                         </h3>
-                        <p className="text-[11px] text-slate-400">زبائن مباشرين وصلوا وينتظرون كابتن بالاسم أو أول كابتن يفضى</p>
+                        <p className="text-[11px] text-slate-400">
+                          تصل هنا تلقائياً فور ضغط المنسق «إنهاء الحلاقة» على الكرسي • تحديث كل 4 ثوانٍ ⚡
+                        </p>
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAdmitCustomerName("");
-                        setAdmitCustomerPhone("");
-                        setAdmitSpecialistId("FIRST_AVAILABLE");
-                        setAdmitMode("WAITING");
-                        setShowAdmitModal(true);
-                      }}
-                      className="py-1 px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>إضافة زبون للاستراحة 🛋️</span>
-                    </button>
                   </div>
 
-                  {waitingTickets.length === 0 ? (
-                    <div className="p-4 rounded-2xl bg-[#121218] border border-white/5 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                      <span>🛋️</span>
-                      <span>لا يوجد زبائن حالياً في صالة الاستراحة • جميع الكباتن المتاحين جاهزون لاستقبال الزبائن على الكراسي 💈</span>
+                  {readyTickets.length === 0 ? (
+                    <div className="p-7 rounded-3xl bg-[#14141c] border-2 border-dashed border-emerald-500/20 text-center space-y-2">
+                      <div className="text-3xl">🧾</div>
+                      <p className="text-xs sm:text-sm text-slate-300 font-black">
+                        لا توجد شيكات منتهية بانتظار التحصيل حالياً
+                      </p>
+                      <p className="text-[11px] text-slate-500 font-bold">
+                        بمجرد انتهاء أي عميل من الكرسي وإرساله من شاشة المنسق سيظهر هنا فوراً للتحصيل والطباعة
+                      </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {waitingTickets.map((wt) => {
-                        const targetSpec = specialists.find((s) => s.id === wt.specialistId);
-                        const isSpecific = !wt.notes?.includes("أول كابتن");
-                        const isSpecReady = targetSpec?.status === "AVAILABLE";
-                        const anySpecAvailable = specialists.some((s) => s.status === "AVAILABLE");
-                        const waitMinutes = Math.max(1, Math.round((Date.now() - new Date(wt.createdAt).getTime()) / 60000));
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {readyTickets.map((t) => {
+                        const isSelected = selectedTicket?.id === t.id;
+                        let servCount = 0;
+                        try {
+                          const s = typeof t.services === "string" ? JSON.parse(t.services) : t.services;
+                          servCount = Array.isArray(s) ? s.length : 0;
+                        } catch {}
 
                         return (
                           <div
-                            key={wt.id}
-                            className={`p-3.5 rounded-2xl border transition space-y-2.5 flex flex-col justify-between ${
-                              isSpecReady || (!isSpecific && anySpecAvailable)
-                                ? "bg-emerald-500/10 border-emerald-500/40 ring-1 ring-emerald-500/30 shadow-lg shadow-emerald-500/5"
-                                : "bg-[#14141c] border-white/10"
+                            key={t.id}
+                            onClick={() => handleSelectTicket(t)}
+                            className={`cursor-pointer p-4 rounded-2xl border-2 transition space-y-3 flex flex-col justify-between ${
+                              isSelected
+                                ? "bg-amber-500/20 border-amber-400 ring-2 ring-amber-400 shadow-lg shadow-amber-500/15"
+                                : "bg-gradient-to-b from-[#15201c] to-[#121218] border-emerald-500/50 hover:border-emerald-400 ring-1 ring-emerald-500/30"
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="font-mono text-xs text-amber-400 font-black">
-                                #{wt.ticketNumber}
+                                #{t.ticketNumber}
                               </span>
-                              <span className="py-0.5 px-2 rounded-lg bg-white/5 text-slate-300 font-mono text-[10px] font-bold">
-                                ⏱️ ينتظر منذ {waitMinutes} د
+                              <span className="py-0.5 px-2.5 rounded-full text-[10px] font-black bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 animate-pulse">
+                                جاهز للتحصيل الآن 💰
                               </span>
                             </div>
 
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-black text-sm text-white">{wt.customerName}</h4>
-                                {wt.customerPhone && (
-                                  <span className="text-[11px] text-slate-400 font-mono">{wt.customerPhone}</span>
-                                )}
-                              </div>
-
-                              {/* Specialist Preference & Live Status */}
-                              <div className="text-[11px] p-2 rounded-xl bg-black/40 border border-white/5 space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-slate-400 font-bold">المطلوب:</span>
-                                  <span className="font-bold text-amber-300">
-                                    {isSpecific ? `طلب كابتن (${targetSpec?.name || wt.specialist?.name}) بالاسم 👑` : "في انتظار أول كابتن يفضى ⏳"}
-                                  </span>
-                                </div>
-                                <div className="flex items-center justify-between pt-0.5">
-                                  <span className="text-slate-400">حالة الكابتن:</span>
-                                  <span>
-                                    {isSpecific ? (
-                                      isSpecReady ? (
-                                        <strong className="text-emerald-400 font-bold animate-pulse">🟢 الكرسي متاح الآن!</strong>
-                                      ) : (
-                                        <span className="text-amber-400 font-bold">🔴 مشغول على الكرسي #{targetSpec?.chairNumber}</span>
-                                      )
-                                    ) : anySpecAvailable ? (
-                                      <strong className="text-emerald-400 font-bold animate-pulse">🟢 يوجد كابتن متاح الآن!</strong>
-                                    ) : (
-                                      <span className="text-rose-400 font-bold">🔴 جميع الكباتن مشغولون حالياً</span>
-                                    )}
-                                  </span>
-                                </div>
-                              </div>
+                            <div>
+                              <h4 className="font-black text-base text-white">{t.customerName}</h4>
+                              <p className="text-xs text-slate-300">
+                                المتخصص: <strong className="text-amber-300">{t.specialist?.name}</strong>{" "}
+                                (كرسي #{t.chairNumber})
+                              </p>
                             </div>
 
-                            <div className="flex items-center gap-2 pt-1 border-t border-white/5">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (!isSpecific) {
-                                    setShowSeatPickerModal(wt);
-                                  } else {
-                                    handleSeatWaitingTicket(wt, targetSpec?.id);
-                                  }
-                                }}
-                                className={`flex-1 py-2 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md ${
-                                  isSpecReady || (!isSpecific && anySpecAvailable)
-                                    ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20"
-                                    : "bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300"
-                                }`}
-                              >
-                                <Scissors className="w-3.5 h-3.5" />
-                                <span>إجلاس على الكرسي الآن 💺</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => handleCancelWaitingTicket(wt.id, wt.customerName)}
-                                className="py-2 px-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 hover:text-white transition text-xs font-bold cursor-pointer"
-                                title="إلغاء الانتظار / مغادرة الصالون"
-                              >
-                                ✕
-                              </button>
+                            <div className="flex items-center justify-between border-t border-white/10 pt-2 text-xs">
+                              <span className="text-slate-300 font-bold">{servCount} خدمات منفذة</span>
+                              <span className="font-mono text-lg font-black text-emerald-400">
+                                {t.finalAmount} ج.م
+                              </span>
                             </div>
                           </div>
                         );
@@ -827,78 +797,61 @@ export default function CashierPosPage() {
                   )}
                 </div>
 
-                {/* Active Chairs & Finished Tickets */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-black text-white flex items-center gap-2">
+                {/* ─────────────────────────────────────────────────────────────
+                    2. IN-CHAIR LIVE STATUS TRACKER (متابعة الكراسي الحالية عند المنسق)
+                   ───────────────────────────────────────────────────────────── */}
+                <div className="space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-300 flex items-center gap-2">
                       <Scissors className="w-4 h-4 text-amber-400" />
-                      <span>كراسي الحلاقة والتذاكر اللحظية ({chairTickets.length})</span>
+                      <span>قيد التنفيذ على الكراسي حالياً ({inChairTickets.length})</span>
                     </h3>
-                    <span className="text-[11px] text-amber-300 font-bold">
-                      تحديث تلقائي كل 4 ثوانٍ ⚡
-                    </span>
+                    {waitingCount > 0 && (
+                      <span className="py-0.5 px-2.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[10px] font-bold">
+                        🛋️ {waitingCount} بصالة الانتظار
+                      </span>
+                    )}
                   </div>
 
-                  {chairTickets.length === 0 ? (
-                    <div className="p-8 rounded-3xl bg-[#14141c] border border-white/10 text-center space-y-2">
-                      <div className="text-2xl">💈</div>
-                      <p className="text-xs text-slate-400 font-bold">
-                        لا توجد كراسي مشغولة أو تذاكر بانتظار الحساب حالياً
-                      </p>
+                  {inChairTickets.length === 0 ? (
+                    <div className="p-3.5 rounded-2xl bg-[#121218] border border-white/5 text-center text-[11px] text-slate-500 font-bold">
+                      لا توجد جلسات جارية على الكراسي حالياً — يتم توجيه العملاء وإضافة الخدمات الإضافية عبر شاشة المنسق 🧭
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      {chairTickets.map((t) => {
-                        const isSelected = selectedTicket?.id === t.id;
-                        const isReadyForCashier = t.status === "READY_FOR_CASHIER";
-
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {inChairTickets.map((t) => {
                         let servCount = 0;
                         try {
                           const s = typeof t.services === "string" ? JSON.parse(t.services) : t.services;
-                          servCount = s.length;
+                          servCount = Array.isArray(s) ? s.length : 0;
                         } catch {}
-
                         return (
                           <div
                             key={t.id}
                             onClick={() => handleSelectTicket(t)}
-                            className={`cursor-pointer p-4 rounded-2xl border transition space-y-3 flex flex-col justify-between ${
-                              isSelected
-                                ? "bg-amber-500/20 border-amber-400 ring-2 ring-amber-400 shadow-lg shadow-amber-500/10"
-                                : isReadyForCashier
-                                ? "bg-gradient-to-b from-[#181822] to-[#121218] border-emerald-500/50 hover:border-emerald-400 ring-1 ring-emerald-500/30"
-                                : "bg-[#14141c] hover:bg-[#181824] border-white/10"
+                            className={`cursor-pointer p-3 rounded-2xl border transition flex items-center justify-between gap-2 ${
+                              selectedTicket?.id === t.id
+                                ? "bg-amber-500/15 border-amber-400"
+                                : "bg-[#12121a] border-white/10 hover:border-amber-500/30"
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-xs text-amber-400 font-black">
-                                #{t.ticketNumber}
-                              </span>
-                              <span
-                                className={`py-0.5 px-2 rounded-full text-[10px] font-black ${
-                                  isReadyForCashier
-                                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse"
-                                    : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
-                                }`}
-                              >
-                                {isReadyForCashier ? "جاهز للحساب 💰" : "على الكرسي ✂️"}
-                              </span>
-                            </div>
-
-                            <div>
-                              <h4 className="font-black text-sm text-white">{t.customerName}</h4>
-                              <p className="text-xs text-slate-400">
-                                المتخصص: <strong className="text-amber-300">{t.specialist?.name}</strong>{" "}
-                                (ك #{t.chairNumber})
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-[10px] text-amber-400 font-bold">
+                                  #{t.ticketNumber}
+                                </span>
+                                <span className="text-[10px] text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded font-bold">
+                                  ✂️ شغال الآن
+                                </span>
+                              </div>
+                              <h5 className="font-black text-xs text-white truncate">{t.customerName}</h5>
+                              <p className="text-[10px] text-slate-400 truncate">
+                                {t.specialist?.name} (ك #{t.chairNumber}) • {servCount} خدمات
                               </p>
                             </div>
-
-                            <div className="flex items-center justify-between border-t border-white/5 pt-2 text-xs">
-                              <span className="text-slate-400">{servCount} خدمات مسجلة</span>
-                              <span className="font-mono text-base font-black text-amber-400">
-                                {t.finalAmount} ج.م
-                              </span>
-                            </div>
+                            <span className="font-mono text-sm font-black text-amber-400 shrink-0">
+                              {t.finalAmount} ج
+                            </span>
                           </div>
                         );
                       })}
