@@ -2079,6 +2079,7 @@ export namespace Prisma {
   export type BranchCountOutputType = {
     users: number
     specialists: number
+    services: number
     bookings: number
     tickets: number
     products: number
@@ -2092,6 +2093,7 @@ export namespace Prisma {
   export type BranchCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | BranchCountOutputTypeCountUsersArgs
     specialists?: boolean | BranchCountOutputTypeCountSpecialistsArgs
+    services?: boolean | BranchCountOutputTypeCountServicesArgs
     bookings?: boolean | BranchCountOutputTypeCountBookingsArgs
     tickets?: boolean | BranchCountOutputTypeCountTicketsArgs
     products?: boolean | BranchCountOutputTypeCountProductsArgs
@@ -2125,6 +2127,13 @@ export namespace Prisma {
    */
   export type BranchCountOutputTypeCountSpecialistsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SpecialistWhereInput
+  }
+
+  /**
+   * BranchCountOutputType without action
+   */
+  export type BranchCountOutputTypeCountServicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ServiceWhereInput
   }
 
   /**
@@ -2475,6 +2484,7 @@ export namespace Prisma {
     createdAt?: boolean
     users?: boolean | Branch$usersArgs<ExtArgs>
     specialists?: boolean | Branch$specialistsArgs<ExtArgs>
+    services?: boolean | Branch$servicesArgs<ExtArgs>
     bookings?: boolean | Branch$bookingsArgs<ExtArgs>
     tickets?: boolean | Branch$ticketsArgs<ExtArgs>
     products?: boolean | Branch$productsArgs<ExtArgs>
@@ -2526,6 +2536,7 @@ export namespace Prisma {
   export type BranchInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | Branch$usersArgs<ExtArgs>
     specialists?: boolean | Branch$specialistsArgs<ExtArgs>
+    services?: boolean | Branch$servicesArgs<ExtArgs>
     bookings?: boolean | Branch$bookingsArgs<ExtArgs>
     tickets?: boolean | Branch$ticketsArgs<ExtArgs>
     products?: boolean | Branch$productsArgs<ExtArgs>
@@ -2544,6 +2555,7 @@ export namespace Prisma {
     objects: {
       users: Prisma.$UserPayload<ExtArgs>[]
       specialists: Prisma.$SpecialistPayload<ExtArgs>[]
+      services: Prisma.$ServicePayload<ExtArgs>[]
       bookings: Prisma.$BookingPayload<ExtArgs>[]
       tickets: Prisma.$TicketPayload<ExtArgs>[]
       products: Prisma.$ProductPayload<ExtArgs>[]
@@ -2959,6 +2971,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     users<T extends Branch$usersArgs<ExtArgs> = {}>(args?: Subset<T, Branch$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     specialists<T extends Branch$specialistsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$specialistsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SpecialistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    services<T extends Branch$servicesArgs<ExtArgs> = {}>(args?: Subset<T, Branch$servicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ServicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     bookings<T extends Branch$bookingsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tickets<T extends Branch$ticketsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     products<T extends Branch$productsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$productsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3443,6 +3456,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SpecialistScalarFieldEnum | SpecialistScalarFieldEnum[]
+  }
+
+  /**
+   * Branch.services
+   */
+  export type Branch$servicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Service
+     */
+    select?: ServiceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Service
+     */
+    omit?: ServiceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
+    where?: ServiceWhereInput
+    orderBy?: ServiceOrderByWithRelationInput | ServiceOrderByWithRelationInput[]
+    cursor?: ServiceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ServiceScalarFieldEnum | ServiceScalarFieldEnum[]
   }
 
   /**
@@ -6230,6 +6267,7 @@ export namespace Prisma {
 
   export type ServiceMinAggregateOutputType = {
     id: string | null
+    branchId: string | null
     nameAr: string | null
     nameEn: string | null
     category: string | null
@@ -6244,6 +6282,7 @@ export namespace Prisma {
 
   export type ServiceMaxAggregateOutputType = {
     id: string | null
+    branchId: string | null
     nameAr: string | null
     nameEn: string | null
     category: string | null
@@ -6258,6 +6297,7 @@ export namespace Prisma {
 
   export type ServiceCountAggregateOutputType = {
     id: number
+    branchId: number
     nameAr: number
     nameEn: number
     category: number
@@ -6286,6 +6326,7 @@ export namespace Prisma {
 
   export type ServiceMinAggregateInputType = {
     id?: true
+    branchId?: true
     nameAr?: true
     nameEn?: true
     category?: true
@@ -6300,6 +6341,7 @@ export namespace Prisma {
 
   export type ServiceMaxAggregateInputType = {
     id?: true
+    branchId?: true
     nameAr?: true
     nameEn?: true
     category?: true
@@ -6314,6 +6356,7 @@ export namespace Prisma {
 
   export type ServiceCountAggregateInputType = {
     id?: true
+    branchId?: true
     nameAr?: true
     nameEn?: true
     category?: true
@@ -6415,6 +6458,7 @@ export namespace Prisma {
 
   export type ServiceGroupByOutputType = {
     id: string
+    branchId: string | null
     nameAr: string
     nameEn: string | null
     category: string
@@ -6448,6 +6492,7 @@ export namespace Prisma {
 
   export type ServiceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    branchId?: boolean
     nameAr?: boolean
     nameEn?: boolean
     category?: boolean
@@ -6458,10 +6503,12 @@ export namespace Prisma {
     sortOrder?: boolean
     isActive?: boolean
     createdAt?: boolean
+    branch?: boolean | Service$branchArgs<ExtArgs>
   }, ExtArgs["result"]["service"]>
 
   export type ServiceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    branchId?: boolean
     nameAr?: boolean
     nameEn?: boolean
     category?: boolean
@@ -6472,10 +6519,12 @@ export namespace Prisma {
     sortOrder?: boolean
     isActive?: boolean
     createdAt?: boolean
+    branch?: boolean | Service$branchArgs<ExtArgs>
   }, ExtArgs["result"]["service"]>
 
   export type ServiceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    branchId?: boolean
     nameAr?: boolean
     nameEn?: boolean
     category?: boolean
@@ -6486,10 +6535,12 @@ export namespace Prisma {
     sortOrder?: boolean
     isActive?: boolean
     createdAt?: boolean
+    branch?: boolean | Service$branchArgs<ExtArgs>
   }, ExtArgs["result"]["service"]>
 
   export type ServiceSelectScalar = {
     id?: boolean
+    branchId?: boolean
     nameAr?: boolean
     nameEn?: boolean
     category?: boolean
@@ -6502,13 +6553,25 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type ServiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nameAr" | "nameEn" | "category" | "price" | "durationMinutes" | "description" | "image" | "sortOrder" | "isActive" | "createdAt", ExtArgs["result"]["service"]>
+  export type ServiceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "nameAr" | "nameEn" | "category" | "price" | "durationMinutes" | "description" | "image" | "sortOrder" | "isActive" | "createdAt", ExtArgs["result"]["service"]>
+  export type ServiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Service$branchArgs<ExtArgs>
+  }
+  export type ServiceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Service$branchArgs<ExtArgs>
+  }
+  export type ServiceIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Service$branchArgs<ExtArgs>
+  }
 
   export type $ServicePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Service"
-    objects: {}
+    objects: {
+      branch: Prisma.$BranchPayload<ExtArgs> | null
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      branchId: string | null
       nameAr: string
       nameEn: string | null
       category: string
@@ -6913,6 +6976,7 @@ export namespace Prisma {
    */
   export interface Prisma__ServiceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    branch<T extends Service$branchArgs<ExtArgs> = {}>(args?: Subset<T, Service$branchArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6943,6 +7007,7 @@ export namespace Prisma {
    */
   interface ServiceFieldRefs {
     readonly id: FieldRef<"Service", 'String'>
+    readonly branchId: FieldRef<"Service", 'String'>
     readonly nameAr: FieldRef<"Service", 'String'>
     readonly nameEn: FieldRef<"Service", 'String'>
     readonly category: FieldRef<"Service", 'String'>
@@ -6970,6 +7035,10 @@ export namespace Prisma {
      */
     omit?: ServiceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
+    /**
      * Filter, which Service to fetch.
      */
     where: ServiceWhereUniqueInput
@@ -6988,6 +7057,10 @@ export namespace Prisma {
      */
     omit?: ServiceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
+    /**
      * Filter, which Service to fetch.
      */
     where: ServiceWhereUniqueInput
@@ -7005,6 +7078,10 @@ export namespace Prisma {
      * Omit specific fields from the Service
      */
     omit?: ServiceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
     /**
      * Filter, which Service to fetch.
      */
@@ -7054,6 +7131,10 @@ export namespace Prisma {
      */
     omit?: ServiceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
+    /**
      * Filter, which Service to fetch.
      */
     where?: ServiceWhereInput
@@ -7101,6 +7182,10 @@ export namespace Prisma {
      * Omit specific fields from the Service
      */
     omit?: ServiceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
     /**
      * Filter, which Services to fetch.
      */
@@ -7150,6 +7235,10 @@ export namespace Prisma {
      */
     omit?: ServiceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
+    /**
      * The data needed to create a Service.
      */
     data: XOR<ServiceCreateInput, ServiceUncheckedCreateInput>
@@ -7183,6 +7272,10 @@ export namespace Prisma {
      */
     data: ServiceCreateManyInput | ServiceCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7197,6 +7290,10 @@ export namespace Prisma {
      * Omit specific fields from the Service
      */
     omit?: ServiceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
     /**
      * The data needed to update a Service.
      */
@@ -7249,6 +7346,10 @@ export namespace Prisma {
      * Limit how many Services to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -7263,6 +7364,10 @@ export namespace Prisma {
      * Omit specific fields from the Service
      */
     omit?: ServiceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
     /**
      * The filter to search for the Service to update in case it exists.
      */
@@ -7290,6 +7395,10 @@ export namespace Prisma {
      */
     omit?: ServiceOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
+    /**
      * Filter which Service to delete.
      */
     where: ServiceWhereUniqueInput
@@ -7310,6 +7419,25 @@ export namespace Prisma {
   }
 
   /**
+   * Service.branch
+   */
+  export type Service$branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Branch
+     */
+    select?: BranchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Branch
+     */
+    omit?: BranchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchInclude<ExtArgs> | null
+    where?: BranchWhereInput
+  }
+
+  /**
    * Service without action
    */
   export type ServiceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -7321,6 +7449,10 @@ export namespace Prisma {
      * Omit specific fields from the Service
      */
     omit?: ServiceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ServiceInclude<ExtArgs> | null
   }
 
 
@@ -19874,6 +20006,7 @@ export namespace Prisma {
 
   export const ServiceScalarFieldEnum: {
     id: 'id',
+    branchId: 'branchId',
     nameAr: 'nameAr',
     nameEn: 'nameEn',
     category: 'category',
@@ -20210,6 +20343,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Branch"> | Date | string
     users?: UserListRelationFilter
     specialists?: SpecialistListRelationFilter
+    services?: ServiceListRelationFilter
     bookings?: BookingListRelationFilter
     tickets?: TicketListRelationFilter
     products?: ProductListRelationFilter
@@ -20232,6 +20366,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     users?: UserOrderByRelationAggregateInput
     specialists?: SpecialistOrderByRelationAggregateInput
+    services?: ServiceOrderByRelationAggregateInput
     bookings?: BookingOrderByRelationAggregateInput
     tickets?: TicketOrderByRelationAggregateInput
     products?: ProductOrderByRelationAggregateInput
@@ -20257,6 +20392,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Branch"> | Date | string
     users?: UserListRelationFilter
     specialists?: SpecialistListRelationFilter
+    services?: ServiceListRelationFilter
     bookings?: BookingListRelationFilter
     tickets?: TicketListRelationFilter
     products?: ProductListRelationFilter
@@ -20514,6 +20650,7 @@ export namespace Prisma {
     OR?: ServiceWhereInput[]
     NOT?: ServiceWhereInput | ServiceWhereInput[]
     id?: StringFilter<"Service"> | string
+    branchId?: StringNullableFilter<"Service"> | string | null
     nameAr?: StringFilter<"Service"> | string
     nameEn?: StringNullableFilter<"Service"> | string | null
     category?: StringFilter<"Service"> | string
@@ -20524,10 +20661,12 @@ export namespace Prisma {
     sortOrder?: IntFilter<"Service"> | number
     isActive?: BoolFilter<"Service"> | boolean
     createdAt?: DateTimeFilter<"Service"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
   }
 
   export type ServiceOrderByWithRelationInput = {
     id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
     nameAr?: SortOrder
     nameEn?: SortOrderInput | SortOrder
     category?: SortOrder
@@ -20538,6 +20677,7 @@ export namespace Prisma {
     sortOrder?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
+    branch?: BranchOrderByWithRelationInput
   }
 
   export type ServiceWhereUniqueInput = Prisma.AtLeast<{
@@ -20545,6 +20685,7 @@ export namespace Prisma {
     AND?: ServiceWhereInput | ServiceWhereInput[]
     OR?: ServiceWhereInput[]
     NOT?: ServiceWhereInput | ServiceWhereInput[]
+    branchId?: StringNullableFilter<"Service"> | string | null
     nameAr?: StringFilter<"Service"> | string
     nameEn?: StringNullableFilter<"Service"> | string | null
     category?: StringFilter<"Service"> | string
@@ -20555,10 +20696,12 @@ export namespace Prisma {
     sortOrder?: IntFilter<"Service"> | number
     isActive?: BoolFilter<"Service"> | boolean
     createdAt?: DateTimeFilter<"Service"> | Date | string
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
   }, "id">
 
   export type ServiceOrderByWithAggregationInput = {
     id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
     nameAr?: SortOrder
     nameEn?: SortOrderInput | SortOrder
     category?: SortOrder
@@ -20581,6 +20724,7 @@ export namespace Prisma {
     OR?: ServiceScalarWhereWithAggregatesInput[]
     NOT?: ServiceScalarWhereWithAggregatesInput | ServiceScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Service"> | string
+    branchId?: StringNullableWithAggregatesFilter<"Service"> | string | null
     nameAr?: StringWithAggregatesFilter<"Service"> | string
     nameEn?: StringNullableWithAggregatesFilter<"Service"> | string | null
     category?: StringWithAggregatesFilter<"Service"> | string
@@ -21693,6 +21837,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -21715,6 +21860,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -21737,6 +21883,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -21759,6 +21906,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -22061,10 +22209,12 @@ export namespace Prisma {
     sortOrder?: number
     isActive?: boolean
     createdAt?: Date | string
+    branch?: BranchCreateNestedOneWithoutServicesInput
   }
 
   export type ServiceUncheckedCreateInput = {
     id?: string
+    branchId?: string | null
     nameAr: string
     nameEn?: string | null
     category?: string
@@ -22089,10 +22239,12 @@ export namespace Prisma {
     sortOrder?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    branch?: BranchUpdateOneWithoutServicesNestedInput
   }
 
   export type ServiceUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
     nameAr?: StringFieldUpdateOperationsInput | string
     nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     category?: StringFieldUpdateOperationsInput | string
@@ -22107,6 +22259,7 @@ export namespace Prisma {
 
   export type ServiceCreateManyInput = {
     id?: string
+    branchId?: string | null
     nameAr: string
     nameEn?: string | null
     category?: string
@@ -22135,6 +22288,7 @@ export namespace Prisma {
 
   export type ServiceUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
     nameAr?: StringFieldUpdateOperationsInput | string
     nameEn?: NullableStringFieldUpdateOperationsInput | string | null
     category?: StringFieldUpdateOperationsInput | string
@@ -23467,6 +23621,12 @@ export namespace Prisma {
     none?: SpecialistWhereInput
   }
 
+  export type ServiceListRelationFilter = {
+    every?: ServiceWhereInput
+    some?: ServiceWhereInput
+    none?: ServiceWhereInput
+  }
+
   export type BookingListRelationFilter = {
     every?: BookingWhereInput
     some?: BookingWhereInput
@@ -23525,6 +23685,10 @@ export namespace Prisma {
   }
 
   export type SpecialistOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ServiceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -23843,6 +24007,7 @@ export namespace Prisma {
 
   export type ServiceCountOrderByAggregateInput = {
     id?: SortOrder
+    branchId?: SortOrder
     nameAr?: SortOrder
     nameEn?: SortOrder
     category?: SortOrder
@@ -23863,6 +24028,7 @@ export namespace Prisma {
 
   export type ServiceMaxOrderByAggregateInput = {
     id?: SortOrder
+    branchId?: SortOrder
     nameAr?: SortOrder
     nameEn?: SortOrder
     category?: SortOrder
@@ -23877,6 +24043,7 @@ export namespace Prisma {
 
   export type ServiceMinOrderByAggregateInput = {
     id?: SortOrder
+    branchId?: SortOrder
     nameAr?: SortOrder
     nameEn?: SortOrder
     category?: SortOrder
@@ -24668,6 +24835,13 @@ export namespace Prisma {
     connect?: SpecialistWhereUniqueInput | SpecialistWhereUniqueInput[]
   }
 
+  export type ServiceCreateNestedManyWithoutBranchInput = {
+    create?: XOR<ServiceCreateWithoutBranchInput, ServiceUncheckedCreateWithoutBranchInput> | ServiceCreateWithoutBranchInput[] | ServiceUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ServiceCreateOrConnectWithoutBranchInput | ServiceCreateOrConnectWithoutBranchInput[]
+    createMany?: ServiceCreateManyBranchInputEnvelope
+    connect?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+  }
+
   export type BookingCreateNestedManyWithoutBranchInput = {
     create?: XOR<BookingCreateWithoutBranchInput, BookingUncheckedCreateWithoutBranchInput> | BookingCreateWithoutBranchInput[] | BookingUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutBranchInput | BookingCreateOrConnectWithoutBranchInput[]
@@ -24736,6 +24910,13 @@ export namespace Prisma {
     connectOrCreate?: SpecialistCreateOrConnectWithoutBranchInput | SpecialistCreateOrConnectWithoutBranchInput[]
     createMany?: SpecialistCreateManyBranchInputEnvelope
     connect?: SpecialistWhereUniqueInput | SpecialistWhereUniqueInput[]
+  }
+
+  export type ServiceUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<ServiceCreateWithoutBranchInput, ServiceUncheckedCreateWithoutBranchInput> | ServiceCreateWithoutBranchInput[] | ServiceUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ServiceCreateOrConnectWithoutBranchInput | ServiceCreateOrConnectWithoutBranchInput[]
+    createMany?: ServiceCreateManyBranchInputEnvelope
+    connect?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
   }
 
   export type BookingUncheckedCreateNestedManyWithoutBranchInput = {
@@ -24836,6 +25017,20 @@ export namespace Prisma {
     update?: SpecialistUpdateWithWhereUniqueWithoutBranchInput | SpecialistUpdateWithWhereUniqueWithoutBranchInput[]
     updateMany?: SpecialistUpdateManyWithWhereWithoutBranchInput | SpecialistUpdateManyWithWhereWithoutBranchInput[]
     deleteMany?: SpecialistScalarWhereInput | SpecialistScalarWhereInput[]
+  }
+
+  export type ServiceUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<ServiceCreateWithoutBranchInput, ServiceUncheckedCreateWithoutBranchInput> | ServiceCreateWithoutBranchInput[] | ServiceUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ServiceCreateOrConnectWithoutBranchInput | ServiceCreateOrConnectWithoutBranchInput[]
+    upsert?: ServiceUpsertWithWhereUniqueWithoutBranchInput | ServiceUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: ServiceCreateManyBranchInputEnvelope
+    set?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    disconnect?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    delete?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    connect?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    update?: ServiceUpdateWithWhereUniqueWithoutBranchInput | ServiceUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: ServiceUpdateManyWithWhereWithoutBranchInput | ServiceUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: ServiceScalarWhereInput | ServiceScalarWhereInput[]
   }
 
   export type BookingUpdateManyWithoutBranchNestedInput = {
@@ -24976,6 +25171,20 @@ export namespace Prisma {
     update?: SpecialistUpdateWithWhereUniqueWithoutBranchInput | SpecialistUpdateWithWhereUniqueWithoutBranchInput[]
     updateMany?: SpecialistUpdateManyWithWhereWithoutBranchInput | SpecialistUpdateManyWithWhereWithoutBranchInput[]
     deleteMany?: SpecialistScalarWhereInput | SpecialistScalarWhereInput[]
+  }
+
+  export type ServiceUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<ServiceCreateWithoutBranchInput, ServiceUncheckedCreateWithoutBranchInput> | ServiceCreateWithoutBranchInput[] | ServiceUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: ServiceCreateOrConnectWithoutBranchInput | ServiceCreateOrConnectWithoutBranchInput[]
+    upsert?: ServiceUpsertWithWhereUniqueWithoutBranchInput | ServiceUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: ServiceCreateManyBranchInputEnvelope
+    set?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    disconnect?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    delete?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    connect?: ServiceWhereUniqueInput | ServiceWhereUniqueInput[]
+    update?: ServiceUpdateWithWhereUniqueWithoutBranchInput | ServiceUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: ServiceUpdateManyWithWhereWithoutBranchInput | ServiceUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: ServiceScalarWhereInput | ServiceScalarWhereInput[]
   }
 
   export type BookingUncheckedUpdateManyWithoutBranchNestedInput = {
@@ -25308,6 +25517,22 @@ export namespace Prisma {
     update?: SpecialistLedgerUpdateWithWhereUniqueWithoutSpecialistInput | SpecialistLedgerUpdateWithWhereUniqueWithoutSpecialistInput[]
     updateMany?: SpecialistLedgerUpdateManyWithWhereWithoutSpecialistInput | SpecialistLedgerUpdateManyWithWhereWithoutSpecialistInput[]
     deleteMany?: SpecialistLedgerScalarWhereInput | SpecialistLedgerScalarWhereInput[]
+  }
+
+  export type BranchCreateNestedOneWithoutServicesInput = {
+    create?: XOR<BranchCreateWithoutServicesInput, BranchUncheckedCreateWithoutServicesInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutServicesInput
+    connect?: BranchWhereUniqueInput
+  }
+
+  export type BranchUpdateOneWithoutServicesNestedInput = {
+    create?: XOR<BranchCreateWithoutServicesInput, BranchUncheckedCreateWithoutServicesInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutServicesInput
+    upsert?: BranchUpsertWithoutServicesInput
+    disconnect?: BranchWhereInput | boolean
+    delete?: BranchWhereInput | boolean
+    connect?: BranchWhereUniqueInput
+    update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutServicesInput, BranchUpdateWithoutServicesInput>, BranchUncheckedUpdateWithoutServicesInput>
   }
 
   export type BookingCreateNestedManyWithoutCustomerInput = {
@@ -25931,6 +26156,44 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ServiceCreateWithoutBranchInput = {
+    id?: string
+    nameAr: string
+    nameEn?: string | null
+    category?: string
+    price: number
+    durationMinutes?: number
+    description?: string | null
+    image?: string | null
+    sortOrder?: number
+    isActive?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ServiceUncheckedCreateWithoutBranchInput = {
+    id?: string
+    nameAr: string
+    nameEn?: string | null
+    category?: string
+    price: number
+    durationMinutes?: number
+    description?: string | null
+    image?: string | null
+    sortOrder?: number
+    isActive?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ServiceCreateOrConnectWithoutBranchInput = {
+    where: ServiceWhereUniqueInput
+    create: XOR<ServiceCreateWithoutBranchInput, ServiceUncheckedCreateWithoutBranchInput>
+  }
+
+  export type ServiceCreateManyBranchInputEnvelope = {
+    data: ServiceCreateManyBranchInput | ServiceCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
   export type BookingCreateWithoutBranchInput = {
     id?: string
     bookingNumber: string
@@ -26346,6 +26609,40 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Specialist"> | Date | string
   }
 
+  export type ServiceUpsertWithWhereUniqueWithoutBranchInput = {
+    where: ServiceWhereUniqueInput
+    update: XOR<ServiceUpdateWithoutBranchInput, ServiceUncheckedUpdateWithoutBranchInput>
+    create: XOR<ServiceCreateWithoutBranchInput, ServiceUncheckedCreateWithoutBranchInput>
+  }
+
+  export type ServiceUpdateWithWhereUniqueWithoutBranchInput = {
+    where: ServiceWhereUniqueInput
+    data: XOR<ServiceUpdateWithoutBranchInput, ServiceUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type ServiceUpdateManyWithWhereWithoutBranchInput = {
+    where: ServiceScalarWhereInput
+    data: XOR<ServiceUpdateManyMutationInput, ServiceUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type ServiceScalarWhereInput = {
+    AND?: ServiceScalarWhereInput | ServiceScalarWhereInput[]
+    OR?: ServiceScalarWhereInput[]
+    NOT?: ServiceScalarWhereInput | ServiceScalarWhereInput[]
+    id?: StringFilter<"Service"> | string
+    branchId?: StringNullableFilter<"Service"> | string | null
+    nameAr?: StringFilter<"Service"> | string
+    nameEn?: StringNullableFilter<"Service"> | string | null
+    category?: StringFilter<"Service"> | string
+    price?: FloatFilter<"Service"> | number
+    durationMinutes?: IntFilter<"Service"> | number
+    description?: StringNullableFilter<"Service"> | string | null
+    image?: StringNullableFilter<"Service"> | string | null
+    sortOrder?: IntFilter<"Service"> | number
+    isActive?: BoolFilter<"Service"> | boolean
+    createdAt?: DateTimeFilter<"Service"> | Date | string
+  }
+
   export type BookingUpsertWithWhereUniqueWithoutBranchInput = {
     where: BookingWhereUniqueInput
     update: XOR<BookingUpdateWithoutBranchInput, BookingUncheckedUpdateWithoutBranchInput>
@@ -26649,6 +26946,7 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -26670,6 +26968,7 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -26754,6 +27053,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -26775,6 +27075,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -26882,6 +27183,7 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -26903,6 +27205,7 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -27113,6 +27416,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -27134,6 +27438,7 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -27190,6 +27495,110 @@ export namespace Prisma {
   export type SpecialistLedgerUpdateManyWithWhereWithoutSpecialistInput = {
     where: SpecialistLedgerScalarWhereInput
     data: XOR<SpecialistLedgerUpdateManyMutationInput, SpecialistLedgerUncheckedUpdateManyWithoutSpecialistInput>
+  }
+
+  export type BranchCreateWithoutServicesInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    bookings?: BookingCreateNestedManyWithoutBranchInput
+    tickets?: TicketCreateNestedManyWithoutBranchInput
+    products?: ProductCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchUncheckedCreateWithoutServicesInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
+    products?: ProductUncheckedCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchCreateOrConnectWithoutServicesInput = {
+    where: BranchWhereUniqueInput
+    create: XOR<BranchCreateWithoutServicesInput, BranchUncheckedCreateWithoutServicesInput>
+  }
+
+  export type BranchUpsertWithoutServicesInput = {
+    update: XOR<BranchUpdateWithoutServicesInput, BranchUncheckedUpdateWithoutServicesInput>
+    create: XOR<BranchCreateWithoutServicesInput, BranchUncheckedCreateWithoutServicesInput>
+    where?: BranchWhereInput
+  }
+
+  export type BranchUpdateToOneWithWhereWithoutServicesInput = {
+    where?: BranchWhereInput
+    data: XOR<BranchUpdateWithoutServicesInput, BranchUncheckedUpdateWithoutServicesInput>
+  }
+
+  export type BranchUpdateWithoutServicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUpdateManyWithoutBranchNestedInput
+    products?: ProductUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchUncheckedUpdateWithoutServicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
+    products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BookingCreateWithoutCustomerInput = {
@@ -27379,6 +27788,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
@@ -27400,6 +27810,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
@@ -27531,6 +27942,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
@@ -27552,6 +27964,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
@@ -27626,6 +28039,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
@@ -27647,6 +28061,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
@@ -27772,6 +28187,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
@@ -27793,6 +28209,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
@@ -27914,6 +28331,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
@@ -27935,6 +28353,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
@@ -27972,6 +28391,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
@@ -27993,6 +28413,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
@@ -28061,6 +28482,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -28082,6 +28504,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -28172,6 +28595,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -28193,6 +28617,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -28214,6 +28639,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -28235,6 +28661,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -28272,6 +28699,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -28293,6 +28721,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -28314,6 +28743,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -28335,6 +28765,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -28372,6 +28803,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -28393,6 +28825,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -28414,6 +28847,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -28435,6 +28869,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -28472,6 +28907,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -28493,6 +28929,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -28514,6 +28951,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
     tickets?: TicketCreateNestedManyWithoutBranchInput
     products?: ProductCreateNestedManyWithoutBranchInput
@@ -28535,6 +28973,7 @@ export namespace Prisma {
     createdAt?: Date | string
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
     tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
     products?: ProductUncheckedCreateNestedManyWithoutBranchInput
@@ -28572,6 +29011,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
     tickets?: TicketUpdateManyWithoutBranchNestedInput
     products?: ProductUpdateManyWithoutBranchNestedInput
@@ -28593,6 +29033,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
     products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
@@ -28629,6 +29070,20 @@ export namespace Prisma {
     payType?: string
     baseSalary?: number
     commissionRate?: number
+    isActive?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ServiceCreateManyBranchInput = {
+    id?: string
+    nameAr: string
+    nameEn?: string | null
+    category?: string
+    price: number
+    durationMinutes?: number
+    description?: string | null
+    image?: string | null
+    sortOrder?: number
     isActive?: boolean
     createdAt?: Date | string
   }
@@ -28862,6 +29317,48 @@ export namespace Prisma {
     payType?: StringFieldUpdateOperationsInput | string
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nameAr?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceUncheckedUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nameAr?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ServiceUncheckedUpdateManyWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nameAr?: StringFieldUpdateOperationsInput | string
+    nameEn?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

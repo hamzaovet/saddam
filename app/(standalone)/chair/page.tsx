@@ -90,6 +90,7 @@ export default function SpecialistChairPage() {
   const fetchChairData = async () => {
     if (!currentUser) return;
     try {
+      let specBranchId = currentUser?.branchId || "ALL";
       // Find specialist profile
       const resSpec = await fetch(`/api/specialists?activeOnly=false`);
       const dataSpec = await resSpec.json();
@@ -102,6 +103,7 @@ export default function SpecialistChairPage() {
           matched = dataSpec.specialists[0];
         }
         setSpecialist(matched);
+        if (matched?.branchId) specBranchId = matched.branchId;
 
         if (matched) {
           // Fetch active ticket for this specialist
@@ -137,10 +139,10 @@ export default function SpecialistChairPage() {
         }
       }
 
-      // Fetch all services & royal offers
+      // Fetch branch-scoped services & royal offers
       const [resS, resO] = await Promise.all([
-        fetch("/api/services", { cache: "no-store" }),
-        fetch("/api/offers?activeOnly=true", { cache: "no-store" }),
+        fetch(`/api/services?branchId=${specBranchId}`, { cache: "no-store" }),
+        fetch(`/api/offers?activeOnly=true&branchId=${specBranchId}`, { cache: "no-store" }),
       ]);
       const [dataS, dataO] = await Promise.all([resS.json(), resO.json()]);
       if (dataS.success && dataS.services) setServices(dataS.services);

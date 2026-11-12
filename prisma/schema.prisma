@@ -22,6 +22,7 @@ model Branch {
   createdAt       DateTime           @default(now())
   users           User[]
   specialists     Specialist[]
+  services        Service[]
   bookings        Booking[]
   tickets         Ticket[]
   products        Product[]
@@ -87,6 +88,8 @@ model Specialist {
 // ----------------------------------------------------
 model Service {
   id              String             @id @default(cuid())
+  branchId        String?            // null = متاح في كل الفروع، أو مخصص لفرع محدد بأسعاره
+  branch          Branch?            @relation(fields: [branchId], references: [id], onDelete: SetNull)
   nameAr          String
   nameEn          String?
   category        String             @default("HAIR") // HAIR, BEARD, SKIN_CARE, VIP_PACKAGES, KIDS, COLOR_KERATIN

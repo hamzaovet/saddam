@@ -240,8 +240,8 @@ export default function CoordinatorControlPage() {
         fetch(`/api/specialists?activeOnly=true&branchId=${bQuery}`, { cache: "no-store" }),
         fetch(`/api/tickets?activeOnly=true&branchId=${bQuery}`, { cache: "no-store" }),
         fetch(`/api/bookings?branchId=${bQuery}`, { cache: "no-store" }),
-        fetch("/api/services", { cache: "no-store" }),
-        fetch("/api/offers?activeOnly=true", { cache: "no-store" }),
+        fetch(`/api/services?branchId=${bQuery}`, { cache: "no-store" }),
+        fetch(`/api/offers?activeOnly=true&branchId=${bQuery}`, { cache: "no-store" }),
         fetch(`/api/chat?branchId=${bQuery}`, { cache: "no-store" }),
         fetch("/api/customers", { cache: "no-store" }),
       ]);
@@ -2178,9 +2178,11 @@ export default function CoordinatorControlPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
                     {chairCat === "OFFERS"
                       ? offers
-                          .filter((o) =>
-                            !chairSearch.trim() ||
-                            o.titleAr.toLowerCase().includes(chairSearch.trim().toLowerCase())
+                          .filter(
+                            (o) =>
+                              (!o.branchId || o.branchId === openedSpecialist.branchId) &&
+                              (!chairSearch.trim() ||
+                                o.titleAr.toLowerCase().includes(chairSearch.trim().toLowerCase()))
                           )
                           .map((offer) => (
                             <button
@@ -2210,6 +2212,7 @@ export default function CoordinatorControlPage() {
                       : services
                           .filter(
                             (s) =>
+                              (!s.branchId || s.branchId === openedSpecialist.branchId) &&
                               (chairCat === "ALL" || s.category === chairCat) &&
                               (!chairSearch.trim() ||
                                 s.nameAr.toLowerCase().includes(chairSearch.trim().toLowerCase()))
@@ -2397,7 +2400,9 @@ export default function CoordinatorControlPage() {
                         {chairWalkInServices.reduce((s, it) => s + Number(it.price || 0), 0)} ج.م):
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto pr-1">
-                        {services.map((srv) => {
+                        {services
+                          .filter((s) => !s.branchId || s.branchId === openedSpecialist.branchId)
+                          .map((srv) => {
                           const picked = chairWalkInServices.some((p) => p.id === srv.id);
                           return (
                             <button
@@ -2599,8 +2604,9 @@ export default function CoordinatorControlPage() {
                   {services
                     .filter(
                       (s) =>
-                        !walkInServiceSearch.trim() ||
-                        s.nameAr.toLowerCase().includes(walkInServiceSearch.trim().toLowerCase())
+                        (!s.branchId || !walkInBranchId || s.branchId === walkInBranchId) &&
+                        (!walkInServiceSearch.trim() ||
+                          s.nameAr.toLowerCase().includes(walkInServiceSearch.trim().toLowerCase()))
                     )
                     .map((srv) => {
                       const picked = walkInSelectedItems.some((p) => p.id === srv.id);
@@ -2698,7 +2704,9 @@ export default function CoordinatorControlPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pt-2 border-t border-white/10">
-              {services.map((srv) => (
+              {services
+                .filter((s) => !s.branchId || s.branchId === editingWaitingTicket.branchId)
+                .map((srv) => (
                 <button
                   key={srv.id}
                   type="button"

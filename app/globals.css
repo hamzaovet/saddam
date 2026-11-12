@@ -39,6 +39,34 @@ body {
   border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes goldPulse {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 48px rgba(245, 158, 11, 0.5);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out both;
+}
+
+.animate-gold-pulse {
+  animation: goldPulse 3s ease-in-out infinite;
+}
+
 /* Thermal Receipt Print Styles */
 @media print {
   body * {

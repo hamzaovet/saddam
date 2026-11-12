@@ -45,8 +45,10 @@ export default function HomePage() {
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Selected Booking Details
+  // Selected Booking Details & Branch Gateway
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const [showBranchGateway, setShowBranchGateway] = useState<boolean>(true);
+  const [switchingBranch, setSwitchingBranch] = useState<boolean>(false);
   const [selectedSpecialistId, setSelectedSpecialistId] = useState<string>("");
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -323,6 +325,50 @@ export default function HomePage() {
     }
   };
 
+  // Fetch branch-specific services & offers
+  const loadBranchCatalog = async (branchId: string) => {
+    try {
+      const q = branchId ? `?branchId=${encodeURIComponent(branchId)}` : "";
+      const qOffers = branchId
+        ? `?activeOnly=true&branchId=${encodeURIComponent(branchId)}`
+        : "?activeOnly=true";
+      const [resS, resO] = await Promise.all([
+        fetch(`/api/services${q}`, { cache: "no-store" }),
+        fetch(`/api/offers${qOffers}`, { cache: "no-store" }),
+      ]);
+      const [dataS, dataO] = await Promise.all([resS.json(), resO.json()]);
+      if (dataS.success && dataS.services) setServices(dataS.services);
+      if (dataO.success && dataO.offers) setOffers(dataO.offers);
+    } catch (e) {
+      console.error("Failed to load branch catalog:", e);
+    }
+  };
+
+  // Enter or Switch Branch from the Royal Gateway
+  const handleEnterBranch = async (branch: any) => {
+    if (!branch?.id) return;
+    const isChanging = Boolean(selectedBranchId && selectedBranchId !== branch.id);
+    setSwitchingBranch(true);
+    setSelectedBranchId(branch.id);
+    try {
+      sessionStorage.setItem("saddam_client_branch_id", branch.id);
+    } catch {}
+
+    if (isChanging) {
+      setSelectedServices([]);
+      setSelectedSpecialistId("");
+    }
+
+    await loadBranchCatalog(branch.id);
+    setSwitchingBranch(false);
+    setShowBranchGateway(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    showToast(
+      "success",
+      `أهلاً بك في ${branch.name} — يتم الآن عرض الأسعار والعروض والكباتن الخاصة بالفرع 📍👑`
+    );
+  };
+
   // Initialize Data
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -336,12 +382,28 @@ export default function HomePage() {
     async function loadData() {
       try {
         setLoading(true);
+        let rememberedBranchId = "";
+        try {
+          const urlBranch = new URLSearchParams(window.location.search).get("branch");
+          rememberedBranchId = urlBranch || sessionStorage.getItem("saddam_client_branch_id") || "";
+        } catch {}
+
         const [resSet, resB, resS, resSpec, resO] = await Promise.all([
           fetch("/api/settings", { cache: "no-store" }),
           fetch("/api/branches", { cache: "no-store" }),
-          fetch("/api/services", { cache: "no-store" }),
+          fetch(
+            rememberedBranchId
+              ? `/api/services?branchId=${encodeURIComponent(rememberedBranchId)}`
+              : "/api/services",
+            { cache: "no-store" }
+          ),
           fetch("/api/specialists", { cache: "no-store" }),
-          fetch("/api/offers?activeOnly=true", { cache: "no-store" }),
+          fetch(
+            rememberedBranchId
+              ? `/api/offers?activeOnly=true&branchId=${encodeURIComponent(rememberedBranchId)}`
+              : "/api/offers?activeOnly=true",
+            { cache: "no-store" }
+          ),
         ]);
 
         const [dataSet, dataB, dataS, dataSpec, dataO] = await Promise.all([
@@ -355,8 +417,16 @@ export default function HomePage() {
         if (dataSet.success && dataSet.settings) setSettings(dataSet.settings);
         if (dataB.success && dataB.branches) {
           setBranches(dataB.branches);
-          if (dataB.branches.length > 0) {
-            setSelectedBranchId(dataB.branches[0].id);
+          const matchedRemembered = dataB.branches.find(
+            (b: any) =>
+              b.id === rememberedBranchId ||
+              b.code?.toLowerCase() === rememberedBranchId.toLowerCase()
+          );
+          if (matchedRemembered) {
+            setSelectedBranchId(matchedRemembered.id);
+            setShowBranchGateway(false);
+          } else {
+            setShowBranchGateway(true);
           }
         }
         if (dataS.success && dataS.services) setServices(dataS.services);
@@ -416,8 +486,10 @@ export default function HomePage() {
     }
   };
 
-  // Filter Services by Category
+  // Filter Services by Branch & Category
   const filteredServices = services.filter((s) => {
+    const branchMatch = !selectedBranchId || !s.branchId || s.branchId === selectedBranchId;
+    if (!branchMatch) return false;
     if (activeCategory === "ALL") return true;
     return s.category === activeCategory;
   });
@@ -680,24 +752,41 @@ export default function HomePage() {
           1. LUXURY TOP NAVIGATION BAR (RESPONSIVE & AIRY ON MOBILE)
          ───────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-[#0c0c12]/95 backdrop-blur-md border-b border-amber-500/25 px-3 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-between shadow-2xl">
-        {/* Brand Logo & Name */}
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg shadow-amber-500/20 bg-black shrink-0 group-hover:scale-105 transition">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.jpg" alt="صالون حلاقة صدام" className="w-full h-full object-cover" />
-          </div>
-          <div className="leading-tight">
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-sm sm:text-lg md:text-xl font-black text-amber-400 tracking-wide whitespace-nowrap">
-                صالون صدام <span className="hidden sm:inline">حلاقة</span> VIP
-              </h1>
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse hidden sm:block" />
+        {/* Brand Logo & Active Branch Pill */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg shadow-amber-500/20 bg-black shrink-0 group-hover:scale-105 transition">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.jpg" alt="صالون حلاقة صدام" className="w-full h-full object-cover" />
             </div>
-            <p className="text-[9px] sm:text-xs text-amber-200/60 font-mono font-bold tracking-widest uppercase hidden md:block">
-              SADDAM BARBER SHOP • ROYAL EXPERIENCE
-            </p>
-          </div>
-        </Link>
+            <div className="leading-tight">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-sm sm:text-lg md:text-xl font-black text-amber-400 tracking-wide whitespace-nowrap">
+                  صالون صدام <span className="hidden sm:inline">حلاقة</span> VIP
+                </h1>
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse hidden sm:block" />
+              </div>
+              <p className="text-[9px] sm:text-xs text-amber-200/60 font-mono font-bold tracking-widest uppercase hidden md:block">
+                SADDAM BARBER SHOP • ROYAL EXPERIENCE
+              </p>
+            </div>
+          </Link>
+
+          {selectedBranch && (
+            <button
+              type="button"
+              onClick={() => setShowBranchGateway(true)}
+              className="hidden sm:flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-xs font-black text-amber-200 transition cursor-pointer shrink-0"
+              title="اضغط لتغيير الفرع"
+            >
+              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="max-w-[140px] truncate">{selectedBranch.name}</span>
+              <span className="text-[10px] py-0.5 px-1.5 rounded-md bg-amber-500 text-slate-950 font-black">
+                تغيير
+              </span>
+            </button>
+          )}
+        </div>
 
         {/* Action Buttons: Staff Login + Card QR + Customer */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
@@ -856,28 +945,47 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Live Branches Switcher Pills with Addresses */}
-          <div className="pt-2 flex flex-col items-center justify-center gap-3">
-            <span className="text-xs font-bold text-slate-400">اختر الفرع الأقرب لك لحجز الموعد أو العرض:</span>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {branches.map((b) => {
-                const isSelected = selectedBranchId === b.id;
-                return (
-                  <button
-                    key={b.id}
-                    onClick={() => setSelectedBranchId(b.id)}
-                    className={`py-2.5 px-5 rounded-2xl text-xs font-black transition flex items-center gap-2 ${
-                      isSelected
-                        ? "bg-amber-500 text-slate-950 shadow-xl shadow-amber-500/20 ring-2 ring-amber-400 scale-105"
-                        : "bg-[#14141e] hover:bg-[#1a1a28] text-slate-300 border border-amber-500/30"
-                    }`}
-                  >
-                    <MapPin className="w-4 h-4 text-amber-400" />
-                    <span>{b.name}</span>
-                  </button>
-                );
-              })}
-            </div>
+          {/* Active Branch Showcase Card & Quick Switch */}
+          <div className="pt-3 max-w-2xl mx-auto">
+            {selectedBranch ? (
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#161624] to-amber-500/15 border-2 border-amber-400/50 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-right">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-black text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 py-0.5 px-2 rounded-full">
+                        الفرع النشط حالياً 🟢
+                      </span>
+                      <span className="text-[10px] font-bold text-amber-300">
+                        الأسعار والعروض خاصة بهذا الفرع
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-white mt-0.5 truncate">
+                      {selectedBranch.name}
+                    </h3>
+                    <p className="text-[11px] text-slate-300 truncate">{selectedBranch.address}</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowBranchGateway(true)}
+                  className="w-full sm:w-auto py-2.5 px-5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer active:scale-95"
+                >
+                  <span>تبديل لفرع آخر 🔄</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowBranchGateway(true)}
+                className="py-3 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition shadow-xl cursor-pointer"
+              >
+                اختر الفرع أولاً 📍
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -894,10 +1002,11 @@ export default function HomePage() {
               </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-black text-white">
-                  باكدجات وعروض صدام الملكية الحصرية (VIP Packages)
+                  باكدجات وعروض {selectedBranch?.name || "صدام"} الحصرية (VIP Packages)
                 </h3>
                 <p className="text-xs text-slate-400">
-                  خصومات فورية تصل إلى 46% على باكدجات العرسان والاسترخاء والعناية المتكاملة 💈
+                  عروض وخصومات فورية مخصصة لـ{" "}
+                  <strong className="text-amber-300">{selectedBranch?.name || "الفرع المختار"}</strong> 💈
                 </p>
               </div>
             </div>
@@ -1217,9 +1326,12 @@ export default function HomePage() {
                 2
               </div>
               <div>
-                <h3 className="text-lg font-black text-white">اختر الخدمات التجميلية والعناية المطلوبة</h3>
+                <h3 className="text-lg font-black text-white">
+                  اختر الخدمات والأسعار ({selectedBranch?.name || "الفرع"})
+                </h3>
                 <p className="text-xs text-slate-400">
-                  شاهد صور كل خدمة، مدتها بالدقائق، وسعرها الواضح
+                  الأسعار المعروضة مخصصة لـ{" "}
+                  <strong className="text-amber-300">{selectedBranch?.name || "الفرع المختار"}</strong> • شاهد صور كل خدمة ومدتها بالدقائق
                 </p>
               </div>
             </div>
@@ -1519,29 +1631,35 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Branch Selector */}
+            {/* Locked Active Branch Summary (Matches Selected Prices & Offers) */}
             <div className="space-y-1.5 text-xs">
-              <label className="font-bold text-slate-300 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                <span>الفرع المطلوب:</span>
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {branches.map((b) => (
-                  <button
-                    key={b.id}
-                    type="button"
-                    onClick={() => setSelectedBranchId(b.id)}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition text-right cursor-pointer ${
-                      selectedBranchId === b.id
-                        ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black"
-                        : "bg-black/50 text-slate-300 border-white/10 hover:border-amber-500/30"
-                    }`}
-                  >
-                    <div className="font-bold">{b.name}</div>
-                    <div className="text-[10px] opacity-80 font-normal truncate">{b.address}</div>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-slate-300 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                  <span>الفرع المؤكد للحجز:</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBookingModal(false);
+                    setShowBranchGateway(true);
+                  }}
+                  className="text-[11px] text-amber-400 hover:underline font-black cursor-pointer"
+                >
+                  تغيير الفرع 🔄
+                </button>
               </div>
+              {selectedBranch && (
+                <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-400/50 flex items-center justify-between gap-2">
+                  <div>
+                    <div className="font-black text-amber-300 text-xs">{selectedBranch.name}</div>
+                    <div className="text-[10px] text-slate-300">{selectedBranch.address}</div>
+                  </div>
+                  <span className="py-1 px-2.5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] shrink-0">
+                    محدد ✓
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Specialist Selector */}
@@ -2043,11 +2161,251 @@ export default function HomePage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          10. LUXURY VIP FLOATING TOAST NOTIFICATION (NO WINDOWS ALERTS!)
+          10. ROYAL BRANCH SELECTION GATEWAY (FIRST-OPEN WOW EXPERIENCE)
+         ───────────────────────────────────────────────────────────── */}
+      {showBranchGateway && (
+        <div
+          className="fixed inset-0 z-[110] overflow-y-auto bg-[#050508] text-slate-100 flex flex-col font-sans animate-fade-in"
+          dir="rtl"
+        >
+          {/* Ambient Cinema Backdrop & Gold Spotlights */}
+          <div
+            className="fixed inset-0 bg-cover bg-center opacity-15 scale-105 pointer-events-none filter blur-[2px]"
+            style={{
+              backgroundImage:
+                "url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1600&auto=format&fit=crop&q=80')",
+            }}
+          />
+          <div className="fixed -top-32 right-1/4 w-[520px] h-[520px] rounded-full bg-amber-500/12 blur-[140px] pointer-events-none" />
+          <div className="fixed -bottom-32 left-1/4 w-[460px] h-[460px] rounded-full bg-amber-600/10 blur-[140px] pointer-events-none" />
+          <div className="fixed inset-0 bg-gradient-to-b from-[#050508]/90 via-[#08080e]/85 to-[#050508]/98 pointer-events-none" />
+
+          {/* Gateway Top Bar */}
+          <div className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 pt-4 sm:pt-6 flex items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 py-1.5 px-3.5 rounded-full bg-amber-500/10 border border-amber-400/35 text-amber-300 text-[11px] font-black">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>SADDAM ROYAL LOUNGE • SELECT BRANCH</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {selectedBranchId && (
+                <button
+                  type="button"
+                  onClick={() => setShowBranchGateway(false)}
+                  className="py-1.5 px-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-black text-white transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>العودة للفرع الحالي</span>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <Link
+                href="/login"
+                className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-black transition flex items-center gap-1"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>الطاقم 🔒</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Center Gateway Content */}
+          <div className="relative z-10 flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-10 flex flex-col items-center justify-center space-y-8">
+            {/* Crown Logo & Grand Headline */}
+            <div className="text-center space-y-4 max-w-2xl">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto">
+                <div className="absolute -inset-2 rounded-[28px] bg-gradient-to-tr from-amber-500/40 via-amber-200/20 to-amber-600/40 blur-md animate-gold-pulse" />
+                <div className="relative w-full h-full rounded-3xl overflow-hidden border-2 border-amber-400 bg-black p-1 shadow-2xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/logo.jpg"
+                    alt="صالون حلاقة صدام VIP"
+                    className="w-full h-full object-cover rounded-2xl"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className="inline-block text-[11px] sm:text-xs font-black tracking-widest uppercase text-amber-400">
+                  👑 أهلاً بك في صالون حلاقة صدام VIP
+                </span>
+                <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
+                  اختر فرعك أولاً لبدء{" "}
+                  <span className="gold-gradient-text">تجربة صدام الملكية</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl mx-auto">
+                  كل فرع يتميز بقائمة أسعاره، عروضه الخاصة، وطاقم الكباتن التابع له — اختر الفرع الأقرب لك للدخول واستعراض الأسعار والحجز الفوري
+                </p>
+              </div>
+            </div>
+
+            {/* Monumental Branch Cards */}
+            {loading && branches.length === 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl">
+                {[0, 1].map((idx) => (
+                  <div
+                    key={idx}
+                    className="h-96 rounded-3xl bg-[#101018] border border-amber-500/20 animate-pulse p-6 flex flex-col justify-end space-y-3"
+                  >
+                    <div className="h-6 w-1/2 bg-white/10 rounded-xl" />
+                    <div className="h-4 w-3/4 bg-white/5 rounded-xl" />
+                    <div className="h-12 w-full bg-amber-500/20 rounded-2xl" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl">
+                {branches
+                  .filter((b) => b.isActive !== false)
+                  .map((b, idx) => {
+                    const isNasr =
+                      b.code?.includes("NASR") || b.name?.includes("نصر");
+                    const isCurrent = selectedBranchId === b.id;
+                    const branchSpecs = Array.isArray(b.specialists) ? b.specialists : [];
+                    const freeChairs = branchSpecs.filter(
+                      (sp: any) => sp.status === "AVAILABLE"
+                    ).length;
+                    const coverImg = isNasr
+                      ? "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1000&auto=format&fit=crop&q=85"
+                      : "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=1000&auto=format&fit=crop&q=85";
+
+                    return (
+                      <div
+                        key={b.id}
+                        onClick={() => handleEnterBranch(b)}
+                        className={`group relative rounded-[28px] overflow-hidden border-2 transition-all duration-300 cursor-pointer flex flex-col justify-between bg-gradient-to-b from-[#151521] via-[#101019] to-[#0a0a10] shadow-2xl hover:-translate-y-1.5 ${
+                          isCurrent
+                            ? "border-amber-400 ring-2 ring-amber-400/50 shadow-amber-500/25"
+                            : "border-amber-500/35 hover:border-amber-400 hover:shadow-amber-500/20"
+                        }`}
+                      >
+                        {/* Top Visual Showcase */}
+                        <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-black">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={coverImg}
+                            alt={b.name}
+                            className="w-full h-full object-cover opacity-80 group-hover:scale-110 group-hover:opacity-95 transition duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#12121b] via-[#0c0c14]/45 to-black/30" />
+
+                          {/* Top Corner Badges */}
+                          <div className="absolute top-4 right-4 left-4 flex items-center justify-between gap-2">
+                            <span
+                              className={`py-1 px-3 rounded-full text-[11px] font-black shadow-lg backdrop-blur-md border ${
+                                isNasr
+                                  ? "bg-amber-500 text-slate-950 border-amber-300"
+                                  : "bg-black/75 text-amber-300 border-amber-400/50"
+                              }`}
+                            >
+                              {isNasr
+                                ? "👑 VIP FLAGSHIP • عباس العقاد"
+                                : idx === 0
+                                ? "💈 ORIGINAL ROYAL • الفرع الرئيسي"
+                                : "💈 SADDAM LUXURY BRANCH"}
+                            </span>
+
+                            {isCurrent && (
+                              <span className="py-1 px-2.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px] shadow-md">
+                                الفرع المختار ✓
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Live Branch Availability Pill */}
+                          <div className="absolute bottom-4 right-4 left-4 flex flex-wrap items-end justify-between gap-2">
+                            <div>
+                              <span className="text-[10px] font-mono font-bold text-amber-300/90 uppercase tracking-wider block">
+                                {b.code || (isNasr ? "NASR CITY VIP" : "HADAYEK EL-KOBBA")}
+                              </span>
+                              <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-amber-300 transition drop-shadow-lg">
+                                {b.name}
+                              </h3>
+                            </div>
+
+                            <span
+                              className={`py-1 px-3 rounded-full text-[11px] font-black border backdrop-blur-md ${
+                                freeChairs > 0
+                                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/50"
+                                  : "bg-amber-500/20 text-amber-200 border-amber-400/40"
+                              }`}
+                            >
+                              {freeChairs > 0
+                                ? `🟢 ${freeChairs} كرسي متاح الآن`
+                                : `✂️ ${branchSpecs.length} كباتن محترفين`}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Branch Details & CTA */}
+                        <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between">
+                          <div className="space-y-2.5 text-xs">
+                            <div className="flex items-start gap-2 text-slate-200">
+                              <MapPin className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                              <span className="font-bold leading-relaxed">{b.address}</span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                              <span className="flex items-center gap-1.5 font-mono font-bold text-amber-300">
+                                <Phone className="w-3.5 h-3.5 text-amber-400" />
+                                {b.phone}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                                يومياً 12 ظ - 02 ص
+                              </span>
+                            </div>
+
+                            {/* Branch Specialties Strip */}
+                            <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-black">
+                              <span className="py-1 px-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-200">
+                                💎 أسعار وخدمات خاصة بالفرع
+                              </span>
+                              <span className="py-1 px-2.5 rounded-lg bg-white/5 border border-white/10 text-slate-300">
+                                👑 عروض وحجز فوري
+                              </span>
+                              {b.googleMapsUrl && (
+                                <a
+                                  href={b.googleMapsUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="py-1 px-2.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 flex items-center gap-1 transition"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  <span>الموقع GPS</span>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            disabled={switchingBranch}
+                            className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 group-hover:from-amber-400 group-hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 cursor-pointer"
+                          >
+                            <span>الدخول واستعراض أسعار وحجز {b.name}</span>
+                            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+
+            <p className="text-[11px] text-slate-500 font-bold text-center">
+              يمكنك تبديل الفرع في أي وقت من أعلى الصفحة لمقارنة الأسعار والعروض بين الفرعين 🔄
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          11. LUXURY VIP FLOATING TOAST NOTIFICATION (NO WINDOWS ALERTS!)
          ───────────────────────────────────────────────────────────── */}
       {pageToast && (
         <div
-          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-[92%] sm:w-auto animate-fade-in font-sans"
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-[150] max-w-md w-[92%] sm:w-auto animate-fade-in font-sans"
           dir="rtl"
         >
           <div

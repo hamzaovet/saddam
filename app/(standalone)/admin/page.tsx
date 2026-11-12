@@ -212,6 +212,7 @@ export default function AdminPage() {
   const [serviceForm, setServiceForm] = useState({
     nameAr: "",
     category: "HAIR",
+    branchId: "",
     price: 150,
     durationMinutes: 30,
     description: "",
@@ -1209,6 +1210,7 @@ export default function AdminPage() {
     setServiceForm({
       nameAr: srv.nameAr || "",
       category: srv.category || "HAIR",
+      branchId: srv.branchId || "",
       price: srv.price || 150,
       durationMinutes: srv.durationMinutes || 30,
       description: srv.description || "",
@@ -1217,6 +1219,24 @@ export default function AdminPage() {
       isActive: srv.isActive !== false,
     });
     setShowServiceModal(true);
+  };
+
+  const handleDuplicateServiceToBranch = (srv: any) => {
+    const otherBranch = branches.find((b) => b.id !== srv.branchId);
+    setEditingService(null);
+    setServiceForm({
+      nameAr: srv.nameAr || "",
+      category: srv.category || "HAIR",
+      branchId: otherBranch?.id || "",
+      price: srv.price || 150,
+      durationMinutes: srv.durationMinutes || 30,
+      description: srv.description || "",
+      image: srv.image || "",
+      sortOrder: srv.sortOrder || 0,
+      isActive: true,
+    });
+    setShowServiceModal(true);
+    showToast("info", "تم تجهيز نسخة من الخدمة — اختر الفرع وحدد السعر الخاص به ثم احفظ 📋");
   };
 
   const handleDeleteService = async (id: string, name: string) => {
@@ -2339,7 +2359,9 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {offers.map((offer) => {
+              {offers
+                .filter((o) => selectedBranchId === "ALL" || !o.branchId || o.branchId === selectedBranchId)
+                .map((offer) => {
                 let featuresList: string[] = [];
                 try {
                   featuresList = JSON.parse(offer.features || "[]");
@@ -3461,6 +3483,7 @@ export default function AdminPage() {
                   setServiceForm({
                     nameAr: "",
                     category: "HAIR",
+                    branchId: selectedBranchId !== "ALL" ? selectedBranchId : "",
                     price: 150,
                     durationMinutes: 30,
                     description: "",
@@ -3478,7 +3501,9 @@ export default function AdminPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {services.map((srv) => (
+              {services
+                .filter((s) => selectedBranchId === "ALL" || !s.branchId || s.branchId === selectedBranchId)
+                .map((srv) => (
                 <div key={srv.id} className="rounded-3xl bg-[#14141e] border-2 border-amber-500/30 overflow-hidden flex flex-col justify-between shadow-xl hover:border-amber-400 transition group">
                   {/* Service Image Banner Preview */}
                   <div className="relative h-32 w-full bg-black overflow-hidden">
@@ -3499,6 +3524,9 @@ export default function AdminPage() {
                     <span className="absolute top-2.5 left-2.5 py-0.5 px-2.5 rounded-xl text-[10px] font-bold bg-black/75 backdrop-blur-md text-slate-300 border border-white/10 font-mono">
                       {srv.durationMinutes || 30} دقيقة
                     </span>
+                    <span className="absolute bottom-2.5 left-2.5 py-0.5 px-2.5 rounded-full text-[10px] font-black bg-black/80 text-amber-300 border border-amber-500/30">
+                      📍 {srv.branch?.name || "كل الفروع (موحد)"}
+                    </span>
                     <span className={`absolute bottom-2.5 right-2.5 py-0.5 px-2 rounded-full text-[10px] font-black ${
                       srv.isActive !== false ? "bg-emerald-500/90 text-slate-950" : "bg-rose-500/90 text-white"
                     }`}>
@@ -3517,7 +3545,7 @@ export default function AdminPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-3 mt-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3 mt-2">
                       <button
                         onClick={() => handleToggleServiceActive(srv)}
                         className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition border ${
@@ -3530,6 +3558,13 @@ export default function AdminPage() {
                       </button>
 
                       <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleDuplicateServiceToBranch(srv)}
+                          className="py-1.5 px-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[11px] font-bold transition"
+                          title="نسخ الخدمة لفرع آخر بسعر مختلف"
+                        >
+                          نسخ لفرع 📋
+                        </button>
                         <button
                           onClick={() => handleOpenEditService(srv)}
                           className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1 transition"
@@ -5101,6 +5136,22 @@ export default function AdminPage() {
                     <option value="false">معطل ومخفي 🔴</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">الفرع المخصصة له الخدمة (لتسعير كل فرع):</label>
+                <select
+                  value={serviceForm.branchId}
+                  onChange={(e) => setServiceForm({ ...serviceForm, branchId: e.target.value })}
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-amber-500/30 text-amber-200 font-bold"
+                >
+                  <option value="">🌐 كل الفروع (سعر موحد)</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      📍 {b.name} فقط
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1.5 p-3 rounded-2xl bg-black/40 border border-white/10">

@@ -7,15 +7,22 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
+    const branchId = searchParams.get("branchId");
     const activeOnly = searchParams.get("activeOnly") !== "false";
 
     const where: any = {};
     if (activeOnly) where.isActive = true;
     if (category && category !== "ALL") where.category = category;
+    if (branchId && branchId !== "ALL") {
+      where.OR = [{ branchId }, { branchId: null }];
+    }
 
     const services = await prisma.service.findMany({
       where,
       orderBy: [{ sortOrder: "asc" }, { price: "asc" }],
+      include: {
+        branch: { select: { id: true, name: true, code: true } },
+      },
     });
 
     return NextResponse.json({ success: true, services });
@@ -27,7 +34,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { nameAr, nameEn, category, price, durationMinutes, description, image, sortOrder } = body;
+    const { nameAr, nameEn, category, price, durationMinutes, description, image, sortOrder, branchId, isActive } = body;
 
     if (!nameAr || price === undefined) {
       return NextResponse.json(
@@ -38,6 +45,7 @@ export async function POST(req: Request) {
 
     const service = await prisma.service.create({
       data: {
+        branchId: branchId || null,
         nameAr: nameAr.trim(),
         nameEn: nameEn?.trim() || null,
         category: category || "HAIR",
@@ -46,7 +54,10 @@ export async function POST(req: Request) {
         description: description?.trim() || null,
         image: image?.trim() || null,
         sortOrder: Number(sortOrder || 0),
-        isActive: true,
+        isActive: isActive !== undefined ? Boolean(isActive) : true,
+      },
+      include: {
+        branch: { select: { id: true, name: true, code: true } },
       },
     });
 
@@ -59,7 +70,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, nameAr, nameEn, category, price, durationMinutes, description, image, sortOrder, isActive } = body;
+    const { id, nameAr, nameEn, category, price, durationMinutes, description, image, sortOrder, branchId, isActive } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "معرف الخدمة مطلوب" }, { status: 400 });
@@ -68,6 +79,7 @@ export async function PATCH(req: Request) {
     const service = await prisma.service.update({
       where: { id },
       data: {
+        ...(branchId !== undefined && { branchId: branchId || null }),
         ...(nameAr && { nameAr: nameAr.trim() }),
         ...(nameEn !== undefined && { nameEn: nameEn?.trim() || null }),
         ...(category && { category }),
@@ -77,6 +89,9 @@ export async function PATCH(req: Request) {
         ...(image !== undefined && { image: image?.trim() || null }),
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+      },
+      include: {
+        branch: { select: { id: true, name: true, code: true } },
       },
     });
 
