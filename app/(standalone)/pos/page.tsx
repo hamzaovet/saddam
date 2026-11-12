@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { PushOptInButton } from "@/components/PwaBootAndPushButton";
 import {
   Scissors,
   Printer,
@@ -663,6 +664,14 @@ export default function CashierPosPage() {
             <Lock className="w-3.5 h-3.5 text-amber-400" />
             <span>إقفال الوردية 🔒</span>
           </button>
+
+          <PushOptInButton
+            role="POS"
+            branchId={selectedBranchId && selectedBranchId !== "ALL" ? selectedBranchId : null}
+            userId={currentUser?.id}
+            userName={currentUser?.name}
+            compact
+          />
 
           <button
             onClick={fetchPosData}

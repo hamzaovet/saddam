@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import CardQRModal from "@/components/CardQRModal";
+import { PushOptInButton } from "@/components/PwaBootAndPushButton";
 import {
   LayoutDashboard,
   Scissors,
@@ -166,8 +167,12 @@ export default function AdminPage() {
     notifyCustomer: true,
   });
 
-  // Audio Alarm State for Bookings
+  // Audio Alarm & Watchdog State for Bookings
   const [alarmBooking, setAlarmBooking] = useState<any>(null);
+  const [watchdogAlerts, setWatchdogAlerts] = useState<{
+    upcomingAlerts: any[];
+    overdueAlerts: any[];
+  }>({ upcomingAlerts: [], overdueAlerts: [] });
   const audioCtxRef = useRef<AudioContext | null>(null);
   const alarmIntervalRef = useRef<any>(null);
   const lastAcknowledgedBookingId = useRef<string | null>(null);
@@ -410,6 +415,7 @@ export default function AdminPage() {
         resChat,
         resTreasury,
         resShifts,
+        resWatchdog,
       ] = await Promise.all([
         fetch("/api/settings"),
         fetch("/api/branches"),
@@ -425,6 +431,7 @@ export default function AdminPage() {
         fetch("/api/chat?limit=50"),
         fetch(`/api/treasury?period=${treasuryPeriod}&branchId=${selectedBranchId}`),
         fetch(`/api/shifts?branchId=${selectedBranchId}`),
+        fetch(`/api/bookings/watchdog?branchId=${selectedBranchId}`),
       ]);
 
       const [
@@ -442,6 +449,7 @@ export default function AdminPage() {
         dataChat,
         dataTreasury,
         dataShifts,
+        dataWatchdog,
       ] = await Promise.all([
         resSet.json(),
         resB.json(),
@@ -457,6 +465,7 @@ export default function AdminPage() {
         resChat.json(),
         resTreasury.json(),
         resShifts.json(),
+        resWatchdog.json().catch(() => ({ success: false })),
       ]);
 
       if (dataSet.success && dataSet.settings) {
@@ -497,6 +506,12 @@ export default function AdminPage() {
       }
       if (dataShifts.success && dataShifts.shifts) {
         setShifts(dataShifts.shifts);
+      }
+      if (dataWatchdog?.success) {
+        setWatchdogAlerts({
+          upcomingAlerts: dataWatchdog.upcomingAlerts || [],
+          overdueAlerts: dataWatchdog.overdueAlerts || [],
+        });
       }
 
       // Bookings & Audio Alarm Check
@@ -1648,6 +1663,15 @@ export default function AdminPage() {
             نقطة البيع POS 💰
           </Link>
 
+          <PushOptInButton
+            role={currentUser?.role === "owner" ? "OWNER" : "ADMIN"}
+            branchId={selectedBranchId && selectedBranchId !== "ALL" ? selectedBranchId : null}
+            userId={currentUser?.id}
+            userName={currentUser?.name}
+            compact
+            showTestButton
+          />
+
           {/* Card 2 QR */}
           <button
             onClick={() => setShowQrModal(true)}
@@ -2169,6 +2193,87 @@ export default function AdminPage() {
            ======================================================== */}
         {activeTab === "bookings" && (
           <div className="space-y-6 animate-fade-in">
+            {(watchdogAlerts.upcomingAlerts.length > 0 || watchdogAlerts.overdueAlerts.length > 0) && (
+              <div className="rounded-3xl border-2 border-rose-500/40 bg-rose-500/10 p-4 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2 text-rose-300 font-black text-xs">
+                    <BellRing className="w-4 h-4 animate-bounce" />
+                    <span>
+                      رادار متابعة الحجوزات والمواعيد ({watchdogAlerts.overdueAlerts.length} فائت/متأخر •{" "}
+                      {watchdogAlerts.upcomingAlerts.length} يقترب خلال 15 دقيقة)
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  {watchdogAlerts.upcomingAlerts.map((al) => (
+                    <div
+                      key={`up-${al.id}`}
+                      className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex flex-wrap items-center justify-between gap-2 text-xs"
+                    >
+                      <div>
+                        <span className="font-black text-amber-300 block">
+                          ⏰ موعد بعد {al.diffMinutes ?? 15}د • #{al.bookingNumber}
+                        </span>
+                        <span className="text-white font-bold">
+                          {al.customerName} ({al.customerPhone}) — {al.branchName} • {al.timeSlot}
+                        </span>
+                      </div>
+                      {al.customerPhone && (
+                        <a
+                          href={`tel:${al.customerPhone}`}
+                          className="py-1 px-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-[11px]"
+                        >
+                          📞 اتصال
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                  {watchdogAlerts.overdueAlerts.map((al) => (
+                    <div
+                      key={`ov-${al.id}`}
+                      className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/40 flex flex-wrap items-center justify-between gap-2 text-xs"
+                    >
+                      <div>
+                        <span className="font-black text-rose-300 block">
+                          {al.isPastDay
+                            ? `⚠️ حجز فائت من يوم (${al.bookingDate}) لم يُغلق`
+                            : `⏳ تأخر +5د عن (${al.timeSlot})${al.chairsBusy ? " • الكراسي مشغولة" : ""}`}
+                          {" "}• #{al.bookingNumber}
+                        </span>
+                        <span className="text-white font-bold">
+                          {al.customerName} ({al.customerPhone}) — {al.branchName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {al.customerPhone && (
+                          <a
+                            href={`tel:${al.customerPhone}`}
+                            className="py-1 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[11px]"
+                          >
+                            📞 اتصال
+                          </a>
+                        )}
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await fetch("/api/bookings", {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ id: al.id, action: "LATE_FIRST_AVAILABLE" }),
+                            });
+                            await loadAllData();
+                          }}
+                          className="py-1 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] cursor-pointer"
+                        >
+                          ⚡ ترحيل لأول كرسي يفضى
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-black text-white">جدول الحجوزات والمواعيد</h3>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendPushNotifications } from "@/lib/push";
 
 export async function GET(req: Request) {
   try {
@@ -138,6 +139,30 @@ export async function POST(req: Request) {
       },
     });
 
+    // Send real-time Web Push to branch Coordinator + Admin + Owner
+    await sendPushNotifications(
+      { roles: ["COORDINATOR", "ADMIN", "OWNER"], branchId: booking.branchId },
+      {
+        title: `🔔 حجز أونلاين جديد (#${booking.bookingNumber})`,
+        body: `${booking.customer?.name || "عميل VIP"} • ${booking.branch?.name || ""} • ${booking.bookingDate} الساعة ${booking.timeSlot} (${totalAmount} ج.م)`,
+        url: "/coordinator",
+        tag: `saddam-new-booking-${booking.id}`,
+        requireInteraction: true,
+      }
+    );
+
+    if (booking.customer?.phone) {
+      await sendPushNotifications(
+        { customerPhone: booking.customer.phone },
+        {
+          title: `👑 تم استلام طلب حجزك (#${booking.bookingNumber})`,
+          body: `موعدك في ${booking.branch?.name || "صالون صدام"} يوم ${booking.bookingDate} الساعة ${booking.timeSlot}. جاري التأكيد من المنسق!`,
+          url: "/",
+          tag: `saddam-cust-booking-${booking.id}`,
+        }
+      );
+    }
+
     return NextResponse.json({ success: true, booking });
   } catch (error: any) {
     console.error("Booking error:", error);
@@ -148,17 +173,126 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, status, notes, timeSlot, bookingDate, specialistId, notifyCustomer } = body;
+    const { id, action, status, notes, timeSlot, bookingDate, specialistId, notifyCustomer } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "معرف الحجز مطلوب" }, { status: 400 });
     }
 
+    // Special Action: 5-Minute Late + Busy Chairs -> Re-route to First Available Chair ⚡
+    if (action === "LATE_FIRST_AVAILABLE") {
+      const existing = await prisma.booking.findUnique({
+        where: { id },
+        include: { customer: true, branch: true, specialist: true },
+      });
+      if (!existing) {
+        return NextResponse.json({ success: false, error: "الحجز غير موجود" }, { status: 404 });
+      }
+
+      const branchSpecs = await prisma.specialist.findMany({
+        where: { branchId: existing.branchId, isActive: true },
+        orderBy: { chairNumber: "asc" },
+      });
+
+      if (branchSpecs.length === 0) {
+        return NextResponse.json({ success: false, error: "لا يوجد متخصصين نشطين في هذا الفرع" }, { status: 400 });
+      }
+
+      let servicesList: any[] = [];
+      try {
+        servicesList = JSON.parse(existing.serviceIds || "[]");
+      } catch {
+        servicesList = [];
+      }
+      const servicesTotal = servicesList.reduce((s: number, i: any) => s + Number(i.price || 0), 0);
+      const lateNote = "⏳ تأخر عن الموعد (+5د) وانشغال الكراسي — تم ترحيله لأول كرسي يفضى ⚡";
+
+      const existingTicket = await prisma.ticket.findFirst({
+        where: {
+          branchId: existing.branchId,
+          status: { in: ["WAITING", "IN_CHAIR"] },
+          OR: [
+            ...(existing.customerId ? [{ customerId: existing.customerId }] : []),
+            ...(existing.customer?.phone ? [{ customerPhone: existing.customer.phone }] : []),
+          ],
+        },
+      });
+
+      let ticket = existingTicket;
+      if (!ticket) {
+        const ticketNumber = `CHAIR-${Math.floor(1000 + Math.random() * 9000)}`;
+        ticket = await prisma.ticket.create({
+          data: {
+            ticketNumber,
+            branchId: existing.branchId,
+            specialistId: branchSpecs[0].id,
+            chairNumber: branchSpecs[0].chairNumber,
+            customerId: existing.customerId,
+            customerName: existing.customer?.name || "عميل VIP",
+            customerPhone: existing.customer?.phone || null,
+            status: "WAITING",
+            services: JSON.stringify(servicesList),
+            servicesTotal,
+            finalAmount: servicesTotal,
+            startTime: new Date(),
+            notes: lateNote,
+          },
+        });
+      }
+
+      const updatedBooking = await prisma.booking.update({
+        where: { id },
+        data: {
+          status: "WAITING_LOUNGE",
+          specialistId: null,
+          notes: existing.notes ? `${existing.notes} | ${lateNote}` : lateNote,
+        },
+        include: { customer: true, branch: true, specialist: true },
+      });
+
+      if (existing.customer?.phone) {
+        const msgText = `⏳ أهلاً بك في صالون صدام (#${existing.bookingNumber}). نظراً للتأخر أكثر من 5 دقائق عن موعد (${existing.timeSlot}) وانشغال الكراسي حالياً بفرع (${existing.branch?.name || ""})، تم ترحيل دورك تلقائياً إلى (أول كرسي يفضى ⚡) فور وجودك بصالة الانتظار 👑`;
+
+        await prisma.chatMessage.create({
+          data: {
+            sender: "SALON",
+            senderName: "منسق صالون صدام 🧭",
+            customerPhone: existing.customer.phone,
+            customerName: existing.customer.name,
+            branchId: existing.branchId,
+            bookingId: existing.id,
+            message: msgText,
+          },
+        });
+
+        await sendPushNotifications(
+          { customerPhone: existing.customer.phone },
+          {
+            title: `⚡ تم ترحيل موعدك لأول كرسي يفضى (#${existing.bookingNumber})`,
+            body: msgText,
+            url: "/",
+            tag: `saddam-reroute-${existing.id}`,
+            requireInteraction: true,
+          }
+        );
+      }
+
+      return NextResponse.json({ success: true, booking: updatedBooking, ticket });
+    }
+
     const updateData: any = {};
     if (status) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes;
-    if (timeSlot) updateData.timeSlot = timeSlot;
-    if (bookingDate) updateData.bookingDate = bookingDate;
+    if (timeSlot) {
+      updateData.timeSlot = timeSlot;
+      updateData.reminderSentAt = null;
+      updateData.overdueAlertSentAt = null;
+    }
+    if (bookingDate) {
+      updateData.bookingDate = bookingDate;
+      updateData.reminderSentAt = null;
+      updateData.overdueAlertSentAt = null;
+    }
     if (specialistId !== undefined) updateData.specialistId = specialistId || null;
 
     const booking = await prisma.booking.update({
@@ -171,7 +305,7 @@ export async function PATCH(req: Request) {
       },
     });
 
-    // If rescheduled or notified, send automated chat message to customer
+    // If rescheduled or notified, send automated chat message + Web Push to customer
     if (notifyCustomer && booking.customer?.phone) {
       const msgText =
         status === "CANCELLED"
@@ -189,6 +323,40 @@ export async function PATCH(req: Request) {
           message: msgText,
         },
       });
+
+      await sendPushNotifications(
+        { customerPhone: booking.customer.phone },
+        {
+          title:
+            status === "CANCELLED"
+              ? `❌ تحديث على حجزك (#${booking.bookingNumber})`
+              : `✅ تم تأكيد / تحديث موعدك (#${booking.bookingNumber})`,
+          body: msgText,
+          url: "/",
+          tag: `saddam-booking-upd-${booking.id}`,
+          requireInteraction: true,
+        }
+      );
+    } else if (status && booking.customer?.phone) {
+      const statusLabels: Record<string, string> = {
+        CONFIRMED: "✅ تم تأكيد موعد حجزك",
+        IN_CHAIR: "💈 حان دورك الآن على الكرسي الملكي",
+        WAITING_LOUNGE: "🛋️ أنت الآن في صالة الانتظار الملكية",
+        COMPLETED: "👑 نورتنا في صالون صدام! نتمنى لك إطلالة رائعة",
+        CANCELLED: "❌ تم إلغاء الحجز",
+      };
+      const pushTitle = statusLabels[status];
+      if (pushTitle) {
+        await sendPushNotifications(
+          { customerPhone: booking.customer.phone },
+          {
+            title: `${pushTitle} (#${booking.bookingNumber})`,
+            body: `فرع ${booking.branch?.name || "صالون صدام"} • ${booking.bookingDate} الساعة ${booking.timeSlot}`,
+            url: "/",
+            tag: `saddam-booking-status-${booking.id}`,
+          }
+        );
+      }
     }
 
     return NextResponse.json({ success: true, booking });

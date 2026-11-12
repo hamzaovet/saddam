@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { PushOptInButton } from "@/components/PwaBootAndPushButton";
+import { computeBookingTiming, getCairoNow } from "@/lib/booking-time";
 import {
   Scissors,
   Clock,
@@ -114,6 +116,7 @@ export default function CoordinatorControlPage() {
   const [chairWalkInName, setChairWalkInName] = useState("");
   const [chairWalkInPhone, setChairWalkInPhone] = useState("");
   const [chairWalkInServices, setChairWalkInServices] = useState<any[]>([]);
+  const [chairWalkInCategory, setChairWalkInCategory] = useState<string>("ALL");
 
   // Global Reception / Walk-in Router Modal
   const [showWalkInModal, setShowWalkInModal] = useState(false);
@@ -124,6 +127,7 @@ export default function CoordinatorControlPage() {
   const [walkInSpecId, setWalkInSpecId] = useState("");
   const [walkInSelectedItems, setWalkInSelectedItems] = useState<any[]>([]);
   const [walkInServiceSearch, setWalkInServiceSearch] = useState("");
+  const [walkInCategory, setWalkInCategory] = useState<string>("ALL");
   const [submittingWalkIn, setSubmittingWalkIn] = useState(false);
 
   // Seat Picker Modal (for Waiting Ticket or Arrived Online Booking)
@@ -134,6 +138,16 @@ export default function CoordinatorControlPage() {
 
   // Edit Services of Waiting Ticket Modal
   const [editingWaitingTicketId, setEditingWaitingTicketId] = useState<string | null>(null);
+  const [waitingEditCategory, setWaitingEditCategory] = useState<string>("ALL");
+
+  // Watchdog Alerts (15-min pre-alert, Missed yesterday/today, 5-min late + busy)
+  const [watchdogAlerts, setWatchdogAlerts] = useState<{
+    upcomingAlerts: any[];
+    overdueAlerts: any[];
+    late5MinAlerts: any[];
+    reminderLeadMinutes: number;
+  }>({ upcomingAlerts: [], overdueAlerts: [], late5MinAlerts: [], reminderLeadMinutes: 15 });
+  const prevWatchdogRef = useRef<number | null>(null);
 
   // Booking Schedule / Assign Specialist Modal
   const [editingBooking, setEditingBooking] = useState<any>(null);
@@ -235,7 +249,7 @@ export default function CoordinatorControlPage() {
     if (!silent) setLoading(true);
     try {
       const bQuery = selectedBranchId || "ALL";
-      const [resB, resSpec, resT, resBk, resS, resO, resChat, resCust] = await Promise.all([
+      const [resB, resSpec, resT, resBk, resS, resO, resChat, resCust, resWatch] = await Promise.all([
         fetch("/api/branches", { cache: "no-store" }),
         fetch(`/api/specialists?activeOnly=true&branchId=${bQuery}`, { cache: "no-store" }),
         fetch(`/api/tickets?activeOnly=true&branchId=${bQuery}`, { cache: "no-store" }),
@@ -244,9 +258,10 @@ export default function CoordinatorControlPage() {
         fetch(`/api/offers?activeOnly=true&branchId=${bQuery}`, { cache: "no-store" }),
         fetch(`/api/chat?branchId=${bQuery}`, { cache: "no-store" }),
         fetch("/api/customers", { cache: "no-store" }),
+        fetch(`/api/bookings/watchdog?branchId=${bQuery}`, { cache: "no-store" }),
       ]);
 
-      const [dataB, dataSpec, dataT, dataBk, dataS, dataO, dataChat, dataCust] = await Promise.all([
+      const [dataB, dataSpec, dataT, dataBk, dataS, dataO, dataChat, dataCust, dataWatch] = await Promise.all([
         resB.json(),
         resSpec.json(),
         resT.json(),
@@ -255,6 +270,7 @@ export default function CoordinatorControlPage() {
         resO.json(),
         resChat.json(),
         resCust.json(),
+        resWatch.json().catch(() => ({ success: false })),
       ]);
 
       if (dataB.success && dataB.branches) setBranches(dataB.branches);
@@ -280,6 +296,22 @@ export default function CoordinatorControlPage() {
           notify("info", "💬 وصلت رسالة جديدة من عميل في الشات!");
         }
         prevUnreadChatRef.current = unread;
+      }
+      if (dataWatch?.success) {
+        const up = dataWatch.upcomingAlerts || [];
+        const ov = dataWatch.overdueAlerts || [];
+        setWatchdogAlerts({
+          upcomingAlerts: up,
+          overdueAlerts: ov,
+          late5MinAlerts: dataWatch.late5MinAlerts || [],
+          reminderLeadMinutes: dataWatch.reminderLeadMinutes || 15,
+        });
+        const totalAlerts = up.length + ov.length;
+        if (prevWatchdogRef.current !== null && totalAlerts > prevWatchdogRef.current) {
+          playChime();
+          notify("info", `⏰ تنبيه رادار المواعيد: ${ov.length} متأخر/فائت • ${up.length} يقترب خلال 15 دقيقة`);
+        }
+        prevWatchdogRef.current = totalAlerts;
       }
     } catch (e) {
       console.error(e);
@@ -387,7 +419,23 @@ export default function CoordinatorControlPage() {
     });
   }, [specialists, chairFilter, activeTicketBySpecId]);
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getCairoNow().dateStr;
+
+  const getCombinedCatalogItems = (branchId?: string) => {
+    const branchOffers = offers
+      .filter((o) => o.isActive !== false && (!branchId || branchId === "ALL" || !o.branchId || o.branchId === branchId))
+      .map((o) => ({
+        id: `offer-${o.id}`,
+        nameAr: o.badge ? `${o.titleAr} (${o.badge})` : o.titleAr,
+        price: Number(o.price || 0),
+        category: "OFFERS",
+        isOffer: true,
+      }));
+    const branchServices = services
+      .filter((s) => s.isActive !== false && (!branchId || branchId === "ALL" || !s.branchId || s.branchId === branchId))
+      .map((s) => ({ ...s, isOffer: false }));
+    return [...branchOffers, ...branchServices];
+  };
 
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
@@ -883,6 +931,51 @@ export default function CoordinatorControlPage() {
     }
   };
 
+  const handleLateFirstAvailableBooking = async (bkOrAlert: any) => {
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: bkOrAlert.id,
+          action: "LATE_FIRST_AVAILABLE",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        notify("success", `⚡ تم ترحيل حجز (#${bkOrAlert.bookingNumber}) إلى أول كرسي يفضى وإبلاغ العميل!`);
+        await fetchAll(true);
+      } else {
+        notify("error", data.error || "تعذر ترحيل الموعد");
+      }
+    } catch {
+      notify("error", "تعذر الاتصال بالخادم");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResetBookingToConfirmed = async (bk: any) => {
+    try {
+      setActionLoading(true);
+      const res = await fetch("/api/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: bk.id, status: "CONFIRMED" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        notify("info", `تمت إعادة الحجز #${bk.bookingNumber} لحالة (مؤكد) للمتابعة`);
+        await fetchAll(true);
+      }
+    } catch {
+      notify("error", "تعذر تحديث الحالة");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Chat Reply
   const handleSendChatReply = async (customText?: string) => {
     const text = (customText ?? chatReplyText).trim();
@@ -1010,6 +1103,7 @@ export default function CoordinatorControlPage() {
               setWalkInRouteType("FIRST_AVAILABLE");
               setWalkInSelectedItems([]);
               setWalkInServiceSearch("");
+              setWalkInCategory("ALL");
               setShowWalkInModal(true);
             }}
             className="py-2 px-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-lg shadow-amber-500/20 cursor-pointer"
@@ -1056,6 +1150,15 @@ export default function CoordinatorControlPage() {
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
+
+          <PushOptInButton
+            role="COORDINATOR"
+            branchId={selectedBranchId !== "ALL" ? selectedBranchId : currentUser?.branchId || null}
+            userId={currentUser?.id}
+            userName={currentUser?.name}
+            compact
+            showTestButton
+          />
 
           <button
             type="button"
@@ -1146,6 +1249,115 @@ export default function CoordinatorControlPage() {
             <span className="text-2xl">💰</span>
           </div>
         </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            2.5 BOOKING WATCHDOG: 15-MIN PRE-ALERT, OVERDUE & 5-MIN LATE ROUTING
+           ───────────────────────────────────────────────────────────── */}
+        {(watchdogAlerts.upcomingAlerts.length > 0 || watchdogAlerts.overdueAlerts.length > 0) && (
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-rose-500/15 via-amber-500/10 to-rose-500/15 border-2 border-rose-500/45 shadow-lg space-y-2.5">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 text-xs font-black text-rose-300">
+                <Bell className="w-4 h-4 animate-bounce text-amber-400" />
+                <span>
+                  🚨 رادار المواعيد والتنبيهات ({watchdogAlerts.upcomingAlerts.length} قادم خلال {watchdogAlerts.reminderLeadMinutes}د •{" "}
+                  {watchdogAlerts.overdueAlerts.length} متأخر / فائت)
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+              {watchdogAlerts.upcomingAlerts.map((al) => (
+                <div
+                  key={`up-${al.id}`}
+                  className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 flex flex-wrap items-center justify-between gap-2 text-xs"
+                >
+                  <div>
+                    <span className="font-black text-amber-300 block">
+                      ⏰ يقترب خلال {al.diffMinutes ?? 15} دقيقة • #{al.bookingNumber}
+                    </span>
+                    <span className="text-white font-bold">
+                      {al.customerName} ({al.customerPhone}) — {al.timeSlot}
+                      {al.specialistName ? ` • ✂️ ${al.specialistName}` : " • ⚡ أول كرسي يفضى"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {al.customerPhone && (
+                      <a
+                        href={`tel:${al.customerPhone}`}
+                        className="py-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[11px]"
+                      >
+                        📞 اتصال
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const found = bookings.find((b) => b.id === al.id) || al;
+                        setSeatPickerTarget({ type: "BOOKING", record: found });
+                      }}
+                      className="py-1.5 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] cursor-pointer"
+                    >
+                      💺 إجلاس / انتظار
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {watchdogAlerts.overdueAlerts.map((al) => (
+                <div
+                  key={`ov-${al.id}`}
+                  className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/45 flex flex-wrap items-center justify-between gap-2 text-xs"
+                >
+                  <div>
+                    <span className="font-black text-rose-300 block">
+                      {al.isPastDay
+                        ? `⚠️ موعد فائت من يوم (${al.bookingDate}) لم يُغلق`
+                        : `⏳ تأخر +5د عن موعد (${al.timeSlot})${al.chairsBusy ? " • الكراسي مشغولة 🔴" : ""}`}
+                      {" "}• #{al.bookingNumber}
+                    </span>
+                    <span className="text-white font-bold">
+                      {al.customerName} ({al.customerPhone}) — {al.branchName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {al.customerPhone && (
+                      <a
+                        href={`tel:${al.customerPhone}`}
+                        className="py-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-[11px]"
+                      >
+                        📞 اتصال
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={() => handleLateFirstAvailableBooking(al)}
+                      className="py-1.5 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] cursor-pointer"
+                    >
+                      ⚡ وصل متأخر ← ترحيل لأول كرسي يفضى
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const found = bookings.find((b) => b.id === al.id);
+                        if (found) handleOpenEditBooking(found);
+                      }}
+                      className="py-1.5 px-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-bold text-[11px] cursor-pointer"
+                    >
+                      ⏱️ تأجيل
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCancelBooking(al)}
+                      className="py-1.5 px-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 font-bold text-[11px] cursor-pointer"
+                    >
+                      إلغاء ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ─────────────────────────────────────────────────────────────
             3. SMART ROUTER READY MATCH ALERT (when waiting meets free chair)
@@ -1639,17 +1851,42 @@ export default function CoordinatorControlPage() {
                   <div className="space-y-3">
                     {filteredBookings.map((bk) => {
                       const bkServices = parseJsonArray(bk.serviceIds);
+                      const timing = computeBookingTiming(bk.bookingDate, bk.timeSlot, watchdogAlerts.reminderLeadMinutes || 15);
+                      const isOverdueCard = (bk.status === "PENDING" || bk.status === "CONFIRMED") && timing.isOverdue;
+                      const isUpcomingSoon = (bk.status === "PENDING" || bk.status === "CONFIRMED") && timing.isUpcoming15Min;
+                      const hasOpenTicket = tickets.some(
+                        (t) =>
+                          (t.status === "WAITING" || t.status === "IN_CHAIR") &&
+                          ((t.customerId && t.customerId === bk.customerId) ||
+                            (t.customerPhone && bk.customer?.phone && t.customerPhone === bk.customer.phone))
+                      );
                       return (
                         <div
                           key={bk.id}
                           className={`p-3.5 rounded-2xl border space-y-2.5 ${
-                            bk.status === "PENDING"
-                              ? "bg-rose-500/10 border-rose-500/40"
-                              : "bg-black/40 border-white/10"
+                            isOverdueCard
+                              ? "bg-rose-500/15 border-rose-500/60"
+                              : isUpcomingSoon
+                                ? "bg-amber-500/10 border-amber-500/50"
+                                : bk.status === "PENDING"
+                                  ? "bg-rose-500/10 border-rose-500/40"
+                                  : "bg-black/40 border-white/10"
                           }`}
                         >
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-mono font-black text-amber-400">#{bk.bookingNumber}</span>
+                          <div className="flex items-center justify-between text-xs gap-2 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-black text-amber-400">#{bk.bookingNumber}</span>
+                              {isOverdueCard && (
+                                <span className="py-0.5 px-2 rounded-full bg-rose-600 text-white text-[10px] font-black animate-pulse">
+                                  {timing.isPastDay ? "⚠️ حجز فائت (اتصل/رحّل)" : "⏳ تأخر +5 دقائق"}
+                                </span>
+                              )}
+                              {isUpcomingSoon && !isOverdueCard && (
+                                <span className="py-0.5 px-2 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">
+                                  ⏰ بعد {timing.diffMinutes ?? 15} د
+                                </span>
+                              )}
+                            </div>
                             <span
                               className={`py-0.5 px-2 rounded-full text-[10px] font-black border ${
                                 bk.status === "PENDING"
@@ -1738,7 +1975,45 @@ export default function CoordinatorControlPage() {
                                 >
                                   وصل المحل! إجلاس / انتظار 💺
                                 </button>
+                                {(timing.isPastDue5Min || timing.isPastDay) && (
+                                  <button
+                                    type="button"
+                                    disabled={actionLoading}
+                                    onClick={() => handleLateFirstAvailableBooking(bk)}
+                                    className="py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/50 text-amber-200 font-black text-[11px] cursor-pointer"
+                                  >
+                                    ⚡ ترحيل لأول كرسي يفضى
+                                  </button>
+                                )}
                               </>
+                            )}
+
+                            {bk.status === "IN_CHAIR" && !hasOpenTicket && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setSeatPickerTarget({ type: "BOOKING", record: bk })}
+                                  className="py-1.5 px-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] cursor-pointer"
+                                >
+                                  فتح تذكرة بالكرسي 💺
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleResetBookingToConfirmed(bk)}
+                                  className="py-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-300 font-bold text-[11px] cursor-pointer"
+                                >
+                                  إرجاع لمؤكد ↩️
+                                </button>
+                              </>
+                            )}
+
+                            {bk.customer?.phone && (
+                              <a
+                                href={`tel:${bk.customer.phone}`}
+                                className="py-1.5 px-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-bold text-[11px]"
+                              >
+                                اتصال 📞
+                              </a>
                             )}
 
                             <button
@@ -2394,36 +2669,59 @@ export default function CoordinatorControlPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="text-slate-300 font-bold block mb-1.5">
-                        حدد الخدمات المطلوبة ({chairWalkInServices.length} — إجمالي{" "}
-                        {chairWalkInServices.reduce((s, it) => s + Number(it.price || 0), 0)} ج.م):
-                      </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto pr-1">
-                        {services
-                          .filter((s) => !s.branchId || s.branchId === openedSpecialist.branchId)
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <label className="text-slate-300 font-bold">
+                          الخدمات والعروض الملكية ({chairWalkInServices.length} مختار — إجمالي{" "}
+                          {chairWalkInServices.reduce((s, it) => s + Number(it.price || 0), 0)} ج.م):
+                        </label>
+                      </div>
+                      <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                        {Object.entries(CATEGORY_LABELS).map(([catKey, catLabel]) => (
+                          <button
+                            key={catKey}
+                            type="button"
+                            onClick={() => setChairWalkInCategory(catKey)}
+                            className={`py-1 px-2.5 rounded-lg text-[10px] font-black whitespace-nowrap border cursor-pointer ${
+                              chairWalkInCategory === catKey
+                                ? "bg-amber-500 text-slate-950 border-amber-400"
+                                : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"
+                            }`}
+                          >
+                            {catLabel}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
+                        {getCombinedCatalogItems(openedSpecialist.branchId)
+                          .filter((it) => chairWalkInCategory === "ALL" || it.category === chairWalkInCategory)
                           .map((srv) => {
-                          const picked = chairWalkInServices.some((p) => p.id === srv.id);
-                          return (
-                            <button
-                              key={srv.id}
-                              type="button"
-                              onClick={() => toggleChairWalkInService(srv)}
-                              className={`p-2.5 rounded-xl border text-right transition cursor-pointer ${
-                                picked
-                                  ? "bg-amber-500/20 border-amber-400 text-white font-black"
-                                  : "bg-black/40 border-white/10 text-slate-300 hover:bg-white/5"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="truncate text-[11px]">{srv.nameAr}</span>
-                                <span className="font-mono text-amber-400 text-[11px]">
-                                  {srv.price}ج
-                                </span>
-                              </div>
-                            </button>
-                          );
-                        })}
+                            const picked = chairWalkInServices.some((p) => p.id === srv.id);
+                            return (
+                              <button
+                                key={srv.id}
+                                type="button"
+                                onClick={() => toggleChairWalkInService(srv)}
+                                className={`p-2.5 rounded-xl border text-right transition cursor-pointer ${
+                                  picked
+                                    ? "bg-amber-500/20 border-amber-400 text-white font-black"
+                                    : srv.isOffer
+                                      ? "bg-amber-500/5 border-amber-500/25 text-amber-100 hover:bg-amber-500/15"
+                                      : "bg-black/40 border-white/10 text-slate-300 hover:bg-white/5"
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className="text-[11px] leading-snug line-clamp-2">
+                                    {srv.isOffer && "👑 "}
+                                    {srv.nameAr}
+                                  </span>
+                                  <span className="font-mono text-amber-400 text-[11px] shrink-0">
+                                    {srv.price}ج
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })}
                       </div>
                     </div>
 
@@ -2600,13 +2898,30 @@ export default function CoordinatorControlPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
-                  {services
+                <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                  {Object.entries(CATEGORY_LABELS).map(([catKey, catLabel]) => (
+                    <button
+                      key={catKey}
+                      type="button"
+                      onClick={() => setWalkInCategory(catKey)}
+                      className={`py-1 px-2.5 rounded-lg text-[10px] font-black whitespace-nowrap border cursor-pointer ${
+                        walkInCategory === catKey
+                          ? "bg-amber-500 text-slate-950 border-amber-400"
+                          : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"
+                      }`}
+                    >
+                      {catLabel}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
+                  {getCombinedCatalogItems(walkInBranchId)
                     .filter(
-                      (s) =>
-                        (!s.branchId || !walkInBranchId || s.branchId === walkInBranchId) &&
+                      (item) =>
+                        (walkInCategory === "ALL" || item.category === walkInCategory) &&
                         (!walkInServiceSearch.trim() ||
-                          s.nameAr.toLowerCase().includes(walkInServiceSearch.trim().toLowerCase()))
+                          item.nameAr.toLowerCase().includes(walkInServiceSearch.trim().toLowerCase()))
                     )
                     .map((srv) => {
                       const picked = walkInSelectedItems.some((p) => p.id === srv.id);
@@ -2615,14 +2930,19 @@ export default function CoordinatorControlPage() {
                           key={srv.id}
                           type="button"
                           onClick={() => toggleWalkInService(srv)}
-                          className={`p-2 rounded-xl border text-right transition cursor-pointer ${
+                          className={`p-2.5 rounded-xl border text-right transition cursor-pointer ${
                             picked
                               ? "bg-amber-500/20 border-amber-400 text-white font-black"
-                              : "bg-black/40 border-white/10 text-slate-300 hover:bg-white/5"
+                              : srv.isOffer
+                                ? "bg-amber-500/5 border-amber-500/25 text-amber-100 hover:bg-amber-500/15"
+                                : "bg-black/40 border-white/10 text-slate-300 hover:bg-white/5"
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-1 text-[11px]">
-                            <span className="truncate">{srv.nameAr}</span>
+                          <div className="flex items-start justify-between gap-2 text-[11px]">
+                            <span className="leading-snug line-clamp-2">
+                              {srv.isOffer && "👑 "}
+                              {srv.nameAr}
+                            </span>
                             <span className="font-mono text-amber-400 shrink-0">{srv.price}ج</span>
                           </div>
                         </button>
@@ -2703,21 +3023,45 @@ export default function CoordinatorControlPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pt-2 border-t border-white/10">
-              {services
-                .filter((s) => !s.branchId || s.branchId === editingWaitingTicket.branchId)
-                .map((srv) => (
+            <div className="flex items-center gap-1 overflow-x-auto pt-2 border-t border-white/10 pb-1">
+              {Object.entries(CATEGORY_LABELS).map(([catKey, catLabel]) => (
                 <button
-                  key={srv.id}
+                  key={catKey}
                   type="button"
-                  disabled={actionLoading}
-                  onClick={() => handleAddServiceToTicket(editingWaitingTicket.id, srv)}
-                  className="p-2.5 rounded-xl bg-white/5 hover:bg-amber-500/20 border border-white/10 text-right text-xs transition cursor-pointer"
+                  onClick={() => setWaitingEditCategory(catKey)}
+                  className={`py-1 px-2 rounded-lg text-[10px] font-black whitespace-nowrap border cursor-pointer ${
+                    waitingEditCategory === catKey
+                      ? "bg-amber-500 text-slate-950 border-amber-400"
+                      : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"
+                  }`}
                 >
-                  <span className="font-bold text-white block truncate">{srv.nameAr}</span>
-                  <span className="font-mono text-amber-400 text-[11px]">+ {srv.price} ج.م</span>
+                  {catLabel}
                 </button>
               ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pt-1">
+              {getCombinedCatalogItems(editingWaitingTicket.branchId)
+                .filter((it) => waitingEditCategory === "ALL" || it.category === waitingEditCategory)
+                .map((srv) => (
+                  <button
+                    key={srv.id}
+                    type="button"
+                    disabled={actionLoading}
+                    onClick={() => handleAddServiceToTicket(editingWaitingTicket.id, srv)}
+                    className={`p-2.5 rounded-xl border text-right text-xs transition cursor-pointer ${
+                      srv.isOffer
+                        ? "bg-amber-500/5 hover:bg-amber-500/20 border-amber-500/25"
+                        : "bg-white/5 hover:bg-amber-500/20 border-white/10"
+                    }`}
+                  >
+                    <span className="font-bold text-white block leading-snug line-clamp-2">
+                      {srv.isOffer && "👑 "}
+                      {srv.nameAr}
+                    </span>
+                    <span className="font-mono text-amber-400 text-[11px]">+ {srv.price} ج.م</span>
+                  </button>
+                ))}
             </div>
           </div>
         </div>

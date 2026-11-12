@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendPushNotifications } from "@/lib/push";
 
 export async function GET(req: Request) {
   try {
@@ -100,6 +101,30 @@ export async function POST(req: Request) {
         isRead: sender === "SALON", // Messages from salon are already read
       },
     });
+
+    if ((sender || "CUSTOMER") === "CUSTOMER") {
+      await sendPushNotifications(
+        { roles: ["COORDINATOR", "ADMIN", "OWNER"], branchId: branchId || undefined },
+        {
+          title: `💬 رسالة جديدة من العميل: ${chatMsg.customerName}`,
+          body: chatMsg.message.slice(0, 140),
+          url: "/coordinator",
+          tag: `saddam-chat-${chatMsg.customerPhone || chatMsg.id}`,
+          requireInteraction: true,
+        }
+      );
+    } else if (chatMsg.customerPhone) {
+      await sendPushNotifications(
+        { customerPhone: chatMsg.customerPhone },
+        {
+          title: `👑 رسالة من ${chatMsg.senderName}`,
+          body: chatMsg.message.slice(0, 140),
+          url: "/",
+          tag: `saddam-chat-reply-${chatMsg.customerPhone}`,
+          requireInteraction: true,
+        }
+      );
+    }
 
     return NextResponse.json({ success: true, chatMessage: chatMsg });
   } catch (error: any) {

@@ -83,6 +83,11 @@ export type CashShift = $Result.DefaultSelection<Prisma.$CashShiftPayload>
  * 
  */
 export type TreasuryExpense = $Result.DefaultSelection<Prisma.$TreasuryExpensePayload>
+/**
+ * Model PushSubscription
+ * 
+ */
+export type PushSubscription = $Result.DefaultSelection<Prisma.$PushSubscriptionPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -344,6 +349,16 @@ export class PrismaClient<
     * ```
     */
   get treasuryExpense(): Prisma.TreasuryExpenseDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pushSubscription`: Exposes CRUD operations for the **PushSubscription** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PushSubscriptions
+    * const pushSubscriptions = await prisma.pushSubscription.findMany()
+    * ```
+    */
+  get pushSubscription(): Prisma.PushSubscriptionDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -804,7 +819,8 @@ export namespace Prisma {
     Offer: 'Offer',
     ChatMessage: 'ChatMessage',
     CashShift: 'CashShift',
-    TreasuryExpense: 'TreasuryExpense'
+    TreasuryExpense: 'TreasuryExpense',
+    PushSubscription: 'PushSubscription'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -820,7 +836,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "branch" | "user" | "specialist" | "service" | "customer" | "booking" | "ticket" | "product" | "specialistLedger" | "systemSettings" | "offer" | "chatMessage" | "cashShift" | "treasuryExpense"
+      modelProps: "branch" | "user" | "specialist" | "service" | "customer" | "booking" | "ticket" | "product" | "specialistLedger" | "systemSettings" | "offer" | "chatMessage" | "cashShift" | "treasuryExpense" | "pushSubscription"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1860,6 +1876,80 @@ export namespace Prisma {
           }
         }
       }
+      PushSubscription: {
+        payload: Prisma.$PushSubscriptionPayload<ExtArgs>
+        fields: Prisma.PushSubscriptionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PushSubscriptionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PushSubscriptionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>
+          }
+          findFirst: {
+            args: Prisma.PushSubscriptionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PushSubscriptionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>
+          }
+          findMany: {
+            args: Prisma.PushSubscriptionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>[]
+          }
+          create: {
+            args: Prisma.PushSubscriptionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>
+          }
+          createMany: {
+            args: Prisma.PushSubscriptionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PushSubscriptionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>[]
+          }
+          delete: {
+            args: Prisma.PushSubscriptionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>
+          }
+          update: {
+            args: Prisma.PushSubscriptionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>
+          }
+          deleteMany: {
+            args: Prisma.PushSubscriptionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PushSubscriptionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PushSubscriptionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>[]
+          }
+          upsert: {
+            args: Prisma.PushSubscriptionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushSubscriptionPayload>
+          }
+          aggregate: {
+            args: Prisma.PushSubscriptionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePushSubscription>
+          }
+          groupBy: {
+            args: Prisma.PushSubscriptionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PushSubscriptionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PushSubscriptionCountArgs<ExtArgs>
+            result: $Utils.Optional<PushSubscriptionCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1997,6 +2087,7 @@ export namespace Prisma {
     chatMessage?: ChatMessageOmit
     cashShift?: CashShiftOmit
     treasuryExpense?: TreasuryExpenseOmit
+    pushSubscription?: PushSubscriptionOmit
   }
 
   /* Types for Logging */
@@ -8746,6 +8837,8 @@ export namespace Prisma {
     status: string | null
     notes: string | null
     totalAmount: number | null
+    reminderSentAt: Date | null
+    overdueAlertSentAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -8762,6 +8855,8 @@ export namespace Prisma {
     status: string | null
     notes: string | null
     totalAmount: number | null
+    reminderSentAt: Date | null
+    overdueAlertSentAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -8778,6 +8873,8 @@ export namespace Prisma {
     status: number
     notes: number
     totalAmount: number
+    reminderSentAt: number
+    overdueAlertSentAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -8804,6 +8901,8 @@ export namespace Prisma {
     status?: true
     notes?: true
     totalAmount?: true
+    reminderSentAt?: true
+    overdueAlertSentAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -8820,6 +8919,8 @@ export namespace Prisma {
     status?: true
     notes?: true
     totalAmount?: true
+    reminderSentAt?: true
+    overdueAlertSentAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -8836,6 +8937,8 @@ export namespace Prisma {
     status?: true
     notes?: true
     totalAmount?: true
+    reminderSentAt?: true
+    overdueAlertSentAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -8939,6 +9042,8 @@ export namespace Prisma {
     status: string
     notes: string | null
     totalAmount: number
+    reminderSentAt: Date | null
+    overdueAlertSentAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: BookingCountAggregateOutputType | null
@@ -8974,6 +9079,8 @@ export namespace Prisma {
     status?: boolean
     notes?: boolean
     totalAmount?: boolean
+    reminderSentAt?: boolean
+    overdueAlertSentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
@@ -8993,6 +9100,8 @@ export namespace Prisma {
     status?: boolean
     notes?: boolean
     totalAmount?: boolean
+    reminderSentAt?: boolean
+    overdueAlertSentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
@@ -9012,6 +9121,8 @@ export namespace Prisma {
     status?: boolean
     notes?: boolean
     totalAmount?: boolean
+    reminderSentAt?: boolean
+    overdueAlertSentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
@@ -9031,11 +9142,13 @@ export namespace Prisma {
     status?: boolean
     notes?: boolean
     totalAmount?: boolean
+    reminderSentAt?: boolean
+    overdueAlertSentAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "bookingNumber" | "customerId" | "branchId" | "specialistId" | "serviceIds" | "bookingDate" | "timeSlot" | "status" | "notes" | "totalAmount" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+  export type BookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "bookingNumber" | "customerId" | "branchId" | "specialistId" | "serviceIds" | "bookingDate" | "timeSlot" | "status" | "notes" | "totalAmount" | "reminderSentAt" | "overdueAlertSentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
   export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
     branch?: boolean | BranchDefaultArgs<ExtArgs>
@@ -9071,6 +9184,8 @@ export namespace Prisma {
       status: string
       notes: string | null
       totalAmount: number
+      reminderSentAt: Date | null
+      overdueAlertSentAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["booking"]>
@@ -9510,6 +9625,8 @@ export namespace Prisma {
     readonly status: FieldRef<"Booking", 'String'>
     readonly notes: FieldRef<"Booking", 'String'>
     readonly totalAmount: FieldRef<"Booking", 'Float'>
+    readonly reminderSentAt: FieldRef<"Booking", 'DateTime'>
+    readonly overdueAlertSentAt: FieldRef<"Booking", 'DateTime'>
     readonly createdAt: FieldRef<"Booking", 'DateTime'>
     readonly updatedAt: FieldRef<"Booking", 'DateTime'>
   }
@@ -13772,6 +13889,8 @@ export namespace Prisma {
     bookingSlotInterval: number | null
     reminderMinutesBefore: number | null
     receiptFooterNotes: string | null
+    vapidPublicKey: string | null
+    vapidPrivateKey: string | null
     updatedAt: Date | null
   }
 
@@ -13796,6 +13915,8 @@ export namespace Prisma {
     bookingSlotInterval: number | null
     reminderMinutesBefore: number | null
     receiptFooterNotes: string | null
+    vapidPublicKey: string | null
+    vapidPrivateKey: string | null
     updatedAt: Date | null
   }
 
@@ -13820,6 +13941,8 @@ export namespace Prisma {
     bookingSlotInterval: number
     reminderMinutesBefore: number
     receiptFooterNotes: number
+    vapidPublicKey: number
+    vapidPrivateKey: number
     updatedAt: number
     _all: number
   }
@@ -13856,6 +13979,8 @@ export namespace Prisma {
     bookingSlotInterval?: true
     reminderMinutesBefore?: true
     receiptFooterNotes?: true
+    vapidPublicKey?: true
+    vapidPrivateKey?: true
     updatedAt?: true
   }
 
@@ -13880,6 +14005,8 @@ export namespace Prisma {
     bookingSlotInterval?: true
     reminderMinutesBefore?: true
     receiptFooterNotes?: true
+    vapidPublicKey?: true
+    vapidPrivateKey?: true
     updatedAt?: true
   }
 
@@ -13904,6 +14031,8 @@ export namespace Prisma {
     bookingSlotInterval?: true
     reminderMinutesBefore?: true
     receiptFooterNotes?: true
+    vapidPublicKey?: true
+    vapidPrivateKey?: true
     updatedAt?: true
     _all?: true
   }
@@ -14015,6 +14144,8 @@ export namespace Prisma {
     bookingSlotInterval: number
     reminderMinutesBefore: number
     receiptFooterNotes: string
+    vapidPublicKey: string | null
+    vapidPrivateKey: string | null
     updatedAt: Date
     _count: SystemSettingsCountAggregateOutputType | null
     _avg: SystemSettingsAvgAggregateOutputType | null
@@ -14058,6 +14189,8 @@ export namespace Prisma {
     bookingSlotInterval?: boolean
     reminderMinutesBefore?: boolean
     receiptFooterNotes?: boolean
+    vapidPublicKey?: boolean
+    vapidPrivateKey?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -14082,6 +14215,8 @@ export namespace Prisma {
     bookingSlotInterval?: boolean
     reminderMinutesBefore?: boolean
     receiptFooterNotes?: boolean
+    vapidPublicKey?: boolean
+    vapidPrivateKey?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -14106,6 +14241,8 @@ export namespace Prisma {
     bookingSlotInterval?: boolean
     reminderMinutesBefore?: boolean
     receiptFooterNotes?: boolean
+    vapidPublicKey?: boolean
+    vapidPrivateKey?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -14130,10 +14267,12 @@ export namespace Prisma {
     bookingSlotInterval?: boolean
     reminderMinutesBefore?: boolean
     receiptFooterNotes?: boolean
+    vapidPublicKey?: boolean
+    vapidPrivateKey?: boolean
     updatedAt?: boolean
   }
 
-  export type SystemSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "salonNameAr" | "salonNameEn" | "logoUrl" | "systemLocked" | "lockMessage" | "hadayekPhone" | "nasrCityPhone" | "hotline" | "whatsappNumber" | "facebookUrl" | "instagramUrl" | "defaultOpenHour" | "defaultCloseHour" | "weeklyDayOff" | "isDayOffEnabled" | "dayOffMessage" | "bookingSlotInterval" | "reminderMinutesBefore" | "receiptFooterNotes" | "updatedAt", ExtArgs["result"]["systemSettings"]>
+  export type SystemSettingsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "salonNameAr" | "salonNameEn" | "logoUrl" | "systemLocked" | "lockMessage" | "hadayekPhone" | "nasrCityPhone" | "hotline" | "whatsappNumber" | "facebookUrl" | "instagramUrl" | "defaultOpenHour" | "defaultCloseHour" | "weeklyDayOff" | "isDayOffEnabled" | "dayOffMessage" | "bookingSlotInterval" | "reminderMinutesBefore" | "receiptFooterNotes" | "vapidPublicKey" | "vapidPrivateKey" | "updatedAt", ExtArgs["result"]["systemSettings"]>
 
   export type $SystemSettingsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SystemSettings"
@@ -14159,6 +14298,8 @@ export namespace Prisma {
       bookingSlotInterval: number
       reminderMinutesBefore: number
       receiptFooterNotes: string
+      vapidPublicKey: string | null
+      vapidPrivateKey: string | null
       updatedAt: Date
     }, ExtArgs["result"]["systemSettings"]>
     composites: {}
@@ -14603,6 +14744,8 @@ export namespace Prisma {
     readonly bookingSlotInterval: FieldRef<"SystemSettings", 'Int'>
     readonly reminderMinutesBefore: FieldRef<"SystemSettings", 'Int'>
     readonly receiptFooterNotes: FieldRef<"SystemSettings", 'String'>
+    readonly vapidPublicKey: FieldRef<"SystemSettings", 'String'>
+    readonly vapidPrivateKey: FieldRef<"SystemSettings", 'String'>
     readonly updatedAt: FieldRef<"SystemSettings", 'DateTime'>
   }
     
@@ -19937,6 +20080,1123 @@ export namespace Prisma {
 
 
   /**
+   * Model PushSubscription
+   */
+
+  export type AggregatePushSubscription = {
+    _count: PushSubscriptionCountAggregateOutputType | null
+    _min: PushSubscriptionMinAggregateOutputType | null
+    _max: PushSubscriptionMaxAggregateOutputType | null
+  }
+
+  export type PushSubscriptionMinAggregateOutputType = {
+    id: string | null
+    endpoint: string | null
+    p256dh: string | null
+    auth: string | null
+    role: string | null
+    branchId: string | null
+    userId: string | null
+    userName: string | null
+    customerPhone: string | null
+    userAgent: string | null
+    isActive: boolean | null
+    lastNotifiedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PushSubscriptionMaxAggregateOutputType = {
+    id: string | null
+    endpoint: string | null
+    p256dh: string | null
+    auth: string | null
+    role: string | null
+    branchId: string | null
+    userId: string | null
+    userName: string | null
+    customerPhone: string | null
+    userAgent: string | null
+    isActive: boolean | null
+    lastNotifiedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PushSubscriptionCountAggregateOutputType = {
+    id: number
+    endpoint: number
+    p256dh: number
+    auth: number
+    role: number
+    branchId: number
+    userId: number
+    userName: number
+    customerPhone: number
+    userAgent: number
+    isActive: number
+    lastNotifiedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PushSubscriptionMinAggregateInputType = {
+    id?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    role?: true
+    branchId?: true
+    userId?: true
+    userName?: true
+    customerPhone?: true
+    userAgent?: true
+    isActive?: true
+    lastNotifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PushSubscriptionMaxAggregateInputType = {
+    id?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    role?: true
+    branchId?: true
+    userId?: true
+    userName?: true
+    customerPhone?: true
+    userAgent?: true
+    isActive?: true
+    lastNotifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PushSubscriptionCountAggregateInputType = {
+    id?: true
+    endpoint?: true
+    p256dh?: true
+    auth?: true
+    role?: true
+    branchId?: true
+    userId?: true
+    userName?: true
+    customerPhone?: true
+    userAgent?: true
+    isActive?: true
+    lastNotifiedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PushSubscriptionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushSubscription to aggregate.
+     */
+    where?: PushSubscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionOrderByWithRelationInput | PushSubscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PushSubscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PushSubscriptions
+    **/
+    _count?: true | PushSubscriptionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PushSubscriptionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PushSubscriptionMaxAggregateInputType
+  }
+
+  export type GetPushSubscriptionAggregateType<T extends PushSubscriptionAggregateArgs> = {
+        [P in keyof T & keyof AggregatePushSubscription]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePushSubscription[P]>
+      : GetScalarType<T[P], AggregatePushSubscription[P]>
+  }
+
+
+
+
+  export type PushSubscriptionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushSubscriptionWhereInput
+    orderBy?: PushSubscriptionOrderByWithAggregationInput | PushSubscriptionOrderByWithAggregationInput[]
+    by: PushSubscriptionScalarFieldEnum[] | PushSubscriptionScalarFieldEnum
+    having?: PushSubscriptionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PushSubscriptionCountAggregateInputType | true
+    _min?: PushSubscriptionMinAggregateInputType
+    _max?: PushSubscriptionMaxAggregateInputType
+  }
+
+  export type PushSubscriptionGroupByOutputType = {
+    id: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    role: string
+    branchId: string | null
+    userId: string | null
+    userName: string | null
+    customerPhone: string | null
+    userAgent: string | null
+    isActive: boolean
+    lastNotifiedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PushSubscriptionCountAggregateOutputType | null
+    _min: PushSubscriptionMinAggregateOutputType | null
+    _max: PushSubscriptionMaxAggregateOutputType | null
+  }
+
+  type GetPushSubscriptionGroupByPayload<T extends PushSubscriptionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PushSubscriptionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PushSubscriptionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PushSubscriptionGroupByOutputType[P]>
+            : GetScalarType<T[P], PushSubscriptionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PushSubscriptionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    role?: boolean
+    branchId?: boolean
+    userId?: boolean
+    userName?: boolean
+    customerPhone?: boolean
+    userAgent?: boolean
+    isActive?: boolean
+    lastNotifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["pushSubscription"]>
+
+  export type PushSubscriptionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    role?: boolean
+    branchId?: boolean
+    userId?: boolean
+    userName?: boolean
+    customerPhone?: boolean
+    userAgent?: boolean
+    isActive?: boolean
+    lastNotifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["pushSubscription"]>
+
+  export type PushSubscriptionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    role?: boolean
+    branchId?: boolean
+    userId?: boolean
+    userName?: boolean
+    customerPhone?: boolean
+    userAgent?: boolean
+    isActive?: boolean
+    lastNotifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["pushSubscription"]>
+
+  export type PushSubscriptionSelectScalar = {
+    id?: boolean
+    endpoint?: boolean
+    p256dh?: boolean
+    auth?: boolean
+    role?: boolean
+    branchId?: boolean
+    userId?: boolean
+    userName?: boolean
+    customerPhone?: boolean
+    userAgent?: boolean
+    isActive?: boolean
+    lastNotifiedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PushSubscriptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "endpoint" | "p256dh" | "auth" | "role" | "branchId" | "userId" | "userName" | "customerPhone" | "userAgent" | "isActive" | "lastNotifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pushSubscription"]>
+
+  export type $PushSubscriptionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PushSubscription"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      endpoint: string
+      p256dh: string
+      auth: string
+      role: string
+      branchId: string | null
+      userId: string | null
+      userName: string | null
+      customerPhone: string | null
+      userAgent: string | null
+      isActive: boolean
+      lastNotifiedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["pushSubscription"]>
+    composites: {}
+  }
+
+  type PushSubscriptionGetPayload<S extends boolean | null | undefined | PushSubscriptionDefaultArgs> = $Result.GetResult<Prisma.$PushSubscriptionPayload, S>
+
+  type PushSubscriptionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PushSubscriptionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PushSubscriptionCountAggregateInputType | true
+    }
+
+  export interface PushSubscriptionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PushSubscription'], meta: { name: 'PushSubscription' } }
+    /**
+     * Find zero or one PushSubscription that matches the filter.
+     * @param {PushSubscriptionFindUniqueArgs} args - Arguments to find a PushSubscription
+     * @example
+     * // Get one PushSubscription
+     * const pushSubscription = await prisma.pushSubscription.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PushSubscriptionFindUniqueArgs>(args: SelectSubset<T, PushSubscriptionFindUniqueArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PushSubscription that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PushSubscriptionFindUniqueOrThrowArgs} args - Arguments to find a PushSubscription
+     * @example
+     * // Get one PushSubscription
+     * const pushSubscription = await prisma.pushSubscription.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PushSubscriptionFindUniqueOrThrowArgs>(args: SelectSubset<T, PushSubscriptionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushSubscription that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionFindFirstArgs} args - Arguments to find a PushSubscription
+     * @example
+     * // Get one PushSubscription
+     * const pushSubscription = await prisma.pushSubscription.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PushSubscriptionFindFirstArgs>(args?: SelectSubset<T, PushSubscriptionFindFirstArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushSubscription that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionFindFirstOrThrowArgs} args - Arguments to find a PushSubscription
+     * @example
+     * // Get one PushSubscription
+     * const pushSubscription = await prisma.pushSubscription.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PushSubscriptionFindFirstOrThrowArgs>(args?: SelectSubset<T, PushSubscriptionFindFirstOrThrowArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PushSubscriptions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscription.findMany()
+     * 
+     * // Get first 10 PushSubscriptions
+     * const pushSubscriptions = await prisma.pushSubscription.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pushSubscriptionWithIdOnly = await prisma.pushSubscription.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PushSubscriptionFindManyArgs>(args?: SelectSubset<T, PushSubscriptionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PushSubscription.
+     * @param {PushSubscriptionCreateArgs} args - Arguments to create a PushSubscription.
+     * @example
+     * // Create one PushSubscription
+     * const PushSubscription = await prisma.pushSubscription.create({
+     *   data: {
+     *     // ... data to create a PushSubscription
+     *   }
+     * })
+     * 
+     */
+    create<T extends PushSubscriptionCreateArgs>(args: SelectSubset<T, PushSubscriptionCreateArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PushSubscriptions.
+     * @param {PushSubscriptionCreateManyArgs} args - Arguments to create many PushSubscriptions.
+     * @example
+     * // Create many PushSubscriptions
+     * const pushSubscription = await prisma.pushSubscription.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PushSubscriptionCreateManyArgs>(args?: SelectSubset<T, PushSubscriptionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PushSubscriptions and returns the data saved in the database.
+     * @param {PushSubscriptionCreateManyAndReturnArgs} args - Arguments to create many PushSubscriptions.
+     * @example
+     * // Create many PushSubscriptions
+     * const pushSubscription = await prisma.pushSubscription.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PushSubscriptions and only return the `id`
+     * const pushSubscriptionWithIdOnly = await prisma.pushSubscription.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PushSubscriptionCreateManyAndReturnArgs>(args?: SelectSubset<T, PushSubscriptionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PushSubscription.
+     * @param {PushSubscriptionDeleteArgs} args - Arguments to delete one PushSubscription.
+     * @example
+     * // Delete one PushSubscription
+     * const PushSubscription = await prisma.pushSubscription.delete({
+     *   where: {
+     *     // ... filter to delete one PushSubscription
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PushSubscriptionDeleteArgs>(args: SelectSubset<T, PushSubscriptionDeleteArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PushSubscription.
+     * @param {PushSubscriptionUpdateArgs} args - Arguments to update one PushSubscription.
+     * @example
+     * // Update one PushSubscription
+     * const pushSubscription = await prisma.pushSubscription.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PushSubscriptionUpdateArgs>(args: SelectSubset<T, PushSubscriptionUpdateArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PushSubscriptions.
+     * @param {PushSubscriptionDeleteManyArgs} args - Arguments to filter PushSubscriptions to delete.
+     * @example
+     * // Delete a few PushSubscriptions
+     * const { count } = await prisma.pushSubscription.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PushSubscriptionDeleteManyArgs>(args?: SelectSubset<T, PushSubscriptionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushSubscriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PushSubscriptions
+     * const pushSubscription = await prisma.pushSubscription.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PushSubscriptionUpdateManyArgs>(args: SelectSubset<T, PushSubscriptionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushSubscriptions and returns the data updated in the database.
+     * @param {PushSubscriptionUpdateManyAndReturnArgs} args - Arguments to update many PushSubscriptions.
+     * @example
+     * // Update many PushSubscriptions
+     * const pushSubscription = await prisma.pushSubscription.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PushSubscriptions and only return the `id`
+     * const pushSubscriptionWithIdOnly = await prisma.pushSubscription.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PushSubscriptionUpdateManyAndReturnArgs>(args: SelectSubset<T, PushSubscriptionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PushSubscription.
+     * @param {PushSubscriptionUpsertArgs} args - Arguments to update or create a PushSubscription.
+     * @example
+     * // Update or create a PushSubscription
+     * const pushSubscription = await prisma.pushSubscription.upsert({
+     *   create: {
+     *     // ... data to create a PushSubscription
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PushSubscription we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PushSubscriptionUpsertArgs>(args: SelectSubset<T, PushSubscriptionUpsertArgs<ExtArgs>>): Prisma__PushSubscriptionClient<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PushSubscriptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionCountArgs} args - Arguments to filter PushSubscriptions to count.
+     * @example
+     * // Count the number of PushSubscriptions
+     * const count = await prisma.pushSubscription.count({
+     *   where: {
+     *     // ... the filter for the PushSubscriptions we want to count
+     *   }
+     * })
+    **/
+    count<T extends PushSubscriptionCountArgs>(
+      args?: Subset<T, PushSubscriptionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PushSubscriptionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PushSubscription.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PushSubscriptionAggregateArgs>(args: Subset<T, PushSubscriptionAggregateArgs>): Prisma.PrismaPromise<GetPushSubscriptionAggregateType<T>>
+
+    /**
+     * Group by PushSubscription.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushSubscriptionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PushSubscriptionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PushSubscriptionGroupByArgs['orderBy'] }
+        : { orderBy?: PushSubscriptionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PushSubscriptionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPushSubscriptionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PushSubscription model
+   */
+  readonly fields: PushSubscriptionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PushSubscription.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PushSubscriptionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PushSubscription model
+   */
+  interface PushSubscriptionFieldRefs {
+    readonly id: FieldRef<"PushSubscription", 'String'>
+    readonly endpoint: FieldRef<"PushSubscription", 'String'>
+    readonly p256dh: FieldRef<"PushSubscription", 'String'>
+    readonly auth: FieldRef<"PushSubscription", 'String'>
+    readonly role: FieldRef<"PushSubscription", 'String'>
+    readonly branchId: FieldRef<"PushSubscription", 'String'>
+    readonly userId: FieldRef<"PushSubscription", 'String'>
+    readonly userName: FieldRef<"PushSubscription", 'String'>
+    readonly customerPhone: FieldRef<"PushSubscription", 'String'>
+    readonly userAgent: FieldRef<"PushSubscription", 'String'>
+    readonly isActive: FieldRef<"PushSubscription", 'Boolean'>
+    readonly lastNotifiedAt: FieldRef<"PushSubscription", 'DateTime'>
+    readonly createdAt: FieldRef<"PushSubscription", 'DateTime'>
+    readonly updatedAt: FieldRef<"PushSubscription", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PushSubscription findUnique
+   */
+  export type PushSubscriptionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscription to fetch.
+     */
+    where: PushSubscriptionWhereUniqueInput
+  }
+
+  /**
+   * PushSubscription findUniqueOrThrow
+   */
+  export type PushSubscriptionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscription to fetch.
+     */
+    where: PushSubscriptionWhereUniqueInput
+  }
+
+  /**
+   * PushSubscription findFirst
+   */
+  export type PushSubscriptionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscription to fetch.
+     */
+    where?: PushSubscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionOrderByWithRelationInput | PushSubscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushSubscriptions.
+     */
+    cursor?: PushSubscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushSubscriptions.
+     */
+    distinct?: PushSubscriptionScalarFieldEnum | PushSubscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * PushSubscription findFirstOrThrow
+   */
+  export type PushSubscriptionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscription to fetch.
+     */
+    where?: PushSubscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionOrderByWithRelationInput | PushSubscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushSubscriptions.
+     */
+    cursor?: PushSubscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushSubscriptions.
+     */
+    distinct?: PushSubscriptionScalarFieldEnum | PushSubscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * PushSubscription findMany
+   */
+  export type PushSubscriptionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * Filter, which PushSubscriptions to fetch.
+     */
+    where?: PushSubscriptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushSubscriptions to fetch.
+     */
+    orderBy?: PushSubscriptionOrderByWithRelationInput | PushSubscriptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PushSubscriptions.
+     */
+    cursor?: PushSubscriptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushSubscriptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushSubscriptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushSubscriptions.
+     */
+    distinct?: PushSubscriptionScalarFieldEnum | PushSubscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * PushSubscription create
+   */
+  export type PushSubscriptionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PushSubscription.
+     */
+    data: XOR<PushSubscriptionCreateInput, PushSubscriptionUncheckedCreateInput>
+  }
+
+  /**
+   * PushSubscription createMany
+   */
+  export type PushSubscriptionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PushSubscriptions.
+     */
+    data: PushSubscriptionCreateManyInput | PushSubscriptionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushSubscription createManyAndReturn
+   */
+  export type PushSubscriptionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * The data used to create many PushSubscriptions.
+     */
+    data: PushSubscriptionCreateManyInput | PushSubscriptionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushSubscription update
+   */
+  export type PushSubscriptionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PushSubscription.
+     */
+    data: XOR<PushSubscriptionUpdateInput, PushSubscriptionUncheckedUpdateInput>
+    /**
+     * Choose, which PushSubscription to update.
+     */
+    where: PushSubscriptionWhereUniqueInput
+  }
+
+  /**
+   * PushSubscription updateMany
+   */
+  export type PushSubscriptionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PushSubscriptions.
+     */
+    data: XOR<PushSubscriptionUpdateManyMutationInput, PushSubscriptionUncheckedUpdateManyInput>
+    /**
+     * Filter which PushSubscriptions to update
+     */
+    where?: PushSubscriptionWhereInput
+    /**
+     * Limit how many PushSubscriptions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushSubscription updateManyAndReturn
+   */
+  export type PushSubscriptionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * The data used to update PushSubscriptions.
+     */
+    data: XOR<PushSubscriptionUpdateManyMutationInput, PushSubscriptionUncheckedUpdateManyInput>
+    /**
+     * Filter which PushSubscriptions to update
+     */
+    where?: PushSubscriptionWhereInput
+    /**
+     * Limit how many PushSubscriptions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushSubscription upsert
+   */
+  export type PushSubscriptionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PushSubscription to update in case it exists.
+     */
+    where: PushSubscriptionWhereUniqueInput
+    /**
+     * In case the PushSubscription found by the `where` argument doesn't exist, create a new PushSubscription with this data.
+     */
+    create: XOR<PushSubscriptionCreateInput, PushSubscriptionUncheckedCreateInput>
+    /**
+     * In case the PushSubscription was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PushSubscriptionUpdateInput, PushSubscriptionUncheckedUpdateInput>
+  }
+
+  /**
+   * PushSubscription delete
+   */
+  export type PushSubscriptionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+    /**
+     * Filter which PushSubscription to delete.
+     */
+    where: PushSubscriptionWhereUniqueInput
+  }
+
+  /**
+   * PushSubscription deleteMany
+   */
+  export type PushSubscriptionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushSubscriptions to delete
+     */
+    where?: PushSubscriptionWhereInput
+    /**
+     * Limit how many PushSubscriptions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushSubscription without action
+   */
+  export type PushSubscriptionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushSubscription
+     */
+    select?: PushSubscriptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushSubscription
+     */
+    omit?: PushSubscriptionOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -20054,6 +21314,8 @@ export namespace Prisma {
     status: 'status',
     notes: 'notes',
     totalAmount: 'totalAmount',
+    reminderSentAt: 'reminderSentAt',
+    overdueAlertSentAt: 'overdueAlertSentAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -20145,6 +21407,8 @@ export namespace Prisma {
     bookingSlotInterval: 'bookingSlotInterval',
     reminderMinutesBefore: 'reminderMinutesBefore',
     receiptFooterNotes: 'receiptFooterNotes',
+    vapidPublicKey: 'vapidPublicKey',
+    vapidPrivateKey: 'vapidPrivateKey',
     updatedAt: 'updatedAt'
   };
 
@@ -20231,6 +21495,26 @@ export namespace Prisma {
   };
 
   export type TreasuryExpenseScalarFieldEnum = (typeof TreasuryExpenseScalarFieldEnum)[keyof typeof TreasuryExpenseScalarFieldEnum]
+
+
+  export const PushSubscriptionScalarFieldEnum: {
+    id: 'id',
+    endpoint: 'endpoint',
+    p256dh: 'p256dh',
+    auth: 'auth',
+    role: 'role',
+    branchId: 'branchId',
+    userId: 'userId',
+    userName: 'userName',
+    customerPhone: 'customerPhone',
+    userAgent: 'userAgent',
+    isActive: 'isActive',
+    lastNotifiedAt: 'lastNotifiedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -20857,6 +22141,8 @@ export namespace Prisma {
     status?: StringFilter<"Booking"> | string
     notes?: StringNullableFilter<"Booking"> | string | null
     totalAmount?: FloatFilter<"Booking"> | number
+    reminderSentAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    overdueAlertSentAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
@@ -20876,6 +22162,8 @@ export namespace Prisma {
     status?: SortOrder
     notes?: SortOrderInput | SortOrder
     totalAmount?: SortOrder
+    reminderSentAt?: SortOrderInput | SortOrder
+    overdueAlertSentAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     customer?: CustomerOrderByWithRelationInput
@@ -20898,6 +22186,8 @@ export namespace Prisma {
     status?: StringFilter<"Booking"> | string
     notes?: StringNullableFilter<"Booking"> | string | null
     totalAmount?: FloatFilter<"Booking"> | number
+    reminderSentAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    overdueAlertSentAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
     customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
@@ -20917,6 +22207,8 @@ export namespace Prisma {
     status?: SortOrder
     notes?: SortOrderInput | SortOrder
     totalAmount?: SortOrder
+    reminderSentAt?: SortOrderInput | SortOrder
+    overdueAlertSentAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: BookingCountOrderByAggregateInput
@@ -20941,6 +22233,8 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"Booking"> | string
     notes?: StringNullableWithAggregatesFilter<"Booking"> | string | null
     totalAmount?: FloatWithAggregatesFilter<"Booking"> | number
+    reminderSentAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
+    overdueAlertSentAt?: DateTimeNullableWithAggregatesFilter<"Booking"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
   }
@@ -21299,6 +22593,8 @@ export namespace Prisma {
     bookingSlotInterval?: IntFilter<"SystemSettings"> | number
     reminderMinutesBefore?: IntFilter<"SystemSettings"> | number
     receiptFooterNotes?: StringFilter<"SystemSettings"> | string
+    vapidPublicKey?: StringNullableFilter<"SystemSettings"> | string | null
+    vapidPrivateKey?: StringNullableFilter<"SystemSettings"> | string | null
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }
 
@@ -21323,6 +22619,8 @@ export namespace Prisma {
     bookingSlotInterval?: SortOrder
     reminderMinutesBefore?: SortOrder
     receiptFooterNotes?: SortOrder
+    vapidPublicKey?: SortOrderInput | SortOrder
+    vapidPrivateKey?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
   }
 
@@ -21350,6 +22648,8 @@ export namespace Prisma {
     bookingSlotInterval?: IntFilter<"SystemSettings"> | number
     reminderMinutesBefore?: IntFilter<"SystemSettings"> | number
     receiptFooterNotes?: StringFilter<"SystemSettings"> | string
+    vapidPublicKey?: StringNullableFilter<"SystemSettings"> | string | null
+    vapidPrivateKey?: StringNullableFilter<"SystemSettings"> | string | null
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }, "id">
 
@@ -21374,6 +22674,8 @@ export namespace Prisma {
     bookingSlotInterval?: SortOrder
     reminderMinutesBefore?: SortOrder
     receiptFooterNotes?: SortOrder
+    vapidPublicKey?: SortOrderInput | SortOrder
+    vapidPrivateKey?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     _count?: SystemSettingsCountOrderByAggregateInput
     _avg?: SystemSettingsAvgOrderByAggregateInput
@@ -21406,6 +22708,8 @@ export namespace Prisma {
     bookingSlotInterval?: IntWithAggregatesFilter<"SystemSettings"> | number
     reminderMinutesBefore?: IntWithAggregatesFilter<"SystemSettings"> | number
     receiptFooterNotes?: StringWithAggregatesFilter<"SystemSettings"> | string
+    vapidPublicKey?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
+    vapidPrivateKey?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
     updatedAt?: DateTimeWithAggregatesFilter<"SystemSettings"> | Date | string
   }
 
@@ -21823,6 +23127,103 @@ export namespace Prisma {
     recordedBy?: StringWithAggregatesFilter<"TreasuryExpense"> | string
     date?: DateTimeWithAggregatesFilter<"TreasuryExpense"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"TreasuryExpense"> | Date | string
+  }
+
+  export type PushSubscriptionWhereInput = {
+    AND?: PushSubscriptionWhereInput | PushSubscriptionWhereInput[]
+    OR?: PushSubscriptionWhereInput[]
+    NOT?: PushSubscriptionWhereInput | PushSubscriptionWhereInput[]
+    id?: StringFilter<"PushSubscription"> | string
+    endpoint?: StringFilter<"PushSubscription"> | string
+    p256dh?: StringFilter<"PushSubscription"> | string
+    auth?: StringFilter<"PushSubscription"> | string
+    role?: StringFilter<"PushSubscription"> | string
+    branchId?: StringNullableFilter<"PushSubscription"> | string | null
+    userId?: StringNullableFilter<"PushSubscription"> | string | null
+    userName?: StringNullableFilter<"PushSubscription"> | string | null
+    customerPhone?: StringNullableFilter<"PushSubscription"> | string | null
+    userAgent?: StringNullableFilter<"PushSubscription"> | string | null
+    isActive?: BoolFilter<"PushSubscription"> | boolean
+    lastNotifiedAt?: DateTimeNullableFilter<"PushSubscription"> | Date | string | null
+    createdAt?: DateTimeFilter<"PushSubscription"> | Date | string
+    updatedAt?: DateTimeFilter<"PushSubscription"> | Date | string
+  }
+
+  export type PushSubscriptionOrderByWithRelationInput = {
+    id?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    role?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    userName?: SortOrderInput | SortOrder
+    customerPhone?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    lastNotifiedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PushSubscriptionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    endpoint?: string
+    AND?: PushSubscriptionWhereInput | PushSubscriptionWhereInput[]
+    OR?: PushSubscriptionWhereInput[]
+    NOT?: PushSubscriptionWhereInput | PushSubscriptionWhereInput[]
+    p256dh?: StringFilter<"PushSubscription"> | string
+    auth?: StringFilter<"PushSubscription"> | string
+    role?: StringFilter<"PushSubscription"> | string
+    branchId?: StringNullableFilter<"PushSubscription"> | string | null
+    userId?: StringNullableFilter<"PushSubscription"> | string | null
+    userName?: StringNullableFilter<"PushSubscription"> | string | null
+    customerPhone?: StringNullableFilter<"PushSubscription"> | string | null
+    userAgent?: StringNullableFilter<"PushSubscription"> | string | null
+    isActive?: BoolFilter<"PushSubscription"> | boolean
+    lastNotifiedAt?: DateTimeNullableFilter<"PushSubscription"> | Date | string | null
+    createdAt?: DateTimeFilter<"PushSubscription"> | Date | string
+    updatedAt?: DateTimeFilter<"PushSubscription"> | Date | string
+  }, "id" | "endpoint">
+
+  export type PushSubscriptionOrderByWithAggregationInput = {
+    id?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    role?: SortOrder
+    branchId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    userName?: SortOrderInput | SortOrder
+    customerPhone?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    lastNotifiedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PushSubscriptionCountOrderByAggregateInput
+    _max?: PushSubscriptionMaxOrderByAggregateInput
+    _min?: PushSubscriptionMinOrderByAggregateInput
+  }
+
+  export type PushSubscriptionScalarWhereWithAggregatesInput = {
+    AND?: PushSubscriptionScalarWhereWithAggregatesInput | PushSubscriptionScalarWhereWithAggregatesInput[]
+    OR?: PushSubscriptionScalarWhereWithAggregatesInput[]
+    NOT?: PushSubscriptionScalarWhereWithAggregatesInput | PushSubscriptionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PushSubscription"> | string
+    endpoint?: StringWithAggregatesFilter<"PushSubscription"> | string
+    p256dh?: StringWithAggregatesFilter<"PushSubscription"> | string
+    auth?: StringWithAggregatesFilter<"PushSubscription"> | string
+    role?: StringWithAggregatesFilter<"PushSubscription"> | string
+    branchId?: StringNullableWithAggregatesFilter<"PushSubscription"> | string | null
+    userId?: StringNullableWithAggregatesFilter<"PushSubscription"> | string | null
+    userName?: StringNullableWithAggregatesFilter<"PushSubscription"> | string | null
+    customerPhone?: StringNullableWithAggregatesFilter<"PushSubscription"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"PushSubscription"> | string | null
+    isActive?: BoolWithAggregatesFilter<"PushSubscription"> | boolean
+    lastNotifiedAt?: DateTimeNullableWithAggregatesFilter<"PushSubscription"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PushSubscription"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PushSubscription"> | Date | string
   }
 
   export type BranchCreateInput = {
@@ -22437,6 +23838,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     customer: CustomerCreateNestedOneWithoutBookingsInput
@@ -22456,6 +23859,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22469,6 +23874,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneRequiredWithoutBookingsNestedInput
@@ -22488,6 +23895,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22504,6 +23913,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22517,6 +23928,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22533,6 +23946,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22930,6 +24345,8 @@ export namespace Prisma {
     bookingSlotInterval?: number
     reminderMinutesBefore?: number
     receiptFooterNotes?: string
+    vapidPublicKey?: string | null
+    vapidPrivateKey?: string | null
     updatedAt?: Date | string
   }
 
@@ -22954,6 +24371,8 @@ export namespace Prisma {
     bookingSlotInterval?: number
     reminderMinutesBefore?: number
     receiptFooterNotes?: string
+    vapidPublicKey?: string | null
+    vapidPrivateKey?: string | null
     updatedAt?: Date | string
   }
 
@@ -22978,6 +24397,8 @@ export namespace Prisma {
     bookingSlotInterval?: IntFieldUpdateOperationsInput | number
     reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
     receiptFooterNotes?: StringFieldUpdateOperationsInput | string
+    vapidPublicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    vapidPrivateKey?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23002,6 +24423,8 @@ export namespace Prisma {
     bookingSlotInterval?: IntFieldUpdateOperationsInput | number
     reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
     receiptFooterNotes?: StringFieldUpdateOperationsInput | string
+    vapidPublicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    vapidPrivateKey?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23026,6 +24449,8 @@ export namespace Prisma {
     bookingSlotInterval?: number
     reminderMinutesBefore?: number
     receiptFooterNotes?: string
+    vapidPublicKey?: string | null
+    vapidPrivateKey?: string | null
     updatedAt?: Date | string
   }
 
@@ -23050,6 +24475,8 @@ export namespace Prisma {
     bookingSlotInterval?: IntFieldUpdateOperationsInput | number
     reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
     receiptFooterNotes?: StringFieldUpdateOperationsInput | string
+    vapidPublicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    vapidPrivateKey?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23074,6 +24501,8 @@ export namespace Prisma {
     bookingSlotInterval?: IntFieldUpdateOperationsInput | number
     reminderMinutesBefore?: IntFieldUpdateOperationsInput | number
     receiptFooterNotes?: StringFieldUpdateOperationsInput | string
+    vapidPublicKey?: NullableStringFieldUpdateOperationsInput | string | null
+    vapidPrivateKey?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23561,6 +24990,125 @@ export namespace Prisma {
     recordedBy?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionCreateInput = {
+    id?: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    role?: string
+    branchId?: string | null
+    userId?: string | null
+    userName?: string | null
+    customerPhone?: string | null
+    userAgent?: string | null
+    isActive?: boolean
+    lastNotifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PushSubscriptionUncheckedCreateInput = {
+    id?: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    role?: string
+    branchId?: string | null
+    userId?: string | null
+    userName?: string | null
+    customerPhone?: string | null
+    userAgent?: string | null
+    isActive?: boolean
+    lastNotifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PushSubscriptionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastNotifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastNotifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionCreateManyInput = {
+    id?: string
+    endpoint: string
+    p256dh: string
+    auth: string
+    role?: string
+    branchId?: string | null
+    userId?: string | null
+    userName?: string | null
+    customerPhone?: string | null
+    userAgent?: string | null
+    isActive?: boolean
+    lastNotifiedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PushSubscriptionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastNotifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    customerPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastNotifiedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -24165,6 +25713,8 @@ export namespace Prisma {
     status?: SortOrder
     notes?: SortOrder
     totalAmount?: SortOrder
+    reminderSentAt?: SortOrder
+    overdueAlertSentAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24185,6 +25735,8 @@ export namespace Prisma {
     status?: SortOrder
     notes?: SortOrder
     totalAmount?: SortOrder
+    reminderSentAt?: SortOrder
+    overdueAlertSentAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24201,6 +25753,8 @@ export namespace Prisma {
     status?: SortOrder
     notes?: SortOrder
     totalAmount?: SortOrder
+    reminderSentAt?: SortOrder
+    overdueAlertSentAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24471,6 +26025,8 @@ export namespace Prisma {
     bookingSlotInterval?: SortOrder
     reminderMinutesBefore?: SortOrder
     receiptFooterNotes?: SortOrder
+    vapidPublicKey?: SortOrder
+    vapidPrivateKey?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -24500,6 +26056,8 @@ export namespace Prisma {
     bookingSlotInterval?: SortOrder
     reminderMinutesBefore?: SortOrder
     receiptFooterNotes?: SortOrder
+    vapidPublicKey?: SortOrder
+    vapidPrivateKey?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -24524,6 +26082,8 @@ export namespace Prisma {
     bookingSlotInterval?: SortOrder
     reminderMinutesBefore?: SortOrder
     receiptFooterNotes?: SortOrder
+    vapidPublicKey?: SortOrder
+    vapidPrivateKey?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -24819,6 +26379,57 @@ export namespace Prisma {
 
   export type TreasuryExpenseSumOrderByAggregateInput = {
     amount?: SortOrder
+  }
+
+  export type PushSubscriptionCountOrderByAggregateInput = {
+    id?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    role?: SortOrder
+    branchId?: SortOrder
+    userId?: SortOrder
+    userName?: SortOrder
+    customerPhone?: SortOrder
+    userAgent?: SortOrder
+    isActive?: SortOrder
+    lastNotifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PushSubscriptionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    role?: SortOrder
+    branchId?: SortOrder
+    userId?: SortOrder
+    userName?: SortOrder
+    customerPhone?: SortOrder
+    userAgent?: SortOrder
+    isActive?: SortOrder
+    lastNotifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PushSubscriptionMinOrderByAggregateInput = {
+    id?: SortOrder
+    endpoint?: SortOrder
+    p256dh?: SortOrder
+    auth?: SortOrder
+    role?: SortOrder
+    branchId?: SortOrder
+    userId?: SortOrder
+    userName?: SortOrder
+    customerPhone?: SortOrder
+    userAgent?: SortOrder
+    isActive?: SortOrder
+    lastNotifiedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UserCreateNestedManyWithoutBranchInput = {
@@ -26203,6 +27814,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     customer: CustomerCreateNestedOneWithoutBookingsInput
@@ -26220,6 +27833,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26674,6 +28289,8 @@ export namespace Prisma {
     status?: StringFilter<"Booking"> | string
     notes?: StringNullableFilter<"Booking"> | string | null
     totalAmount?: FloatFilter<"Booking"> | number
+    reminderSentAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
+    overdueAlertSentAt?: DateTimeNullableFilter<"Booking"> | Date | string | null
     createdAt?: DateTimeFilter<"Booking"> | Date | string
     updatedAt?: DateTimeFilter<"Booking"> | Date | string
   }
@@ -27230,6 +28847,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     customer: CustomerCreateNestedOneWithoutBookingsInput
@@ -27247,6 +28866,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -27610,6 +29231,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     branch: BranchCreateNestedOneWithoutBookingsInput
@@ -27627,6 +29250,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29099,6 +30724,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29372,6 +30999,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneRequiredWithoutBookingsNestedInput
@@ -29389,6 +31018,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29404,6 +31035,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29770,6 +31403,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29820,6 +31455,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneRequiredWithoutBookingsNestedInput
@@ -29837,6 +31474,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29852,6 +31491,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29978,6 +31619,8 @@ export namespace Prisma {
     status?: string
     notes?: string | null
     totalAmount?: number
+    reminderSentAt?: Date | string | null
+    overdueAlertSentAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -30017,6 +31660,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     branch?: BranchUpdateOneRequiredWithoutBookingsNestedInput
@@ -30034,6 +31679,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30049,6 +31696,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     totalAmount?: FloatFieldUpdateOperationsInput | number
+    reminderSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    overdueAlertSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

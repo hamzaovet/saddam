@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendPushNotifications } from "@/lib/push";
 
 export async function GET(req: Request) {
   try {
@@ -398,6 +399,17 @@ export async function PATCH(req: Request) {
         where: { id: ticket.specialistId },
         data: { status: "AVAILABLE" },
       });
+
+      await sendPushNotifications(
+        { roles: ["POS", "ADMIN", "OWNER"], branchId: updated.branchId },
+        {
+          title: `💰 شيك جاهز للتحصيل (#${updated.ticketNumber})`,
+          body: `${updated.customerName} • كرسي #${updated.chairNumber} (${updated.specialist?.name || ""}) • الإجمالي ${updated.finalAmount} ج.م`,
+          url: "/pos",
+          tag: `saddam-pos-${updated.id}`,
+          requireInteraction: true,
+        }
+      );
 
       return NextResponse.json({ success: true, ticket: updated });
     }

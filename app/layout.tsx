@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { PwaRegistrar } from "@/components/PwaBootAndPushButton";
 
 export const metadata: Metadata = {
   title: "صالون حلاقة صدام VIP | Saddam Barber Shop",
@@ -35,6 +36,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-[#0a0a0e] text-slate-100 antialiased selection:bg-amber-500 selection:text-black">
+        <PwaRegistrar />
         {children}
       </body>
     </html>

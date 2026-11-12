@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import CardQRModal from "@/components/CardQRModal";
 import CustomerChatWidget from "@/components/CustomerChatWidget";
+import { PushOptInButton } from "@/components/PwaBootAndPushButton";
+import { computeBookingTiming } from "@/lib/booking-time";
 import {
   Scissors,
   Sparkles,
@@ -34,6 +36,11 @@ import {
   Sparkle,
   Tag,
   LogOut,
+  MessageSquare,
+  Plus,
+  Trash2,
+  ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -61,7 +68,9 @@ export default function HomePage() {
   // Auth / Customer State
   const [customer, setCustomer] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<"REGISTER" | "LOGIN">("REGISTER");
   const [authStep, setAuthStep] = useState<"INPUT" | "OTP">("INPUT");
+  const [authContextMsg, setAuthContextMsg] = useState("");
   const [regForm, setRegForm] = useState({ name: "", phone: "", email: "" });
   const [otpCode, setOtpCode] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
@@ -69,6 +78,13 @@ export default function HomePage() {
   const [authSuccessMsg, setAuthSuccessMsg] = useState("");
   const [showCustomerMenu, setShowCustomerMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Royal Client Workspace State
+  const [showRoyalPortal, setShowRoyalPortal] = useState(false);
+  const [royalPortalTab, setRoyalPortalTab] = useState<"BUILDER" | "MY_BOOKINGS" | "NOTIFICATIONS">("BUILDER");
+  const [myBookings, setMyBookings] = useState<any[]>([]);
+  const [refreshingBookings, setRefreshingBookings] = useState(false);
+  const [portalCatalogCategory, setPortalCatalogCategory] = useState<string>("ALL");
 
   // Custom Toast State (No Windows native alerts!)
   const [pageToast, setPageToast] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
@@ -87,6 +103,8 @@ export default function HomePage() {
   const executeCustomerLogout = () => {
     localStorage.removeItem("saddam_customer");
     setCustomer(null);
+    setMyBookings([]);
+    setShowRoyalPortal(false);
     setShowCustomerMenu(false);
     setShowLogoutModal(false);
     showToast("info", "تم تسجيل خروجك من الحساب بنجاح 🚪");
@@ -226,52 +244,52 @@ export default function HomePage() {
     "01:30 AM",
   ];
 
-  // 15-Minute Reminder Polling
+  // 15-Minute Reminder Polling & Live Bookings Sync
+  const refreshMyBookings = async (custId?: string) => {
+    const idToUse = custId || customer?.id;
+    if (!idToUse) return;
+    try {
+      setRefreshingBookings(true);
+      const [resBk] = await Promise.all([
+        fetch(`/api/bookings?customerId=${idToUse}`, { cache: "no-store" }),
+        fetch(`/api/bookings/watchdog?branchId=${selectedBranchId || "ALL"}`, { cache: "no-store" }).catch(() => null),
+      ]);
+      const data = await resBk.json();
+      if (data.success && Array.isArray(data.bookings)) {
+        setMyBookings(data.bookings);
+        const reminderLead = settings?.reminderMinutesBefore || 15;
+        const activeList = data.bookings.filter(
+          (b: any) => b.status === "PENDING" || b.status === "CONFIRMED"
+        );
+        for (const b of activeList) {
+          const ackKey = `saddam_ack_reminder_${b.id}`;
+          if (sessionStorage.getItem(ackKey)) continue;
+          const timing = computeBookingTiming(b.bookingDate, b.timeSlot, reminderLead);
+          if (timing.isUpcoming15Min) {
+            setActiveAppointmentReminder({ ...b, diffMinutes: timing.diffMinutes ?? 0 });
+            const remindedKey = `saddam_reminded_${b.id}`;
+            if (!sessionStorage.getItem(remindedKey)) {
+              sessionStorage.setItem(remindedKey, "1");
+              playCustomerReminderChime();
+            }
+            break;
+          }
+        }
+      }
+    } catch {
+    } finally {
+      setRefreshingBookings(false);
+    }
+  };
+
   useEffect(() => {
     if (!customer?.id) return;
 
-    const checkUpcomingAppointment = async () => {
-      try {
-        const res = await fetch(`/api/bookings?customerId=${customer.id}&status=CONFIRMED`);
-        const data = await res.json();
-        if (data.success && data.bookings && data.bookings.length > 0) {
-          const today = new Date().toISOString().split("T")[0];
-          const todayBookings = data.bookings.filter((b: any) => b.bookingDate === today);
-          if (todayBookings.length > 0) {
-            const b = todayBookings[0];
-            const ackKey = `saddam_ack_reminder_${b.id}`;
-            if (sessionStorage.getItem(ackKey)) {
-              return; // Already acknowledged, do not show again
-            }
-
-            const parts = (b.timeSlot || "").trim().split(" ");
-            if (parts.length === 2) {
-              let [h, m] = parts[0].split(":").map(Number);
-              const period = parts[1];
-              if (period === "PM" && h < 12) h += 12;
-              if (period === "AM" && h === 12) h = 0;
-              const slotMin = h * 60 + m;
-              const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-              const diff = slotMin - nowMin;
-              const reminderLead = settings?.reminderMinutesBefore || 15;
-              if (diff >= -15 && diff <= reminderLead + 10) {
-                setActiveAppointmentReminder({ ...b, diffMinutes: diff });
-                const remindedKey = `saddam_reminded_${b.id}`;
-                if (!sessionStorage.getItem(remindedKey)) {
-                  sessionStorage.setItem(remindedKey, "1");
-                  playCustomerReminderChime();
-                }
-              }
-            }
-          }
-        }
-      } catch {}
-    };
-
-    checkUpcomingAppointment();
-    const interval = setInterval(checkUpcomingAppointment, 60000);
+    refreshMyBookings(customer.id);
+    const interval = setInterval(() => refreshMyBookings(customer.id), 45000);
     return () => clearInterval(interval);
-  }, [customer, settings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customer?.id, settings?.reminderMinutesBefore, selectedBranchId]);
 
   // Acknowledge & Respond to 15-Minute Reminder
   const handleAcknowledgeReminder = async (
@@ -461,7 +479,7 @@ export default function HomePage() {
     (o) => !selectedBranchId || !o.branchId || o.branchId === selectedBranchId
   );
 
-  // Quick Select an Offer / Package
+  // Quick Select an Offer / Package (Auth-First -> Royal Client Portal)
   const handleSelectOffer = (offer: any) => {
     const offerItem = {
       id: `offer-${offer.id}`,
@@ -480,10 +498,16 @@ export default function HomePage() {
       setSelectedBranchId(offer.branchId);
     }
 
-    const stepEl = document.getElementById("step-specialists");
-    if (stepEl) {
-      stepEl.scrollIntoView({ behavior: "smooth" });
+    if (!customer) {
+      setAuthContextMsg(`تم اختيار "${offer.titleAr}" 👑 سجل دخولك أو أنشئ حسابك لفتح صفحتك الملكية وإتمام الحجز`);
+      setAuthStep("INPUT");
+      setShowAuthModal(true);
+      return;
     }
+
+    setRoyalPortalTab("BUILDER");
+    setShowRoyalPortal(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Filter Services by Branch & Category
@@ -501,8 +525,19 @@ export default function HomePage() {
     0
   );
 
-  // Toggle Service Selection
+  // Toggle Service Selection (Auth-First when not logged in)
   const toggleService = (srv: any) => {
+    if (!customer) {
+      setSelectedServices((prev) => {
+        const exists = prev.some((item) => item.id === srv.id);
+        return exists ? prev : [...prev, srv];
+      });
+      setAuthContextMsg(`اخترت "${srv.nameAr}" ✂️ سجل دخولك أو أنشئ حسابك لفتح صفحتك الملكية وتعديل خدماتك أو إتمام الحجز`);
+      setAuthStep("INPUT");
+      setShowAuthModal(true);
+      return;
+    }
+
     setSelectedServices((prev) => {
       const exists = prev.some((item) => item.id === srv.id);
       if (exists) {
@@ -555,7 +590,40 @@ export default function HomePage() {
     }
   };
 
-  // Verify OTP
+  // Quick Login for Returning Customer by Phone (sends OTP to saved Gmail)
+  const handleQuickPhoneLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regForm.phone.trim()) {
+      setAuthError("برجاء إدخال رقم الموبايل المسجل");
+      return;
+    }
+    try {
+      setAuthLoading(true);
+      setAuthError("");
+      const res = await fetch("/api/auth/customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "LOGIN",
+          phone: regForm.phone.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRegForm((prev) => ({ ...prev, email: data.email || prev.email }));
+        setAuthSuccessMsg(data.message || "تم إرسال كود الدخول لبريدك الإلكتروني المسجل");
+        setAuthStep("OTP");
+      } else {
+        setAuthError(data.error || "رقم الهاتف غير مسجل — يمكنك اختيار حساب جديد");
+      }
+    } catch {
+      setAuthError("تعذر الاتصال بالخادم");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Verify OTP -> Open Royal Client Portal
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode.trim()) {
@@ -581,9 +649,13 @@ export default function HomePage() {
         setCustomer(data.customer);
         localStorage.setItem("saddam_customer", JSON.stringify(data.customer));
         setShowAuthModal(false);
-        if (selectedServices.length > 0) {
-          executeBooking(data.customer.id);
-        }
+        setAuthContextMsg("");
+        setOtpCode("");
+        setRoyalPortalTab(selectedServices.length > 0 ? "BUILDER" : "MY_BOOKINGS");
+        setShowRoyalPortal(true);
+        await refreshMyBookings(data.customer.id);
+        showToast("success", `أهلاً بك يا ${data.customer.name} في صفحتك الملكية 👑`);
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         setAuthError(data.error || "كود التفعيل غير صحيح");
       }
@@ -645,6 +717,8 @@ export default function HomePage() {
         setConfirmedBooking(data.booking);
         setSelectedServices([]);
         setShowBookingModal(false);
+        setRoyalPortalTab("MY_BOOKINGS");
+        await refreshMyBookings(custId);
         showToast("success", "تم استلام وتأكيد طلب حجزك الملكي بنجاح! 👑🎉");
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
@@ -810,20 +884,27 @@ export default function HomePage() {
             <span className="hidden lg:inline">كارت الـ 2 QR 🪪</span>
           </button>
 
-          {/* Customer Profile / Login */}
+          {/* Customer Profile / Royal Portal / Login */}
           {customer ? (
-            <div className="relative shrink-0">
-              <div className="flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-2.5 rounded-xl bg-black/70 border border-amber-500/40 text-xs shadow-md">
+            <div className="relative shrink-0 flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-3 rounded-xl bg-gradient-to-l from-amber-500/20 to-black/80 border border-amber-400/50 text-xs shadow-md">
                 <button
                   type="button"
-                  onClick={() => setShowCustomerMenu(!showCustomerMenu)}
-                  className="flex items-center gap-1.5 hover:opacity-80 transition cursor-pointer"
-                  title="عرض تفاصيل الحساب"
+                  onClick={() => {
+                    setShowCustomerMenu(false);
+                    setRoyalPortalTab(selectedServices.length > 0 ? "BUILDER" : "MY_BOOKINGS");
+                    setShowRoyalPortal(true);
+                    refreshMyBookings(customer.id);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="flex items-center gap-1.5 hover:opacity-85 transition cursor-pointer"
+                  title="دخول صفحتي الملكية والحجوزات والتنبيهات"
                 >
                   <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span className="font-bold text-white max-w-[65px] sm:max-w-[100px] truncate">{customer.name}</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-black border border-amber-500/30">
-                    VIP
+                  <span className="font-black text-amber-300 hidden sm:inline">صفحتي الملكية:</span>
+                  <span className="font-bold text-white max-w-[75px] sm:max-w-[110px] truncate">{customer.name}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 font-mono font-black">
+                    {myBookings.length > 0 ? `${myBookings.length} 👑` : "VIP"}
                   </span>
                 </button>
 
@@ -838,53 +919,619 @@ export default function HomePage() {
                   <LogOut className="w-3 h-3" />
                 </button>
               </div>
-
-              {/* Customer Dropdown Menu */}
-              {showCustomerMenu && (
-                <div className="absolute left-0 top-full mt-2 w-64 bg-[#12121a] border border-amber-500/40 rounded-2xl p-4 shadow-2xl z-50 space-y-3 animate-fade-in font-sans text-xs">
-                  <div className="border-b border-white/10 pb-2.5">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-black text-white text-sm">{customer.name}</h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black">
-                        VIP عضو ملكي
-                      </span>
-                    </div>
-                    <p className="text-slate-400 font-mono text-[11px] pt-1">{customer.phone}</p>
-                    {customer.email && (
-                      <p className="text-slate-500 text-[10px] truncate">{customer.email}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-1 text-slate-300 text-[11px]">
-                    <p className="text-amber-300 font-bold">✨ مرحباً بك في صالون صدام الملكي</p>
-                    <p className="text-slate-400 text-[10px]">يمكنك حجز مواعيدك ومتابعة عروضك الملكية أولاً بأول.</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleCustomerLogout}
-                    className="w-full py-2 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>تسجيل الخروج من الحساب 🚪</span>
-                  </button>
-                </div>
-              )}
             </div>
           ) : (
             <button
               onClick={() => {
+                setAuthContextMsg("");
                 setAuthStep("INPUT");
                 setShowAuthModal(true);
               }}
               className="py-1.5 px-3 sm:py-2 sm:px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 whitespace-nowrap shrink-0 cursor-pointer"
             >
               <User className="w-3.5 h-3.5 shrink-0" />
-              <span>تسجيل / حسابي</span>
+              <span>دخول / صفحتي الملكية</span>
             </button>
           )}
         </div>
       </header>
+
+      {/* ─────────────────────────────────────────────────────────────
+          1.5 ROYAL CLIENT PORTAL WORKSPACE (WHEN LOGGED IN & OPENED)
+         ───────────────────────────────────────────────────────────── */}
+      {showRoyalPortal && customer && (
+        <section className="max-w-5xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 space-y-6 animate-fade-in">
+          {/* Top Portal Header Card */}
+          <div className="p-5 rounded-3xl bg-gradient-to-l from-[#181826] via-[#12121b] to-[#1a150b] border-2 border-amber-500/45 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="py-0.5 px-2.5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px]">
+                  👑 الصفحة الملكية الخاصة بك
+                </span>
+                <span className="text-[11px] font-bold text-emerald-400">
+                  📍 {selectedBranch?.name || "اختر الفرع"}
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white">
+                مرحباً بك يا {customer.name} ✨
+              </h2>
+              <p className="text-xs text-slate-400 font-mono">
+                📱 {customer.phone} {customer.email ? `• ✉️ ${customer.email}` : ""}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <PushOptInButton
+                role="CUSTOMER"
+                branchId={selectedBranchId || null}
+                customerPhone={customer.phone}
+                userName={customer.name}
+                compact
+                showTestButton
+              />
+              <button
+                type="button"
+                onClick={() => setShowRoyalPortal(false)}
+                className="py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-black text-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <ArrowRight className="w-4 h-4 text-amber-400" />
+                <span>العودة للصفحة الرئيسية وتصفح الخدمات والعروض</span>
+              </button>
+            </div>
+          </div>
+
+          {confirmedBooking && (
+            <div className="p-4 rounded-3xl bg-gradient-to-l from-emerald-500/20 to-[#12121b] border-2 border-emerald-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+              <div className="space-y-1">
+                <span className="text-xs font-black text-emerald-300">
+                  ✅ تم استلام طلب الحجز رقم #{confirmedBooking.bookingNumber} بنجاح!
+                </span>
+                <p className="text-xs text-slate-200">
+                  📍 {confirmedBooking.branch?.name} • ⏰ {confirmedBooking.bookingDate} — {confirmedBooking.timeSlot} • 💰 {confirmedBooking.totalAmount} ج.م
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <PushOptInButton
+                  role="CUSTOMER"
+                  branchId={confirmedBooking.branchId}
+                  customerPhone={customer?.phone}
+                  userName={customer?.name}
+                  compact
+                  showTestButton
+                />
+                <button
+                  type="button"
+                  onClick={() => setConfirmedBooking(null)}
+                  className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Portal Sub-Tabs */}
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => setRoyalPortalTab("BUILDER")}
+              className={`py-3 px-3 rounded-2xl font-black text-xs sm:text-sm transition border flex items-center justify-center gap-1.5 cursor-pointer ${
+                royalPortalTab === "BUILDER"
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20"
+                  : "bg-[#12121b] text-slate-300 border-white/10 hover:border-amber-500/30"
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4 shrink-0" />
+              <span>تجهيز وحجز الموعد ({selectedServices.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setRoyalPortalTab("MY_BOOKINGS");
+                refreshMyBookings(customer.id);
+              }}
+              className={`py-3 px-3 rounded-2xl font-black text-xs sm:text-sm transition border flex items-center justify-center gap-1.5 cursor-pointer ${
+                royalPortalTab === "MY_BOOKINGS"
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20"
+                  : "bg-[#12121b] text-slate-300 border-white/10 hover:border-amber-500/30"
+              }`}
+            >
+              <Calendar className="w-4 h-4 shrink-0" />
+              <span>حجوزاتي والتنبيهات ({myBookings.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRoyalPortalTab("NOTIFICATIONS")}
+              className={`py-3 px-3 rounded-2xl font-black text-xs sm:text-sm transition border flex items-center justify-center gap-1.5 cursor-pointer ${
+                royalPortalTab === "NOTIFICATIONS"
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20"
+                  : "bg-[#12121b] text-slate-300 border-white/10 hover:border-amber-500/30"
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 shrink-0" />
+              <span>الشات وإشعارات الهاتف</span>
+            </button>
+          </div>
+
+          {/* PORTAL TAB 1: BOOKING BUILDER (EDIT / ADD / PICK SPECIALIST / COMPLETE OR CHAT) */}
+          {royalPortalTab === "BUILDER" && (
+            <div className="space-y-6">
+              {/* Branch Lock & Switch */}
+              <div className="p-4 rounded-2xl bg-[#101018] border border-amber-500/30 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <span className="text-[11px] text-slate-400 block">الفرع المختار للحجز:</span>
+                  <strong className="text-sm font-black text-amber-300">
+                    📍 {selectedBranch?.name || "لم يتم تحديد فرع"} — {selectedBranch?.address || ""}
+                  </strong>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowBranchGateway(true)}
+                  className="py-1.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 font-black text-xs cursor-pointer"
+                >
+                  تغيير الفرع 🔄
+                </button>
+              </div>
+
+              {/* Selected Services & Offers Cart */}
+              <div className="p-5 rounded-3xl bg-[#11111a] border border-amber-500/35 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h3 className="text-base font-black text-white">
+                    ✂️ خدماتك وعروضك المختارة حالياً ({selectedServices.length})
+                  </h3>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-slate-400">المدة المقدرة: <strong className="text-white font-mono">{totalDuration} د</strong></span>
+                    <span className="text-slate-400">الإجمالي: <strong className="text-amber-400 font-mono text-base font-black">{totalAmount} ج.م</strong></span>
+                  </div>
+                </div>
+
+                {selectedServices.length === 0 ? (
+                  <div className="p-6 rounded-2xl bg-black/40 border border-dashed border-white/15 text-center text-xs text-slate-400">
+                    لم تختر أي خدمة بعد — أضف خدمات أو عروض ملكية من القائمة بالأسفل 👇
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedServices.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-2 py-2 px-3 rounded-2xl bg-amber-500/15 border border-amber-400/50 text-xs"
+                      >
+                        <span className="font-black text-white">{item.nameAr}</span>
+                        <span className="font-mono text-amber-300 font-bold">{item.price}ج</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedServices((prev) => prev.filter((s) => s.id !== item.id))}
+                          className="p-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 cursor-pointer"
+                          title="حذف الخدمة"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add / Edit Other Services or Offers Inline */}
+                <div className="pt-3 border-t border-white/10 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-black text-amber-300 flex items-center gap-1.5">
+                      <Plus className="w-4 h-4" /> تعديل أو إضافة خدمات وعروض أخرى:
+                    </span>
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                      {[
+                        { id: "ALL", label: "الكل" },
+                        { id: "OFFERS", label: "العروض الملكية 👑" },
+                        { id: "HAIR", label: "شعر ✂️" },
+                        { id: "BEARD", label: "دقن 🧔" },
+                        { id: "VIP_PACKAGES", label: "بكجات VIP" },
+                        { id: "SKIN_CARE", label: "بشرة 🔥" },
+                        { id: "KIDS", label: "أطفال" },
+                      ].map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setPortalCatalogCategory(cat.id)}
+                          className={`py-1 px-2.5 rounded-lg text-[10px] font-black whitespace-nowrap border cursor-pointer ${
+                            portalCatalogCategory === cat.id
+                              ? "bg-amber-500 text-slate-950 border-amber-400"
+                              : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1">
+                    {(portalCatalogCategory === "ALL" || portalCatalogCategory === "OFFERS") &&
+                      filteredOffers.map((off) => {
+                        const offId = `offer-${off.id}`;
+                        const isPicked = selectedServices.some((s) => s.id === offId);
+                        return (
+                          <button
+                            key={offId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedServices((prev) =>
+                                isPicked
+                                  ? prev.filter((s) => s.id !== offId)
+                                  : [
+                                      ...prev,
+                                      {
+                                        id: offId,
+                                        nameAr: `${off.titleAr} (${off.badge || "عرض خاص"})`,
+                                        price: off.price,
+                                        durationMinutes: 60,
+                                        image: off.image,
+                                      },
+                                    ]
+                              );
+                            }}
+                            className={`p-2.5 rounded-xl border text-right text-xs transition cursor-pointer ${
+                              isPicked
+                                ? "bg-amber-500/20 border-amber-400 text-white font-black"
+                                : "bg-amber-500/5 hover:bg-amber-500/15 border-amber-500/25 text-amber-100"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="leading-snug line-clamp-2">👑 {off.titleAr}</span>
+                              <span className="font-mono text-amber-400 shrink-0">{off.price}ج</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+
+                    {services
+                      .filter(
+                        (s) =>
+                          (!selectedBranchId || !s.branchId || s.branchId === selectedBranchId) &&
+                          (portalCatalogCategory === "ALL" || s.category === portalCatalogCategory)
+                      )
+                      .map((srv) => {
+                        const isPicked = selectedServices.some((s) => s.id === srv.id);
+                        return (
+                          <button
+                            key={srv.id}
+                            type="button"
+                            onClick={() => toggleService(srv)}
+                            className={`p-2.5 rounded-xl border text-right text-xs transition cursor-pointer ${
+                              isPicked
+                                ? "bg-amber-500/20 border-amber-400 text-white font-black"
+                                : "bg-black/40 hover:bg-white/5 border-white/10 text-slate-300"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="leading-snug line-clamp-2">{srv.nameAr}</span>
+                              <span className="font-mono text-amber-400 shrink-0">{srv.price}ج</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2 Inside Portal: Specialist / First Available Chair */}
+              <div className="p-5 rounded-3xl bg-[#11111a] border border-white/10 space-y-3">
+                <h3 className="text-sm font-black text-white">✂️ اختيار المتخصص أو أول كرسي يفضى</h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSpecialistId("")}
+                    className={`py-2 px-3.5 rounded-2xl text-xs font-black border transition cursor-pointer ${
+                      !selectedSpecialistId
+                        ? "bg-amber-500 text-slate-950 border-amber-400 shadow-lg"
+                        : "bg-black/40 text-slate-300 border-white/10 hover:border-amber-500/30"
+                    }`}
+                  >
+                    ⚡ أول كرسي يفضى بالفرع
+                  </button>
+                  {filteredSpecialists.map((spec) => (
+                    <button
+                      key={spec.id}
+                      type="button"
+                      onClick={() => setSelectedSpecialistId(spec.id)}
+                      className={`py-2 px-3.5 rounded-2xl text-xs font-bold border transition flex items-center gap-2 cursor-pointer ${
+                        selectedSpecialistId === spec.id
+                          ? "bg-amber-500 text-slate-950 border-amber-400 font-black"
+                          : "bg-black/40 text-slate-300 border-white/10 hover:border-amber-500/30"
+                      }`}
+                    >
+                      <span>{spec.name}</span>
+                      <span className="text-[10px] opacity-80">
+                        ({spec.status === "AVAILABLE" ? "متاح 🟢" : spec.status === "WITH_CLIENT" ? "مشغول 💺" : "كرسي #" + spec.chairNumber})
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step 3 Inside Portal: Date + Time + Confirm / Chat */}
+              <div className="p-5 rounded-3xl bg-[#11111a] border border-white/10 space-y-4">
+                <h3 className="text-sm font-black text-white">📅 تحديد الموعد والملاحظات</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300">التاريخ:</label>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      className="w-full py-2.5 px-3.5 rounded-2xl bg-black/60 border border-amber-500/30 text-xs font-bold text-white"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300">ملاحظات خاصة (اختياري):</label>
+                    <input
+                      type="text"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="مثال: قصة مخصصة أو حجز عريس..."
+                      className="w-full py-2.5 px-3.5 rounded-2xl bg-black/60 border border-amber-500/30 text-xs font-bold text-white"
+                    />
+                  </div>
+                </div>
+
+                {checkIsDayOff(selectedDate) && (
+                  <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs font-bold">
+                    ⚠️ {settings?.dayOffMessage || "عطلة الصالون الأسبوعية"}
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">اختر الساعة:</label>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 max-h-40 overflow-y-auto p-1">
+                    {timeSlots.map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedTimeSlot(slot)}
+                        className={`py-2 px-2 rounded-xl font-mono text-[11px] font-bold border transition cursor-pointer ${
+                          selectedTimeSlot === slot
+                            ? "bg-amber-500 text-slate-950 border-amber-400 font-black"
+                            : "bg-black/50 text-slate-300 border-white/10 hover:border-amber-500/30"
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-white/10">
+                  <button
+                    type="button"
+                    disabled={submittingBooking || selectedServices.length === 0 || checkIsDayOff(selectedDate)}
+                    onClick={() => executeBooking(customer.id)}
+                    className="py-3.5 px-5 rounded-2xl bg-gradient-to-l from-amber-500 to-yellow-400 hover:opacity-95 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{submittingBooking ? "جاري تأكيد الحجز..." : `تأكيد الحجز الملكي الآن (${totalAmount} ج.م)`}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent("saddam-open-chat"))}
+                    className="py-3.5 px-5 rounded-2xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-400/40 text-purple-200 font-black text-sm cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>محادثة وشات مباشر مع الصالون 💬</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PORTAL TAB 2: MY BOOKINGS, COORDINATOR UPDATES & 15-MIN/LATE ALERTS */}
+          {royalPortalTab === "MY_BOOKINGS" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-black text-white">📅 سجل حجوزاتك وحالتها اللحظية</h3>
+                <button
+                  type="button"
+                  onClick={() => refreshMyBookings(customer.id)}
+                  disabled={refreshingBookings}
+                  className="py-1.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-amber-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${refreshingBookings ? "animate-spin" : ""}`} />
+                  <span>تحديث الآن</span>
+                </button>
+              </div>
+
+              {myBookings.length === 0 ? (
+                <div className="p-8 rounded-3xl bg-[#11111a] border border-white/10 text-center space-y-3">
+                  <p className="text-sm font-bold text-slate-300">لا توجد حجوزات مسجلة حتى الآن</p>
+                  <button
+                    type="button"
+                    onClick={() => setRoyalPortalTab("BUILDER")}
+                    className="py-2.5 px-5 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs cursor-pointer"
+                  >
+                    ابدأ حجز موعدك الأول الآن ✂️
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {myBookings.map((bk) => {
+                    const timing = computeBookingTiming(
+                      bk.bookingDate,
+                      bk.timeSlot,
+                      settings?.reminderMinutesBefore || 15
+                    );
+                    let bkServices: any[] = [];
+                    try {
+                      bkServices = JSON.parse(bk.serviceIds || "[]");
+                    } catch {
+                      bkServices = [];
+                    }
+                    const isActiveWait = bk.status === "PENDING" || bk.status === "CONFIRMED";
+
+                    return (
+                      <div
+                        key={bk.id}
+                        className={`p-4 sm:p-5 rounded-3xl border space-y-3 ${
+                          isActiveWait && timing.isUpcoming15Min
+                            ? "bg-amber-500/15 border-amber-400 shadow-lg shadow-amber-500/10"
+                            : isActiveWait && timing.isPastDue5Min
+                              ? "bg-rose-500/10 border-rose-500/45"
+                              : "bg-[#11111a] border-white/10"
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-black text-amber-400 text-sm">
+                              #{bk.bookingNumber}
+                            </span>
+                            <span
+                              className={`py-0.5 px-2.5 rounded-full text-[10px] font-black border ${
+                                bk.status === "PENDING"
+                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                                  : bk.status === "CONFIRMED"
+                                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                                    : bk.status === "WAITING_LOUNGE"
+                                      ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
+                                      : bk.status === "IN_CHAIR"
+                                        ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                                        : bk.status === "COMPLETED"
+                                          ? "bg-blue-500/20 text-blue-300 border-blue-500/40"
+                                          : "bg-white/10 text-slate-400 border-white/10"
+                              }`}
+                            >
+                              {bk.status === "PENDING" && "بانتظار تأكيد المنسق 🔔"}
+                              {bk.status === "CONFIRMED" && "مؤكد ومجدول ✅"}
+                              {bk.status === "WAITING_LOUNGE" && "بصالة الانتظار الملكية ⚡"}
+                              {bk.status === "IN_CHAIR" && "جاري الخدمة على الكرسي 💈"}
+                              {bk.status === "COMPLETED" && "مكتمل 🏆"}
+                              {bk.status === "CANCELLED" && "ملغي ❌"}
+                            </span>
+                          </div>
+                          <strong className="font-mono text-emerald-400 font-black text-sm">
+                            {bk.totalAmount} ج.م
+                          </strong>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-300">
+                          <div>📍 <strong>{bk.branch?.name || "الفرع"}</strong></div>
+                          <div>⏰ <strong className="font-mono text-white">{bk.bookingDate} • {bk.timeSlot}</strong></div>
+                          <div>✂️ <strong className="text-amber-300">{bk.specialist?.name || "⚡ أول كرسي يفضى"}</strong></div>
+                        </div>
+
+                        {bkServices.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {bkServices.map((s: any, idx: number) => (
+                              <span key={idx} className="py-1 px-2.5 rounded-xl bg-black/50 border border-white/10 text-[11px] text-slate-200">
+                                {s.nameAr || s.titleAr} ({s.price}ج)
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {bk.notes && (
+                          <div className="p-2.5 rounded-2xl bg-black/50 border border-amber-500/20 text-[11px] text-amber-200">
+                            📝 تحديث المنسق / الملاحظات: {bk.notes}
+                          </div>
+                        )}
+
+                        {isActiveWait && timing.isUpcoming15Min && (
+                          <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <span className="font-black text-amber-200">
+                              ⏰ {timing.diffMinutes && timing.diffMinutes > 0 ? `متبقي ${timing.diffMinutes} دقيقة على موعدك!` : "حان موعدك الآن!"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveAppointmentReminder({ ...bk, diffMinutes: timing.diffMinutes ?? 0 });
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                              }}
+                              className="py-1.5 px-3 rounded-xl bg-amber-500 text-slate-950 font-black text-[11px] cursor-pointer"
+                            >
+                              تأكيد وصولي / أنا في الطريق 🚗
+                            </button>
+                          </div>
+                        )}
+
+                        {isActiveWait && timing.isPastDue5Min && (
+                          <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <span className="font-bold text-rose-200">
+                              ⏳ {timing.isPastDay ? "موعد من يوم سابق لم يكتمل" : "تأخرت أكثر من 5 دقائق عن الموعد — يمكنك طلب الترحيل لأول كرسي يفضى ⚡"}
+                            </span>
+                            {!timing.isPastDay && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  await fetch("/api/bookings", {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ id: bk.id, action: "LATE_FIRST_AVAILABLE" }),
+                                  });
+                                  showToast("success", "⚡ تم ترحيل دورك لأول كرسي يفضى وإبلاغ المنسق!");
+                                  await refreshMyBookings(customer.id);
+                                }}
+                                className="py-1.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] cursor-pointer"
+                              >
+                                وصلت متأخر ← احجز لي أول كرسي يفضى ⚡
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-end gap-2 pt-1 border-t border-white/5">
+                          <button
+                            type="button"
+                            onClick={() => window.dispatchEvent(new CustomEvent("saddam-open-chat"))}
+                            className="py-1.5 px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 font-bold text-[11px] cursor-pointer"
+                          >
+                            💬 شات بخصوص الحجز
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PORTAL TAB 3: BACKGROUND PUSH NOTIFICATIONS & CHAT */}
+          {royalPortalTab === "NOTIFICATIONS" && (
+            <div className="p-6 rounded-3xl bg-[#11111a] border border-amber-500/30 space-y-5">
+              <div className="space-y-1.5">
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-amber-400" />
+                  <span>تنبيهات الخلفية حتى والتطبيق مقفول 📲</span>
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  فعّل الإشعارات ليصلك تنبيه تلقائي على تليفونك أو جهازك قبل موعدك بـ 15 دقيقة، وعند تأكيد الحجز من المنسق، وعند وصول أي رسالة جديدة في الشات — حتى لو المتصفح مقفول تماماً!
+                </p>
+              </div>
+              <div className="p-4 rounded-2xl bg-black/50 border border-white/10">
+                <PushOptInButton
+                  role="CUSTOMER"
+                  branchId={selectedBranchId || null}
+                  customerPhone={customer.phone}
+                  userName={customer.name}
+                  showTestButton
+                />
+              </div>
+              <div className="pt-2 border-t border-white/10 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent("saddam-open-chat"))}
+                  className="py-3 px-5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs cursor-pointer flex items-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>فتح الشات المباشر مع منسق الصالون 💬</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {!(showRoyalPortal && customer) && (
+        <>
 
       {/* ─────────────────────────────────────────────────────────────
           2. GRAND VISUAL HERO SECTION (ROYAL SADDAM BARBER EXPERIENCE)
@@ -1174,12 +1821,40 @@ export default function HomePage() {
               نحن بانتظارك في الموعد المحدد لتقديم أرقى خدمة عناية وحلاقة ملكية! 👑
             </p>
 
-            <button
-              onClick={() => setConfirmedBooking(null)}
-              className="py-2.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition"
-            >
-              حجز موعد إضافي ➕
-            </button>
+            <div className="p-3 rounded-2xl bg-black/50 border border-amber-500/25 flex flex-col items-center gap-2">
+              <span className="text-[11px] font-bold text-amber-300">
+                📲 فعّل الإشعارات ليصلك تنبيه الـ 15 دقيقة وتحديثات المنسق حتى والتطبيق مقفول:
+              </span>
+              <PushOptInButton
+                role="CUSTOMER"
+                branchId={confirmedBooking.branchId}
+                customerPhone={customer?.phone}
+                userName={customer?.name}
+                showTestButton
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {customer && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmedBooking(null);
+                    setRoyalPortalTab("MY_BOOKINGS");
+                    setShowRoyalPortal(true);
+                  }}
+                  className="py-2.5 px-5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-black text-xs transition cursor-pointer"
+                >
+                  متابعة حجوزاتي في صفحتي الملكية 📅
+                </button>
+              )}
+              <button
+                onClick={() => setConfirmedBooking(null)}
+                className="py-2.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition cursor-pointer"
+              >
+                حجز موعد إضافي ➕
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -1593,16 +2268,33 @@ export default function HomePage() {
               </div>
             </div>
 
-            <button
-              onClick={() => setShowBookingModal(true)}
-              disabled={submittingBooking}
-              className="w-full sm:w-auto py-3 px-8 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>متابعة وتأكيد موعد الحجز الملكي 📅👑</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              {customer && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRoyalPortalTab("BUILDER");
+                    setShowRoyalPortal(true);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="flex-1 sm:flex-initial py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-amber-500/40 text-amber-300 font-black text-xs transition cursor-pointer"
+                >
+                  صفحتي الملكية والتعديل 👑
+                </button>
+              )}
+              <button
+                onClick={() => setShowBookingModal(true)}
+                disabled={submittingBooking}
+                className="flex-1 sm:flex-initial py-3 px-8 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>متابعة وتأكيد موعد الحجز الملكي 📅👑</span>
+              </button>
+            </div>
           </div>
         </aside>
+      )}
+        </>
       )}
 
       {/* ─────────────────────────────────────────────────────────────
@@ -1894,11 +2586,17 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto text-xl font-bold">
                 👑
               </div>
-              <h3 className="text-lg font-black text-white">تسجيل وتأكيد حساب عميل صدام</h3>
+              <h3 className="text-lg font-black text-white">دخول / تسجيل حساب عميل صدام</h3>
               <p className="text-xs text-amber-200/70">
-                يصلك كود التفعيل مباشرة عبر رسالة بريد إلكتروني على Gmail
+                بعد الدخول تنتقل مباشرة لصفحتك الملكية لمراجعة خدماتك وإتمام الحجز أو الشات
               </p>
             </div>
+
+            {authContextMsg && (
+              <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-400/50 text-amber-200 text-xs font-bold leading-relaxed">
+                {authContextMsg}
+              </div>
+            )}
 
             {authError && (
               <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-bold flex items-center gap-2">
@@ -1907,7 +2605,58 @@ export default function HomePage() {
               </div>
             )}
 
-            {authStep === "INPUT" ? (
+            {authStep === "INPUT" && (
+              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-black/50 border border-white/10 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode("REGISTER");
+                    setAuthError("");
+                  }}
+                  className={`py-2 px-3 rounded-xl font-black transition cursor-pointer ${
+                    authMode === "REGISTER" ? "bg-amber-500 text-slate-950" : "text-slate-300 hover:bg-white/5"
+                  }`}
+                >
+                  حساب جديد / بالبيانات
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode("LOGIN");
+                    setAuthError("");
+                  }}
+                  className={`py-2 px-3 rounded-xl font-black transition cursor-pointer ${
+                    authMode === "LOGIN" ? "bg-amber-500 text-slate-950" : "text-slate-300 hover:bg-white/5"
+                  }`}
+                >
+                  مسجل بالفعل (بالموبايل)
+                </button>
+              </div>
+            )}
+
+            {authStep === "INPUT" && authMode === "LOGIN" ? (
+              <form onSubmit={handleQuickPhoneLogin} className="space-y-3.5">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-300">رقم الهاتف المسجل:</label>
+                  <input
+                    type="tel"
+                    required
+                    value={regForm.phone}
+                    onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
+                    placeholder="010XXXXXXXX"
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/30 text-xs text-white font-mono font-bold focus:outline-none focus:border-amber-400 text-left"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>{authLoading ? "جارٍ إرسال كود الدخول..." : "إرسال كود الدخول على بريدك المسجل 📩"}</span>
+                </button>
+              </form>
+            ) : authStep === "INPUT" ? (
               <form onSubmit={handleStartAuth} className="space-y-3.5">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-300">الاسم ثلاثي:</label>

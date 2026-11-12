@@ -28,7 +28,7 @@ export default function CustomerChatWidget({
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Initialize guest info from localStorage
+  // Initialize guest info & external open listener
   useEffect(() => {
     try {
       const savedName = localStorage.getItem("saddam_chat_name") || "";
@@ -36,6 +36,9 @@ export default function CustomerChatWidget({
       if (savedName) setGuestName(savedName);
       if (savedPhone) setGuestPhone(savedPhone);
     } catch {}
+    const onOpenChat = () => setIsOpen(true);
+    window.addEventListener("saddam-open-chat", onOpenChat);
+    return () => window.removeEventListener("saddam-open-chat", onOpenChat);
   }, []);
 
   const activePhone = customer?.phone || guestPhone;
