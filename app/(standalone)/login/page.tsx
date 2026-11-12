@@ -120,7 +120,7 @@ export default function StaffLoginPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="مثال: maestro أو coordinator أو cashier-qobba"
+              placeholder="مثال: maestro أو coordinator-qobba أو cashier-qobba"
               className="w-full py-2.5 px-3.5 rounded-xl bg-black/60 border border-amber-500/30 text-xs text-white font-mono font-bold focus:outline-none focus:border-amber-400"
             />
           </div>

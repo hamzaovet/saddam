@@ -214,6 +214,11 @@ export default function CoordinatorControlPage() {
         router.push("/login");
         return;
       }
+      // كل منسق فرع أو مدير فرع لازم يكون مربوط بفرع محدد (إدارة كل الفروع للمالك والمدير العام فقط)
+      if ((user.role === "coordinator" || user.role === "manager") && !user.branchId) {
+        router.push("/login");
+        return;
+      }
       setCurrentUser(user);
       if (user.branchId) {
         setSelectedBranchId(user.branchId);
@@ -642,8 +647,14 @@ export default function CoordinatorControlPage() {
       notify("error", "يرجى إدخال اسم العميل");
       return;
     }
-    const targetBranchId =
-      walkInBranchId || (selectedBranchId !== "ALL" ? selectedBranchId : branches[0]?.id);
+    const isBranchLocked = Boolean(
+      currentUser?.branchId &&
+        currentUser?.role !== "owner" &&
+        currentUser?.role !== "general_manager"
+    );
+    const targetBranchId = isBranchLocked
+      ? currentUser.branchId
+      : walkInBranchId || (selectedBranchId !== "ALL" ? selectedBranchId : branches[0]?.id);
     if (!targetBranchId) {
       notify("error", "يرجى تحديد الفرع");
       return;
@@ -932,6 +943,16 @@ export default function CoordinatorControlPage() {
     );
   };
 
+  const isGlobalViewer =
+    !currentUser?.branchId &&
+    (currentUser?.role === "owner" || currentUser?.role === "general_manager");
+
+  const activeBranchName = useMemo(() => {
+    const bId = currentUser?.branchId || (selectedBranchId !== "ALL" ? selectedBranchId : "");
+    if (!bId) return "جميع الفروع";
+    return branches.find((b) => b.id === bId)?.name || currentUser?.branch?.name || "الفرع التابع";
+  }, [branches, currentUser, selectedBranchId]);
+
   return (
     <div className="min-h-screen bg-[#09090e] text-slate-100 flex flex-col font-sans" dir="rtl">
       {/* ─────────────────────────────────────────────────────────────
@@ -946,24 +967,25 @@ export default function CoordinatorControlPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-sm sm:text-lg font-black text-amber-400 truncate">
-                غرفة المنسق العام والراوتر 🧭
+                {isGlobalViewer ? "غرفة المنسق والراوتر 🧭" : `منسق ${activeBranchName} 🧭`}
               </h1>
-              <span className="py-0.5 px-2 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/35 text-[10px] font-black">
+              <span className="py-0.5 px-2.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/35 text-[10px] font-black">
+                📍 {activeBranchName}
+              </span>
+              <span className="py-0.5 px-2 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/35 text-[10px] font-black hidden sm:inline">
                 تحكم مباشر بالكراسي 🟢
               </span>
             </div>
             <p className="text-[11px] text-slate-400 font-bold truncate">
-              المسؤول: {currentUser?.name || "المنسق العام"} • توجيه الزبائن، الحجوزات، وإدارة الكراسي
+              المسؤول: {currentUser?.name || "منسق الفرع"} • توجيه الزبائن، الحجوزات، وإدارة الكراسي
             </p>
           </div>
         </div>
 
         {/* Actions Bar */}
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-between sm:justify-end">
-          {/* Branch Selector */}
-          {(!currentUser?.branchId ||
-            currentUser?.role === "owner" ||
-            currentUser?.role === "general_manager") && (
+          {/* Branch Selector (Management Only) */}
+          {isGlobalViewer && (
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
@@ -2442,12 +2464,15 @@ export default function CoordinatorControlPage() {
             </div>
 
             <div className="space-y-3.5 text-xs">
-              {branches.length > 1 && (
+              {isGlobalViewer && branches.length > 1 ? (
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">الفرع:</label>
                   <select
                     value={walkInBranchId}
-                    onChange={(e) => setWalkInBranchId(e.target.value)}
+                    onChange={(e) => {
+                      setWalkInBranchId(e.target.value);
+                      setWalkInSpecId("");
+                    }}
                     className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/15 text-white font-bold"
                   >
                     {branches.map((b) => (
@@ -2456,6 +2481,11 @@ export default function CoordinatorControlPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+              ) : (
+                <div className="py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-black flex items-center justify-between">
+                  <span>📍 الفرع المخصص:</span>
+                  <span>{activeBranchName}</span>
                 </div>
               )}
 

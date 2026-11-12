@@ -138,21 +138,41 @@ async function seed() {
     },
   });
 
-  // Coordinator (الراوتر الموحد)
+  // Branch Coordinators (منسق لكل فرع - الراوتر المركزي داخل كل فرع)
   await prisma.user.upsert({
-    where: { username: "coordinator" },
+    where: { username: "coordinator-qobba" },
     update: {
       role: "coordinator",
+      branchId: qobbaBranch.id,
       isActive: true,
     },
     create: {
-      name: "منسق الصالون العام (الراوتر)",
-      username: "coordinator",
+      name: "منسق فرع حدائق القبة",
+      username: "coordinator-qobba",
       passwordHash: "123456789",
       pin: "157230",
       phone: "01121537537",
       role: "coordinator",
-      branchId: null,
+      branchId: qobbaBranch.id,
+      isActive: true,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { username: "coordinator-nasr" },
+    update: {
+      role: "coordinator",
+      branchId: nasrBranch.id,
+      isActive: true,
+    },
+    create: {
+      name: "منسق فرع مدينة نصر",
+      username: "coordinator-nasr",
+      passwordHash: "123456789",
+      pin: "157230",
+      phone: "01121537538",
+      role: "coordinator",
+      branchId: nasrBranch.id,
       isActive: true,
     },
   });

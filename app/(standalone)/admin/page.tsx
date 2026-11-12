@@ -756,6 +756,10 @@ export default function AdminPage() {
   // Save or Update User
   const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (userForm.role === "coordinator" && !userForm.branchId) {
+      showToast("error", "يجب تحديد الفرع للمنسق (كل فرع له منسق خاص به) 🧭");
+      return;
+    }
     try {
       if (editingUser) {
         const payload: any = {
@@ -3902,7 +3906,7 @@ export default function AdminPage() {
                       <td className="p-3.5 font-bold">
                         <span className="py-0.5 px-2 rounded-lg bg-white/5 text-[10px] text-slate-300">
                           {u.role === "coordinator"
-                            ? "المنسق العام (الراوتر) 🧭"
+                            ? "منسق فرع (الراوتر) 🧭"
                             : u.role === "cashier"
                             ? "كاشير POS 💰"
                             : u.role === "owner"
@@ -4683,7 +4687,7 @@ export default function AdminPage() {
                     <option value="owner">المالك (Maestro)</option>
                     <option value="general_manager">المدير العام</option>
                     <option value="manager">مدير فرع</option>
-                    <option value="coordinator">المنسق العام (الراوتر - استقبال وحجوزات وكراسي) 🧭</option>
+                    <option value="coordinator">منسق فرع (الراوتر - استقبال وحجوزات وكراسي) 🧭</option>
                     <option value="cashier">كاشير نقطة البيع POS 💰</option>
                     <option value="specialist">متخصص حلاقة (كرسي فردي)</option>
                     <option value="worker">عامل صالون وضيافة</option>
