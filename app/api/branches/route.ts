@@ -26,7 +26,17 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, code, address, phone, whatsapp, googleMapsUrl } = body;
+    const {
+      name,
+      code,
+      address,
+      phone,
+      whatsapp,
+      googleMapsUrl,
+      isDayOffEnabled,
+      weeklyDayOff,
+      dayOffMessage,
+    } = body;
 
     if (!name || !code || !address || !phone) {
       return NextResponse.json(
@@ -43,6 +53,9 @@ export async function POST(req: Request) {
         phone: phone.trim(),
         whatsapp: whatsapp?.trim() || null,
         googleMapsUrl: googleMapsUrl?.trim() || null,
+        isDayOffEnabled: isDayOffEnabled !== undefined ? Boolean(isDayOffEnabled) : false,
+        weeklyDayOff: weeklyDayOff || "NONE",
+        dayOffMessage: dayOffMessage?.trim() || null,
         isActive: true,
       },
     });
@@ -56,7 +69,18 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, name, address, phone, whatsapp, googleMapsUrl, isActive } = body;
+    const {
+      id,
+      name,
+      address,
+      phone,
+      whatsapp,
+      googleMapsUrl,
+      isActive,
+      isDayOffEnabled,
+      weeklyDayOff,
+      dayOffMessage,
+    } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: "معرف الفرع مطلوب" }, { status: 400 });
@@ -71,6 +95,9 @@ export async function PATCH(req: Request) {
         ...(whatsapp !== undefined && { whatsapp: whatsapp?.trim() || null }),
         ...(googleMapsUrl !== undefined && { googleMapsUrl: googleMapsUrl?.trim() || null }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        ...(isDayOffEnabled !== undefined && { isDayOffEnabled: Boolean(isDayOffEnabled) }),
+        ...(weeklyDayOff !== undefined && { weeklyDayOff }),
+        ...(dayOffMessage !== undefined && { dayOffMessage: dayOffMessage?.trim() || null }),
       },
     });
 

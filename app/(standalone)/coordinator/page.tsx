@@ -257,7 +257,7 @@ export default function CoordinatorControlPage() {
         fetch(`/api/services?branchId=${bQuery}`, { cache: "no-store" }),
         fetch(`/api/offers?activeOnly=true&branchId=${bQuery}`, { cache: "no-store" }),
         fetch(`/api/chat?branchId=${bQuery}`, { cache: "no-store" }),
-        fetch("/api/customers", { cache: "no-store" }),
+        fetch(`/api/customers?branchId=${encodeURIComponent(bQuery)}`, { cache: "no-store" }),
         fetch(`/api/bookings/watchdog?branchId=${bQuery}`, { cache: "no-store" }),
       ]);
 
@@ -2702,20 +2702,20 @@ export default function CoordinatorControlPage() {
                                 key={srv.id}
                                 type="button"
                                 onClick={() => toggleChairWalkInService(srv)}
-                                className={`p-2.5 rounded-xl border text-right transition cursor-pointer ${
+                                className={`p-2.5 rounded-xl border text-right transition cursor-pointer flex flex-col justify-between gap-1.5 min-h-[58px] ${
                                   picked
-                                    ? "bg-amber-500/20 border-amber-400 text-white font-black"
+                                    ? "bg-amber-500/20 border-amber-400 text-white font-black shadow-md shadow-amber-500/10"
                                     : srv.isOffer
-                                      ? "bg-amber-500/5 border-amber-500/25 text-amber-100 hover:bg-amber-500/15"
-                                      : "bg-black/40 border-white/10 text-slate-300 hover:bg-white/5"
+                                      ? "bg-amber-500/10 border-amber-500/30 text-amber-100 hover:bg-amber-500/20"
+                                      : "bg-black/40 border-white/10 text-slate-200 hover:bg-white/5"
                                 }`}
                               >
-                                <div className="flex items-start justify-between gap-2">
-                                  <span className="text-[11px] leading-snug line-clamp-2">
+                                <div className="flex items-start justify-between gap-1.5 w-full text-[11px]">
+                                  <span className="leading-snug break-words flex-1 font-bold">
                                     {srv.isOffer && "👑 "}
                                     {srv.nameAr}
                                   </span>
-                                  <span className="font-mono text-amber-400 text-[11px] shrink-0">
+                                  <span className="font-mono text-amber-400 font-black shrink-0">
                                     {srv.price}ج
                                   </span>
                                 </div>
@@ -2930,20 +2930,20 @@ export default function CoordinatorControlPage() {
                           key={srv.id}
                           type="button"
                           onClick={() => toggleWalkInService(srv)}
-                          className={`p-2.5 rounded-xl border text-right transition cursor-pointer ${
+                          className={`p-2.5 rounded-xl border text-right transition cursor-pointer flex flex-col justify-between gap-1.5 min-h-[58px] ${
                             picked
-                              ? "bg-amber-500/20 border-amber-400 text-white font-black"
+                              ? "bg-amber-500/20 border-amber-400 text-white font-black shadow-md shadow-amber-500/10"
                               : srv.isOffer
-                                ? "bg-amber-500/5 border-amber-500/25 text-amber-100 hover:bg-amber-500/15"
-                                : "bg-black/40 border-white/10 text-slate-300 hover:bg-white/5"
+                                ? "bg-amber-500/10 border-amber-500/30 text-amber-100 hover:bg-amber-500/20"
+                                : "bg-black/40 border-white/10 text-slate-200 hover:bg-white/5"
                           }`}
                         >
-                          <div className="flex items-start justify-between gap-2 text-[11px]">
-                            <span className="leading-snug line-clamp-2">
+                          <div className="flex items-start justify-between gap-1.5 w-full text-[11px]">
+                            <span className="leading-snug break-words flex-1 font-bold">
                               {srv.isOffer && "👑 "}
                               {srv.nameAr}
                             </span>
-                            <span className="font-mono text-amber-400 shrink-0">{srv.price}ج</span>
+                            <span className="font-mono text-amber-400 font-black shrink-0">{srv.price}ج</span>
                           </div>
                         </button>
                       );
@@ -3055,11 +3055,11 @@ export default function CoordinatorControlPage() {
                         : "bg-white/5 hover:bg-amber-500/20 border-white/10"
                     }`}
                   >
-                    <span className="font-bold text-white block leading-snug line-clamp-2">
+                    <span className="font-bold text-white block leading-snug break-words">
                       {srv.isOffer && "👑 "}
                       {srv.nameAr}
                     </span>
-                    <span className="font-mono text-amber-400 text-[11px]">+ {srv.price} ج.م</span>
+                    <span className="font-mono text-amber-400 text-[11px] font-black">+ {srv.price} ج.م</span>
                   </button>
                 ))}
             </div>

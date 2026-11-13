@@ -56,6 +56,7 @@ import {
   ArrowUpRight,
   Receipt,
   Wallet,
+  Archive,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -104,7 +105,8 @@ export default function AdminPage() {
   const [specialistStatement, setSpecialistStatement] = useState<any>(null);
   const [selectedLedgerSpecialistId, setSelectedLedgerSpecialistId] = useState<string>("");
   const selectedLedgerSpecialistIdRef = useRef<string>("");
-  const [specialistSubView, setSpecialistSubView] = useState<"CARDS" | "STATEMENT">("CARDS");
+  const [specialistSubView, setSpecialistSubView] = useState<"CARDS" | "STATEMENT" | "ARCHIVE">("CARDS");
+  const [specialistBranchFilter, setSpecialistBranchFilter] = useState<string>("ALL");
 
   const handleSelectLedgerSpecialist = (id: string) => {
     selectedLedgerSpecialistIdRef.current = id;
@@ -229,6 +231,7 @@ export default function AdminPage() {
   // Offer Modal (Create/Edit)
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [editingOffer, setEditingOffer] = useState<any>(null);
+  const [broadcastingOfferId, setBroadcastingOfferId] = useState<string | null>(null);
   const [offerForm, setOfferForm] = useState({
     titleAr: "",
     badge: "خصم 46% 🔥",
@@ -239,6 +242,7 @@ export default function AdminPage() {
     description: "",
     features: "قص شعر وتدريج عالمي\nتحديد دقن بالموس والبخار\nسشوار وتصفيف احترافي",
     branchId: "",
+    announcementText: "",
     isActive: true,
     sortOrder: 1,
   });
@@ -271,15 +275,24 @@ export default function AdminPage() {
     }, 4500);
   };
 
-  // Branch Modal
+  // Branch Modal & Day Off Management
   const [showBranchModal, setShowBranchModal] = useState(false);
+  const [editingBranch, setEditingBranch] = useState<any>(null);
   const [branchForm, setBranchForm] = useState({
     name: "",
     code: "",
     address: "",
     phone: "01121537537",
     whatsapp: "01121537537",
+    isDayOffEnabled: false,
+    weeklyDayOff: "NONE",
+    dayOffMessage: "",
   });
+
+  // Customer CRM Filters & WhatsApp Outreach
+  const [customerBranchFilter, setCustomerBranchFilter] = useState<string>("ALL");
+  const [customerSearchQuery, setCustomerSearchQuery] = useState<string>("");
+  const [customerVipFilter, setCustomerVipFilter] = useState<string>("ALL");
 
   // User Modal (Create & Full Edit)
   const [showUserModal, setShowUserModal] = useState(false);
@@ -837,7 +850,7 @@ export default function AdminPage() {
     }
   };
 
-  // Offers Actions
+  // Offers Actions & Per-Branch Broadcast
   const handleOpenCreateOffer = () => {
     setEditingOffer(null);
     setOfferForm({
@@ -849,7 +862,8 @@ export default function AdminPage() {
       image: "/offers/offer-vip-1000.jpg",
       description: "",
       features: "قص شعر وتدريج عالمي\nتحديد دقن بالموس والبخار\nسشوار وتصفيف احترافي",
-      branchId: "",
+      branchId: selectedBranchId !== "ALL" ? selectedBranchId : "",
+      announcementText: "",
       isActive: true,
       sortOrder: (offers.length || 0) + 1,
     });
@@ -876,10 +890,48 @@ export default function AdminPage() {
       description: offer.description || "",
       features: featuresStr,
       branchId: offer.branchId || "",
+      announcementText: offer.announcementText || "",
       isActive: offer.isActive,
       sortOrder: offer.sortOrder || 1,
     });
     setShowOfferModal(true);
+  };
+
+  const handleBroadcastOffer = async (offer: any) => {
+    const targetBranchName = offer.branch?.name || "كافة الفروع";
+    if (
+      !confirm(
+        `هل تريد إرسال إشعار فوري (Push على الهواتف + رسالة شات) بالعرض "${offer.titleAr}" إلى جميع عملاء ${targetBranchName}؟`
+      )
+    ) {
+      return;
+    }
+    try {
+      setBroadcastingOfferId(offer.id);
+      const res = await fetch("/api/offers/broadcast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          offerId: offer.id,
+          branchId: offer.branchId || null,
+          customMessage: offer.announcementText || null,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+        showToast(
+          "success",
+          `تم إرسال إشعار العرض بنجاح لـ ${data.broadcastCount || 0} عميل (${data.pushCount || 0} إشعار Push + ${data.chatCount || 0} رسالة شات) 📢`
+        );
+      } else {
+        showToast("error", data.error || "فشل إرسال الإشعار");
+      }
+    } catch {
+      showToast("error", "حدث خطأ أثناء إرسال إشعار العرض");
+    } finally {
+      setBroadcastingOfferId(null);
+    }
   };
 
   const handleSaveOffer = async (e: React.FormEvent) => {
@@ -900,6 +952,7 @@ export default function AdminPage() {
         description: offerForm.description,
         features: featuresArr,
         branchId: offerForm.branchId || null,
+        announcementText: offerForm.announcementText?.trim() || null,
         isActive: offerForm.isActive,
         sortOrder: Number(offerForm.sortOrder),
       };
@@ -1061,16 +1114,44 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteSpecialist = async (id: string, name: string) => {
-    if (!confirm(`هل أنت متأكد من حذف المتخصص "${name}" نهائياً من السيستم؟`)) return;
+  const handleArchiveSpecialist = async (id: string, name: string) => {
+    if (
+      !confirm(
+        `هل أنت متأكد من تعطيل الكابتن "${name}" ونقله للأرشيف؟\n(ملاحظة هامة: لن يتم حذف أي إيرادات أو فواتير سابقة وستظل محفوظة 100%، ويمكن استعادته للعمل في أي وقت)`
+      )
+    )
+      return;
     try {
-      const res = await fetch(`/api/specialists?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/specialists`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "ARCHIVE" }),
+      });
       const data = await res.json();
       if (data.success) {
         await loadAllData();
-        showToast("success", `تم حذف المتخصص "${name}" بنجاح 🗑️`);
+        showToast("success", `تم تعطيل الكابتن "${name}" ونقله للأرشيف بنجاح 🗄️ مع حفظ كامل إيراداته`);
       } else {
-        showToast("error", data.error || "فشل حذف المتخصص");
+        showToast("error", data.error || "فشل نقل المتخصص للأرشيف");
+      }
+    } catch {
+      showToast("error", "تعذر الاتصال بالخادم");
+    }
+  };
+
+  const handleRestoreSpecialist = async (id: string, name: string) => {
+    try {
+      const res = await fetch(`/api/specialists`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "RESTORE" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+        showToast("success", `تمت استعادة وتنشيط الكابتن "${name}" للعمل بنجاح 🔄`);
+      } else {
+        showToast("error", data.error || "فشل استعادة المتخصص");
       }
     } catch {
       showToast("error", "تعذر الاتصال بالخادم");
@@ -1493,33 +1574,118 @@ export default function AdminPage() {
     }
   };
 
-  // Branch Actions
+  // Branch Actions & Per-Branch Day Off
+  const handleOpenCreateBranch = () => {
+    setEditingBranch(null);
+    setBranchForm({
+      name: "",
+      code: "",
+      address: "",
+      phone: "01121537537",
+      whatsapp: "01121537537",
+      isDayOffEnabled: false,
+      weeklyDayOff: "NONE",
+      dayOffMessage: "",
+    });
+    setShowBranchModal(true);
+  };
+
+  const handleOpenEditBranch = (b: any) => {
+    setEditingBranch(b);
+    setBranchForm({
+      name: b.name,
+      code: b.code,
+      address: b.address,
+      phone: b.phone || "01121537537",
+      whatsapp: b.whatsapp || "01121537537",
+      isDayOffEnabled: Boolean(b.isDayOffEnabled),
+      weeklyDayOff: b.weeklyDayOff || "NONE",
+      dayOffMessage: b.dayOffMessage || "",
+    });
+    setShowBranchModal(true);
+  };
+
   const handleSaveBranch = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const isEdit = Boolean(editingBranch?.id);
       const res = await fetch("/api/branches", {
-        method: "POST",
+        method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(branchForm),
+        body: JSON.stringify(isEdit ? { id: editingBranch.id, ...branchForm } : branchForm),
       });
       const data = await res.json();
       if (data.success) {
         await loadAllData();
         setShowBranchModal(false);
+        setEditingBranch(null);
         setBranchForm({
           name: "",
           code: "",
           address: "",
           phone: "01121537537",
           whatsapp: "01121537537",
+          isDayOffEnabled: false,
+          weeklyDayOff: "NONE",
+          dayOffMessage: "",
         });
-        showToast("success", "تم إضافة الفرع الجديد بنجاح 📍");
+        showToast(
+          "success",
+          isEdit ? "تم تحديث بيانات الفرع وإعدادات الإجازة بنجاح 📍" : "تمت إضافة الفرع الجديد بنجاح 📍"
+        );
       } else {
-        showToast("error", data.error || "فشل إضافة الفرع");
+        showToast("error", data.error || "فشل حفظ الفرع");
       }
     } catch {
       showToast("error", "تعذر الاتصال بالخادم");
     }
+  };
+
+  const handleQuickToggleBranchDayOff = async (b: any) => {
+    try {
+      const newEnabled = !b.isDayOffEnabled;
+      const res = await fetch("/api/branches", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: b.id,
+          isDayOffEnabled: newEnabled,
+          weeklyDayOff: newEnabled
+            ? b.weeklyDayOff && b.weeklyDayOff !== "NONE"
+              ? b.weeklyDayOff
+              : "MONDAY"
+            : "NONE",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await loadAllData();
+        showToast(
+          "success",
+          newEnabled
+            ? `تم تفعيل عطلة ${b.name} الأسبوعية (${b.weeklyDayOff || "MONDAY"}) 🏖️`
+            : `تم إلغاء عطلة ${b.name} (يعمل 7 أيام طوال الأسبوع بدون إجازة) 🟢`
+        );
+      } else {
+        showToast("error", data.error || "فشل تحديث عطلة الفرع");
+      }
+    } catch {
+      showToast("error", "حدث خطأ أثناء تحديث الفرع");
+    }
+  };
+
+  const getDayLabelAr = (day: string) => {
+    const map: Record<string, string> = {
+      MONDAY: "يوم الإثنين",
+      TUESDAY: "يوم الثلاثاء",
+      WEDNESDAY: "يوم الأربعاء",
+      THURSDAY: "يوم الخميس",
+      FRIDAY: "يوم الجمعة",
+      SATURDAY: "يوم السبت",
+      SUNDAY: "يوم الأحد",
+      NONE: "لا يوجد (يعمل 7 أيام طوال الأسبوع)",
+    };
+    return map[day] || day;
   };
 
   const handleLogout = () => {
@@ -2463,6 +2629,39 @@ export default function AdminPage() {
               </button>
             </div>
 
+            {/* Branch Filter Tabs for Offers */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+              <span className="text-slate-400 font-bold shrink-0">تصفية العروض حسب الفرع:</span>
+              <button
+                type="button"
+                onClick={() => setSelectedBranchId("ALL")}
+                className={`py-1.5 px-3.5 rounded-xl font-bold transition shrink-0 ${
+                  selectedBranchId === "ALL"
+                    ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                    : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                }`}
+              >
+                كافة العروض والفروع 👑 ({offers.length})
+              </button>
+              {branches.map((b) => {
+                const bCount = offers.filter((o) => !o.branchId || o.branchId === b.id).length;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => setSelectedBranchId(b.id)}
+                    className={`py-1.5 px-3.5 rounded-xl font-bold transition shrink-0 ${
+                      selectedBranchId === b.id
+                        ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                        : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                    }`}
+                  >
+                    {b.name} ({bCount})
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {offers
                 .filter((o) => selectedBranchId === "ALL" || !o.branchId || o.branchId === selectedBranchId)
@@ -2550,6 +2749,38 @@ export default function AdminPage() {
                           )}
                         </ul>
                       )}
+
+                      {/* Announcement Message Preview */}
+                      {offer.announcementText && (
+                        <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-200 space-y-1">
+                          <span className="font-bold flex items-center gap-1 text-amber-300">
+                            📢 نص الإشعار الترويجي للعملاء:
+                          </span>
+                          <p className="leading-relaxed">{offer.announcementText}</p>
+                        </div>
+                      )}
+
+                      {/* Broadcast Notification Button */}
+                      <div className="space-y-1.5 pt-1">
+                        <button
+                          type="button"
+                          disabled={broadcastingOfferId === offer.id}
+                          onClick={() => handleBroadcastOffer(offer)}
+                          className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50"
+                        >
+                          <BellRing className="w-3.5 h-3.5" />
+                          <span>
+                            {broadcastingOfferId === offer.id
+                              ? "جارٍ إرسال الإشعار..."
+                              : `إرسال إشعار بالعرض لعملاء ${offer.branch?.name || "الصالون"} 📢`}
+                          </span>
+                        </button>
+                        {offer.broadcastSentAt && (
+                          <p className="text-[10px] text-emerald-400 font-bold text-center">
+                            ✓ تم إرسال إشعار سابق: {new Date(offer.broadcastSentAt).toLocaleDateString("ar-EG")}
+                          </p>
+                        )}
+                      </div>
 
                       {/* Control Buttons */}
                       <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-3">
@@ -2820,6 +3051,18 @@ export default function AdminPage() {
                     <FileText className="w-3.5 h-3.5" />
                     <span>كشف الحساب والمستحقات 📑</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setSpecialistSubView("ARCHIVE")}
+                    className={`py-1.5 px-3.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 ${
+                      specialistSubView === "ARCHIVE"
+                        ? "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <Archive className="w-3.5 h-3.5" />
+                    <span>أرشيف المعطلين ({specialists.filter((s) => s.isArchived).length}) 🗄️</span>
+                  </button>
                 </div>
 
                 {specialistSubView === "CARDS" && (
@@ -2850,12 +3093,47 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Specialist Branch Filter */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+              <span className="text-slate-400 font-bold shrink-0">تصفية حسب الفرع:</span>
+              <button
+                type="button"
+                onClick={() => setSpecialistBranchFilter("ALL")}
+                className={`py-1.5 px-3 rounded-xl font-bold transition shrink-0 ${
+                  specialistBranchFilter === "ALL"
+                    ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                    : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                }`}
+              >
+                كافة الفروع 💈 ({specialists.filter((s) => !s.isArchived).length})
+              </button>
+              {branches.map((b) => {
+                const count = specialists.filter((s) => !s.isArchived && s.branchId === b.id).length;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => setSpecialistBranchFilter(b.id)}
+                    className={`py-1.5 px-3 rounded-xl font-bold transition shrink-0 ${
+                      specialistBranchFilter === b.id
+                        ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                        : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                    }`}
+                  >
+                    {b.name} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
             {/* ─────────────────────────────────────────────────────────────
                 VIEW A: SPECIALIST CARDS & SHIFTS
                ───────────────────────────────────────────────────────────── */}
             {specialistSubView === "CARDS" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {specialists.map((spec) => {
+                {specialists
+                  .filter((s) => !s.isArchived && (specialistBranchFilter === "ALL" || s.branchId === specialistBranchFilter))
+                  .map((spec) => {
                   const summary = specialistsSummary.find((s) => s.specialist?.id === spec.id);
                   const balanceDue = summary ? summary.balanceDue : 0;
 
@@ -3063,11 +3341,11 @@ export default function AdminPage() {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteSpecialist(spec.id, spec.name)}
-                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 transition"
-                            title="حذف المتخصص نهائياً"
+                            onClick={() => handleArchiveSpecialist(spec.id, spec.name)}
+                            className="p-2 rounded-xl bg-amber-500/10 hover:bg-rose-500/20 text-amber-300 hover:text-rose-300 border border-amber-500/30 transition cursor-pointer"
+                            title="تعطيل الكابتن ونقله للأرشيف (مع حفظ كامل الإيرادات والحسابات السابقة)"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Archive className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -3568,6 +3846,133 @@ export default function AdminPage() {
                 })()}
               </div>
             )}
+
+            {/* ─────────────────────────────────────────────────────────────
+                VIEW C: ARCHIVED SPECIALISTS (PRESERVING 100% FINANCIAL DATA)
+               ───────────────────────────────────────────────────────────── */}
+            {specialistSubView === "ARCHIVE" && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-lg shrink-0">
+                      🗄️
+                    </div>
+                    <div>
+                      <h4 className="font-black text-sm text-amber-300">
+                        أرشيف الكباتن والمتخصصين السابقين والمُعطّلين
+                      </h4>
+                      <p className="text-slate-300 text-xs mt-0.5">
+                        كافة إيراداتهم وتذاكرهم وحساباتهم المالية محفوظة بنسبة 100% دون أي حذف، مع إمكانية استعادة وتنشيط أي كابتن للعمل فوراً 🔄
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-mono font-bold bg-amber-500/20 py-1.5 px-3.5 rounded-xl border border-amber-500/30 text-amber-300 self-start sm:self-auto shrink-0">
+                    {specialists.filter((s) => s.isArchived).length} كابتن بالأرشيف
+                  </span>
+                </div>
+
+                {specialists.filter((s) => s.isArchived).length === 0 ? (
+                  <div className="p-12 text-center rounded-3xl bg-[#14141e] border border-white/10 text-slate-400 space-y-2">
+                    <Archive className="w-12 h-12 text-amber-400/30 mx-auto" />
+                    <p className="font-black text-sm text-slate-300">أرشيف الكباتن فارغ حالياً</p>
+                    <p className="text-xs text-slate-500">كافة المتخصصين نشطين وعلى رأس العمل بفروع الصالون ✂️</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {specialists
+                      .filter((s) => s.isArchived)
+                      .map((spec) => {
+                        const summary = specialistsSummary.find((s) => s.specialist?.id === spec.id);
+                        const balanceDue = summary ? summary.balanceDue : 0;
+                        const branchName = branches.find((b) => b.id === spec.branchId)?.name || "فرع غير محدد";
+
+                        return (
+                          <div
+                            key={spec.id}
+                            className="p-5 rounded-3xl bg-[#14141e]/90 border-2 border-white/10 space-y-4 shadow-xl flex flex-col justify-between hover:border-amber-400/50 transition"
+                          >
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-600 bg-black shrink-0 grayscale">
+                                  <img
+                                    src={spec.photo || "/logo.jpg"}
+                                    alt={spec.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e: any) => {
+                                      e.currentTarget.src = "/logo.jpg";
+                                    }}
+                                  />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-black text-sm text-slate-200 truncate">{spec.name}</h4>
+                                    <span className="py-0.5 px-2 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold shrink-0">
+                                      بالأرشيف 🗄️
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-slate-400">{spec.title}</p>
+                                  <p className="text-[11px] text-amber-300 font-bold">
+                                    {branchName} • كرسي #{spec.chairNumber}
+                                  </p>
+                                  {spec.archivedAt && (
+                                    <p className="text-[10px] text-slate-500 mt-0.5 font-mono">
+                                      تاريخ الأرشفة: {new Date(spec.archivedAt).toLocaleDateString("ar-EG")}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Financial Ledger Intact Stats */}
+                              <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">إجمالي التذاكر المنفذة:</span>
+                                  <span className="font-mono text-white font-bold">
+                                    {summary?.totalTicketsCount || 0} عميل
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">إجمالي إيراد خدماته:</span>
+                                  <span className="font-mono text-emerald-400 font-bold">
+                                    {summary?.totalRevenueGenerated || 0} ج.م
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-slate-400">الرصيد المستحق النهائي:</span>
+                                  <span className="font-mono text-amber-400 font-black">{balanceDue} ج.م</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Actions: Restore & View Statement */}
+                            <div className="space-y-2 pt-2 border-t border-white/10">
+                              <button
+                                type="button"
+                                onClick={() => handleRestoreSpecialist(spec.id, spec.name)}
+                                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-l from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/20"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                <span>استعادة وتنشيط الكابتن للعمل 🔄</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleSelectLedgerSpecialist(spec.id);
+                                  setSpecialistSubView("STATEMENT");
+                                }}
+                                className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-amber-300 border border-white/10 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                <span>كشف الحساب المالي التاريخي 📑</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -3959,49 +4364,243 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 8: CUSTOMERS CRM & MARKETING
+            TAB 8: CENTRAL CUSTOMERS CRM & MARKETING
            ======================================================== */}
-        {activeTab === "customers" && (
-          <div className="space-y-6 animate-fade-in">
-            <div>
-              <h3 className="text-base font-black text-white">قاعدة بيانات العملاء والتسويق والدعاية</h3>
-              <p className="text-xs text-slate-400">
-                سجل متكامل ببيانات العملاء وأرقام هواتفهم وإجمالي زياراتهم لأغراض الدعاية ورسائل الواتساب 📱
-              </p>
-            </div>
+        {activeTab === "customers" && (() => {
+          const filteredCustomers = customers.filter((c) => {
+            if (customerBranchFilter !== "ALL") {
+              const matchPrimary = c.branchId === customerBranchFilter;
+              const matchVisited = Array.isArray(c.branchesVisited) && c.branchesVisited.some((b: any) => b.id === customerBranchFilter);
+              if (!matchPrimary && !matchVisited) return false;
+            }
+            if (customerVipFilter !== "ALL" && c.vipLevel !== customerVipFilter) return false;
+            if (customerSearchQuery.trim()) {
+              const q = customerSearchQuery.trim().toLowerCase();
+              const matchName = c.name?.toLowerCase().includes(q);
+              const matchPhone = c.phone?.toLowerCase().includes(q);
+              const matchEmail = c.email?.toLowerCase().includes(q);
+              if (!matchName && !matchPhone && !matchEmail) return false;
+            }
+            return true;
+          });
 
-            <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#14141e]">
-              <table className="w-full text-right text-xs">
-                <thead>
-                  <tr className="border-b border-white/10 bg-black/40 text-slate-400 font-bold">
-                    <th className="p-3.5">اسم العميل</th>
-                    <th className="p-3.5">رقم الهاتف</th>
-                    <th className="p-3.5">البريد الإلكتروني</th>
-                    <th className="p-3.5">عدد الزيارات</th>
-                    <th className="p-3.5">إجمالي المنصرف</th>
-                    <th className="p-3.5">تصنيف VIP</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {customers.map((c) => (
-                    <tr key={c.id} className="hover:bg-white/5 transition">
-                      <td className="p-3.5 font-black text-white">{c.name}</td>
-                      <td className="p-3.5 font-mono text-amber-300 font-bold">{c.phone}</td>
-                      <td className="p-3.5 font-mono text-slate-400">{c.email || "غير مسجل"}</td>
-                      <td className="p-3.5 font-mono text-white font-bold">{c.totalVisits} زيارة</td>
-                      <td className="p-3.5 font-mono text-amber-400 font-black">{c.totalSpent} ج.م</td>
-                      <td className="p-3.5">
-                        <span className="py-0.5 px-2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black">
-                          {c.vipLevel}
-                        </span>
-                      </td>
+          const totalCustCount = filteredCustomers.length;
+          const totalLoyaltyPoints = filteredCustomers.reduce((sum, c) => sum + (c.loyaltyPoints || 0), 0);
+          const totalSpendSum = filteredCustomers.reduce((sum, c) => sum + (c.totalSpent || 0), 0);
+          const repeatVisitorsCount = filteredCustomers.filter((c) => (c.totalVisits || 0) > 1).length;
+
+          const handleOpenCustomerWhatsApp = (c: any) => {
+            if (!c.phone) return;
+            const cleanPhone = c.phone.replace(/[^0-9]/g, "");
+            const intlPhone = cleanPhone.startsWith("0") ? "2" + cleanPhone : cleanPhone;
+            const targetBranch = branches.find((b) => b.id === c.branchId)?.name || "صالون صدام";
+            const text = encodeURIComponent(
+              `مرحباً بك يا أ/ ${c.name} ✨\nمعاك إدارة ${targetBranch} (VIP) 👑\nرصيد نقاط الولاء الخاص بحسابك: ${c.loyaltyPoints || 0} نقطة 🌟\nيسعدنا حجز موعدك القادم وخدمتك بأعلى معايير الرفاهية والراحة!`
+            );
+            window.open(`https://wa.me/${intlPhone}?text=${text}`, "_blank");
+          };
+
+          return (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-black text-white flex items-center gap-2">
+                    <Users className="w-5 h-5 text-amber-400" />
+                    <span>قاعدة بيانات العملاء المركزية (CRM) والتسويق ونقاط الولاء</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    قاعدة مركزية للإدارة تضم عملاء كافة الفروع، مع إمكانية التصفية، ورسائل الواتساب، ورصيد نقاط الولاء 📱🌟
+                  </p>
+                </div>
+              </div>
+
+              {/* Branch Filter Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                <span className="text-slate-400 font-bold shrink-0">تصفية حسب الفرع:</span>
+                <button
+                  type="button"
+                  onClick={() => setCustomerBranchFilter("ALL")}
+                  className={`py-1.5 px-3.5 rounded-xl font-bold transition shrink-0 ${
+                    customerBranchFilter === "ALL"
+                      ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                      : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  المركز الرئيسي (كافة الفروع) 🏢 ({customers.length})
+                </button>
+                {branches.map((b) => {
+                  const bCount = customers.filter(
+                    (c) => c.branchId === b.id || (Array.isArray(c.branchesVisited) && c.branchesVisited.some((v: any) => v.id === b.id))
+                  ).length;
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setCustomerBranchFilter(b.id)}
+                      className={`py-1.5 px-3.5 rounded-xl font-bold transition shrink-0 ${
+                        customerBranchFilter === b.id
+                          ? "bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20"
+                          : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/10"
+                      }`}
+                    >
+                      {b.name} ({bCount})
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* CRM Key Metrics Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-1">
+                  <span className="text-[11px] text-slate-400 block font-bold">إجمالي العملاء:</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-xl font-black text-white font-mono">{totalCustCount}</span>
+                    <span className="text-[10px] text-slate-400">عميل مسجل</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-3xl bg-[#14141e] border border-emerald-500/30 space-y-1">
+                  <span className="text-[11px] text-slate-400 block font-bold">نقاط الولاء المكتسبة:</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-xl font-black text-emerald-400 font-mono">{totalLoyaltyPoints.toLocaleString()}</span>
+                    <span className="text-[10px] text-emerald-300">نقطة 🌟</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-1">
+                  <span className="text-[11px] text-slate-400 block font-bold">إجمالي الإنفاق الملكي:</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-xl font-black text-amber-400 font-mono">{totalSpendSum.toLocaleString()}</span>
+                    <span className="text-[10px] text-amber-300">ج.م 💰</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-3xl bg-[#14141e] border border-purple-500/30 space-y-1">
+                  <span className="text-[11px] text-slate-400 block font-bold">العملاء الدائمون (مكررون):</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-xl font-black text-purple-300 font-mono">{repeatVisitorsCount}</span>
+                    <span className="text-[10px] text-purple-300">عملاء VIP 👑</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search & VIP Filters Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-2xl bg-[#14141e] border border-white/10">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={customerSearchQuery}
+                    onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                    placeholder="ابحث بالاسم أو رقم الهاتف أو البريد..."
+                    className="w-full py-1.5 pr-9 pl-3 rounded-xl bg-black/60 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="text-[11px] text-slate-400 font-bold shrink-0">مستوى VIP:</label>
+                  <select
+                    value={customerVipFilter}
+                    onChange={(e) => setCustomerVipFilter(e.target.value)}
+                    className="py-1.5 px-3 rounded-xl bg-black/60 border border-white/10 text-xs text-amber-300 font-bold"
+                  >
+                    <option value="ALL">الكل</option>
+                    <option value="VIP">VIP</option>
+                    <option value="REGULAR">عادي</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto rounded-3xl border border-white/10 bg-[#14141e]">
+                <table className="w-full text-right text-xs">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-black/40 text-slate-400 font-bold">
+                      <th className="p-3.5">اسم العميل</th>
+                      <th className="p-3.5">الهاتف والواتساب</th>
+                      <th className="p-3.5">الفرع الأساسي</th>
+                      <th className="p-3.5">الفروع التي زارها</th>
+                      <th className="p-3.5">الزيارات والحجوزات</th>
+                      <th className="p-3.5">نقاط الولاء 🌟</th>
+                      <th className="p-3.5">إجمالي الإنفاق</th>
+                      <th className="p-3.5 text-center">التسويق المباشر</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {filteredCustomers.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-slate-500 font-bold">
+                          لا يوجد عملاء مطابقين للبحث أو الفلتر المحدد
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredCustomers.map((c) => (
+                        <tr key={c.id} className="hover:bg-white/5 transition">
+                          <td className="p-3.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-white">{c.name}</span>
+                              <span className="py-0.5 px-2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black">
+                                {c.vipLevel || "VIP"}
+                              </span>
+                            </div>
+                            {c.email && (
+                              <span className="block text-[10px] text-slate-500 font-mono">{c.email}</span>
+                            )}
+                          </td>
+                          <td className="p-3.5 font-mono text-amber-300 font-bold">
+                            {c.phone}
+                          </td>
+                          <td className="p-3.5 text-slate-300">
+                            {c.primaryBranchName || "غير محدد"}
+                          </td>
+                          <td className="p-3.5">
+                            {Array.isArray(c.branchesVisited) && c.branchesVisited.length > 0 ? (
+                              <div className="flex items-center gap-1 flex-wrap">
+                                {c.branchesVisited.map((bv: any) => (
+                                  <span
+                                    key={bv.id}
+                                    className="py-0.5 px-2 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300"
+                                  >
+                                    {bv.name}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-500">—</span>
+                            )}
+                          </td>
+                          <td className="p-3.5 font-mono text-white font-bold">
+                            {c.totalVisits || 0} زيارة
+                            <span className="block text-[10px] text-slate-400 font-normal">
+                              ({c.bookingsCount || 0} حجز أونلاين)
+                            </span>
+                          </td>
+                          <td className="p-3.5 font-mono text-emerald-400 font-black">
+                            {c.loyaltyPoints || 0} 🌟
+                          </td>
+                          <td className="p-3.5 font-mono text-amber-400 font-black">
+                            {c.totalSpent || 0} ج.م
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenCustomerWhatsApp(c)}
+                              className="py-1.5 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer"
+                              title="مراسلة عبر الواتساب بقالب ترويجي"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                              <span>واتساب 📱</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ========================================================
             TAB 9: USERS & RBAC ACCESS CONTROL (FULL EDITING ADDED)
@@ -4106,38 +4705,94 @@ export default function AdminPage() {
         )}
 
         {/* ========================================================
-            TAB 10: MULTI-BRANCH SYSTEM
+            TAB 10: MULTI-BRANCH SYSTEM & PER-BRANCH DAY OFF
            ======================================================== */}
         {activeTab === "branches" && (
           <div className="space-y-6 animate-fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-base font-black text-white">فروع صالون صدام والتوسعات المستقبلية</h3>
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-amber-400" />
+                  <span>فروع صالون صدام الملكية وتخصيص أيام الإجازة لكل فرع</span>
+                </h3>
                 <p className="text-xs text-slate-400">
-                  إمكانية إضافة عدد غير محدود من الفروع ديناميكياً مع تخصيص كراسيها وموظفيها 📍
+                  إمكانية تخصيص يوم الإجازة لكل فرع على حدة، أو تعطيل الإجازة ليعمل الفرع 7 أيام طوال الأسبوع بدون إغلاق 📍
                 </p>
               </div>
 
               <button
-                onClick={() => setShowBranchModal(true)}
-                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0"
+                onClick={handleOpenCreateBranch}
+                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 shrink-0 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>إضافة فرع جديد 📍</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {branches.map((b) => (
-                <div key={b.id} className="p-5 rounded-3xl bg-[#14141e] border border-amber-500/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-black text-base text-amber-400">{b.name}</h4>
-                    <span className="font-mono text-xs font-bold text-slate-400">{b.code}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {branches.map((b) => {
+                const isOff = b.isDayOffEnabled && b.weeklyDayOff && b.weeklyDayOff !== "NONE";
+                const dayLabel = isOff ? getDayLabelAr(b.weeklyDayOff) : "يعمل 7 أيام طوال الأسبوع بدون إجازة";
+
+                return (
+                  <div
+                    key={b.id}
+                    className="p-5 rounded-3xl bg-[#14141e] border-2 border-amber-500/30 space-y-4 shadow-xl flex flex-col justify-between hover:border-amber-400 transition"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-black text-base text-amber-400">{b.name}</h4>
+                          <span className="font-mono text-xs font-bold text-slate-400 block">{b.code}</span>
+                        </div>
+                        <span
+                          className={`py-1 px-3 rounded-full text-[11px] font-black border ${
+                            isOff
+                              ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                              : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                          }`}
+                        >
+                          {isOff ? `عطلة: ${dayLabel} 🏖️` : "يعمل 7 أيام بدون إجازة 🟢"}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-300">{b.address}</p>
+                      <p className="text-xs font-mono text-amber-300 font-bold">الهاتف والواتساب: {b.phone}</p>
+
+                      {b.dayOffMessage && (
+                        <p className="text-[11px] text-amber-200/90 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+                          📌 رسالة الإجازة للعملاء: {b.dayOffMessage}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Actions: Quick Toggle Day Off & Full Edit */}
+                    <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleQuickToggleBranchDayOff(b)}
+                        className={`py-1.5 px-3 rounded-xl text-xs font-bold transition border cursor-pointer ${
+                          isOff
+                            ? "bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/40"
+                            : "bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border-purple-500/40"
+                        }`}
+                        title="تبديل وضع الإجازة الأسبوعية للفرع"
+                      >
+                        {isOff ? "إلغاء الإجازة (العمل 7 أيام) 🟢" : "تفعيل يوم إجازة أسبوعية 🏖️"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditBranch(b)}
+                        className="py-1.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 text-xs font-black transition flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>تعديل بيانات وإجازة الفرع ⚙️</span>
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-300">{b.address}</p>
-                  <p className="text-xs font-mono text-amber-300 font-bold">الهاتف والواتساب: {b.phone}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -4424,6 +5079,52 @@ export default function AdminPage() {
                         }
                         className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-amber-200 text-xs focus:border-amber-400"
                       />
+                    </div>
+
+                    {/* Per-Branch Day Off Customizer in Settings */}
+                    <div className="pt-3 border-t border-white/10 space-y-2">
+                      <span className="font-bold text-amber-300 text-xs block">
+                        📍 تخصيص إجازة كل فرع على حدة (إلغاء الإجازة للعمل 7 أيام):
+                      </span>
+                      <div className="space-y-2">
+                        {branches.map((b) => {
+                          const isOff = b.isDayOffEnabled && b.weeklyDayOff && b.weeklyDayOff !== "NONE";
+                          return (
+                            <div
+                              key={b.id}
+                              className="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between gap-2"
+                            >
+                              <div>
+                                <span className="font-black text-white text-xs">{b.name}</span>
+                                <span className="text-[10px] text-slate-400 block">
+                                  {isOff ? `عطلة: ${getDayLabelAr(b.weeklyDayOff)} 🏖️` : "يعمل طوال الأسبوع بدون إجازة 🟢"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuickToggleBranchDayOff(b)}
+                                  className={`py-1 px-2 rounded-lg text-[10px] font-bold transition border cursor-pointer ${
+                                    isOff
+                                      ? "bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30"
+                                      : "bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border-purple-500/30"
+                                  }`}
+                                >
+                                  {isOff ? "إلغاء الإجازة 🟢" : "تفعيل إجازة 🏖️"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditBranch(b)}
+                                  className="p-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[10px] font-bold cursor-pointer"
+                                  title="تعديل تفاصيل وإجازة الفرع"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -5021,6 +5722,19 @@ export default function AdminPage() {
                 />
               </div>
 
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  نص الإشعار الترويجي لعملاء الفرع (يصل للهواتف والشات) 📢:
+                </label>
+                <input
+                  type="text"
+                  value={offerForm.announcementText}
+                  onChange={(e) => setOfferForm({ ...offerForm, announcementText: e.target.value })}
+                  placeholder="مثال: خصم خاص 20% لفترة محدودة على باكيدج العريس لعملاء فرع حدائق القبة!"
+                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                />
+              </div>
+
               <button
                 type="submit"
                 className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition mt-2 shadow-lg shadow-amber-500/20"
@@ -5325,13 +6039,15 @@ export default function AdminPage() {
       {/* 6. BRANCH MODAL */}
       {showBranchModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-sans" dir="rtl">
-          <div className="relative w-full max-w-sm bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+          <div className="relative w-full max-w-md bg-[#12121a] border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-sm font-black text-white">إضافة فرع جديد لصالون صدام</h3>
+              <h3 className="text-sm font-black text-white">
+                {editingBranch ? "تعديل بيانات وإعدادات إجازة الفرع 📍" : "إضافة فرع جديد لصالون صدام 📍"}
+              </h3>
               <button onClick={() => setShowBranchModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
-            <form onSubmit={handleSaveBranch} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveBranch} className="space-y-3.5 text-xs">
               <div>
                 <label className="text-slate-300 font-bold block mb-1">اسم الفرع:</label>
                 <input
@@ -5344,16 +6060,29 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">كود الفرع:</label>
-                <input
-                  type="text"
-                  required
-                  value={branchForm.code}
-                  onChange={(e) => setBranchForm({ ...branchForm, code: e.target.value })}
-                  placeholder="BR-MOHANDESSIN"
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">كود الفرع:</label>
+                  <input
+                    type="text"
+                    required
+                    value={branchForm.code}
+                    onChange={(e) => setBranchForm({ ...branchForm, code: e.target.value })}
+                    placeholder="BR-MOHANDESSIN"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-300 font-bold block mb-1">الهاتف والواتساب:</label>
+                  <input
+                    type="tel"
+                    required
+                    value={branchForm.phone}
+                    onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value, whatsapp: e.target.value })}
+                    placeholder="01121537537"
+                    className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
+                  />
+                </div>
               </div>
 
               <div>
@@ -5368,23 +6097,70 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div>
-                <label className="text-slate-300 font-bold block mb-1">رقم الهاتف والواتساب:</label>
-                <input
-                  type="tel"
-                  required
-                  value={branchForm.phone}
-                  onChange={(e) => setBranchForm({ ...branchForm, phone: e.target.value, whatsapp: e.target.value })}
-                  placeholder="01121537537"
-                  className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white font-mono"
-                />
+              {/* Day Off Policy Configuration */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="font-bold text-white text-xs block">
+                      عطلة أسبوعية خاصة بهذا الفرع
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      إذا تم التعطيل، سيعمل الفرع 7 أيام طوال الأسبوع بدون أي إجازة
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={branchForm.isDayOffEnabled}
+                      onChange={(e) => setBranchForm({ ...branchForm, isDayOffEnabled: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-10 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+
+                {branchForm.isDayOffEnabled ? (
+                  <div className="space-y-2 pt-2 border-t border-white/10">
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">اختر يوم العطلة:</label>
+                      <select
+                        value={branchForm.weeklyDayOff}
+                        onChange={(e) => setBranchForm({ ...branchForm, weeklyDayOff: e.target.value })}
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-amber-300 font-bold"
+                      >
+                        <option value="MONDAY">يوم الإثنين (العطلة المعتادة)</option>
+                        <option value="SUNDAY">يوم الأحد</option>
+                        <option value="SATURDAY">يوم السبت</option>
+                        <option value="TUESDAY">يوم الثلاثاء</option>
+                        <option value="WEDNESDAY">يوم الأربعاء</option>
+                        <option value="THURSDAY">يوم الخميس</option>
+                        <option value="FRIDAY">يوم الجمعة</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-slate-300 font-bold block mb-1">رسالة العطلة للعملاء (اختياري):</label>
+                      <input
+                        type="text"
+                        value={branchForm.dayOffMessage}
+                        onChange={(e) => setBranchForm({ ...branchForm, dayOffMessage: e.target.value })}
+                        placeholder="عفواً، الفرع في عطلة أسبوعية يوم الإثنين - نتشرف بكم طوال باقي الأيام"
+                        className="w-full py-2 px-3 rounded-xl bg-black/60 border border-white/10 text-white"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold text-center">
+                    🟢 الفرع يعمل 7 أيام طوال الأسبوع بدون أي يوم إجازة
+                  </div>
+                )}
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition cursor-pointer"
+                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition cursor-pointer shadow-lg shadow-amber-500/20"
               >
-                حفظ وإضافة الفرع 📍
+                {editingBranch ? "حفظ وتحديث بيانات وإجازة الفرع 💾" : "حفظ وإضافة الفرع الجديد 📍"}
               </button>
             </form>
           </div>

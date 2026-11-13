@@ -58,9 +58,22 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check Weekly Day Off (e.g. MONDAY)
+    // Check Weekly Day Off (Per-Branch first, then fallback to global settings)
+    const targetBranch = await prisma.branch.findUnique({ where: { id: branchId } });
     const settings = await prisma.systemSettings.findFirst();
-    if (settings?.isDayOffEnabled && settings.weeklyDayOff && settings.weeklyDayOff !== "NONE") {
+
+    // Determine if day off is enabled specifically for this branch
+    // If branch has isDayOffEnabled === false, it means this branch NEVER takes a day off (7 days open)
+    const branchHasExplicitConfig = targetBranch && targetBranch.weeklyDayOff !== undefined;
+    const isDayOffActive = targetBranch
+      ? targetBranch.isDayOffEnabled && targetBranch.weeklyDayOff !== "NONE"
+      : Boolean(settings?.isDayOffEnabled && settings.weeklyDayOff && settings.weeklyDayOff !== "NONE");
+
+    const activeDayOff = targetBranch?.isDayOffEnabled
+      ? targetBranch.weeklyDayOff
+      : (settings?.weeklyDayOff || "MONDAY");
+
+    if (isDayOffActive && activeDayOff && activeDayOff !== "NONE") {
       const d = new Date(bookingDate + "T12:00:00Z");
       const dayOfWeek = d.getUTCDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
       const dayMap: Record<string, number> = {
@@ -72,13 +85,14 @@ export async function POST(req: Request) {
         FRIDAY: 5,
         SATURDAY: 6,
       };
-      if (dayMap[settings.weeklyDayOff] === dayOfWeek) {
+      if (dayMap[activeDayOff] === dayOfWeek) {
         return NextResponse.json(
           {
             success: false,
             error:
-              settings.dayOffMessage ||
-              "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️",
+              targetBranch?.dayOffMessage ||
+              settings?.dayOffMessage ||
+              `عفواً، ${targetBranch?.name || "الصالون"} في عطلة أسبوعية - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️`,
           },
           { status: 400 }
         );
@@ -107,11 +121,26 @@ export async function POST(req: Request) {
             name: customerName ? customerName.trim() : "عميل VIP",
             phone: cleanPhone,
             email: customerEmail ? customerEmail.trim().toLowerCase() : null,
+            branchId,
             isVerified: true,
           },
         });
+      } else if (!cust.branchId) {
+        await prisma.customer.update({
+          where: { id: cust.id },
+          data: { branchId },
+        });
       }
       finalCustomerId = cust.id;
+    } else {
+      // Ensure customer has branchId
+      const existing = await prisma.customer.findUnique({ where: { id: finalCustomerId } });
+      if (existing && !existing.branchId) {
+        await prisma.customer.update({
+          where: { id: finalCustomerId },
+          data: { branchId },
+        });
+      }
     }
 
     const servicesArr = Array.isArray(serviceIds) ? serviceIds : [];

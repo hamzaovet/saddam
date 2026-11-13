@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       description,
       features,
       branchId,
+      announcementText,
       isActive,
       sortOrder,
     } = body;
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
         description: description?.trim() || null,
         features: Array.isArray(features) ? JSON.stringify(features) : features || "[]",
         branchId: branchId || null,
+        announcementText: announcementText?.trim() || null,
         isActive: isActive !== undefined ? Boolean(isActive) : true,
         sortOrder: sortOrder ? Number(sortOrder) : 0,
       },
@@ -92,6 +94,7 @@ export async function PATCH(req: Request) {
       description,
       features,
       branchId,
+      announcementText,
       isActive,
       sortOrder,
     } = body;
@@ -114,6 +117,7 @@ export async function PATCH(req: Request) {
           features: Array.isArray(features) ? JSON.stringify(features) : features,
         }),
         ...(branchId !== undefined && { branchId: branchId || null }),
+        ...(announcementText !== undefined && { announcementText: announcementText?.trim() || null }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(sortOrder !== undefined && { sortOrder: Number(sortOrder) }),
       },

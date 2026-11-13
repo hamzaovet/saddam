@@ -121,14 +121,76 @@ export default function HomePage() {
   // QR Modal
   const [showQrModal, setShowQrModal] = useState(false);
 
-  // Day Off Checker (Barbers Weekly Day Off e.g. MONDAY)
-  const checkIsDayOff = (dateStr: string) => {
-    if (!dateStr || !settings?.isDayOffEnabled) return false;
+  // Day Names Helper (Arabic)
+  const getDayLabelAr = (day: string) => {
+    const map: Record<string, string> = {
+      MONDAY: "يوم الإثنين",
+      TUESDAY: "يوم الثلاثاء",
+      WEDNESDAY: "يوم الأربعاء",
+      THURSDAY: "يوم الخميس",
+      FRIDAY: "يوم الجمعة",
+      SATURDAY: "يوم السبت",
+      SUNDAY: "يوم الأحد",
+      NONE: "لا يوجد (يعمل طوال الأسبوع)",
+    };
+    return map[day] || day;
+  };
+
+  // Day Off Checker (Barbers Weekly Day Off - Supports Per-Branch Configuration & 7-Day Open Mode)
+  const getBranchDayOffInfo = (branchId?: string | null) => {
+    const targetBranch = branches.find((b) => b.id === (branchId || selectedBranchId));
+    if (targetBranch) {
+      if (targetBranch.isDayOffEnabled === false || targetBranch.weeklyDayOff === "NONE") {
+        return {
+          isDayOffEnabled: false,
+          weeklyDayOff: "NONE",
+          dayLabel: "يعمل 7 أيام طوال الأسبوع بدون إجازة",
+          dayOffMessage: null,
+          branchName: targetBranch.name,
+        };
+      }
+      if (targetBranch.isDayOffEnabled === true) {
+        return {
+          isDayOffEnabled: true,
+          weeklyDayOff: targetBranch.weeklyDayOff || "MONDAY",
+          dayLabel: getDayLabelAr(targetBranch.weeklyDayOff || "MONDAY"),
+          dayOffMessage:
+            targetBranch.dayOffMessage ||
+            `عفواً، ${targetBranch.name} في عطلة أسبوعية (${getDayLabelAr(targetBranch.weeklyDayOff || "MONDAY")}) - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️`,
+          branchName: targetBranch.name,
+        };
+      }
+    }
+    // Fallback to global settings
+    if (!settings?.isDayOffEnabled) {
+      return {
+        isDayOffEnabled: false,
+        weeklyDayOff: "NONE",
+        dayLabel: "يعمل 7 أيام طوال الأسبوع بدون إجازة",
+        dayOffMessage: null,
+        branchName: "صالون صدام",
+      };
+    }
+    return {
+      isDayOffEnabled: true,
+      weeklyDayOff: settings?.weeklyDayOff || "MONDAY",
+      dayLabel: getDayLabelAr(settings?.weeklyDayOff || "MONDAY"),
+      dayOffMessage:
+        settings?.dayOffMessage ||
+        `عفواً، صالون صدام في عطلة أسبوعية (${getDayLabelAr(settings?.weeklyDayOff || "MONDAY")}) - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️`,
+      branchName: "صالون صدام",
+    };
+  };
+
+  const checkIsDayOff = (dateStr: string, branchId?: string | null) => {
+    if (!dateStr) return false;
+    const info = getBranchDayOffInfo(branchId);
+    if (!info.isDayOffEnabled || info.weeklyDayOff === "NONE") return false;
     try {
       const d = new Date(dateStr + "T12:00:00Z");
       const dayNames = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
       const dayName = dayNames[d.getUTCDay()];
-      return dayName === (settings?.weeklyDayOff || "MONDAY");
+      return dayName === info.weeklyDayOff;
     } catch {
       return false;
     }
@@ -681,12 +743,12 @@ export default function HomePage() {
       return;
     }
 
-    // Day Off Validation (e.g. MONDAY)
-    if (checkIsDayOff(selectedDate)) {
+    // Day Off Validation (Per-branch or global)
+    if (checkIsDayOff(selectedDate, selectedBranchId)) {
       showToast(
         "error",
-        settings?.dayOffMessage ||
-          "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"
+        getBranchDayOffInfo(selectedBranchId).dayOffMessage ||
+          "عفواً، الصالون في عطلة أسبوعية لهذا اليوم - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"
       );
       return;
     }
@@ -1277,7 +1339,7 @@ export default function HomePage() {
 
                 {checkIsDayOff(selectedDate) && (
                   <div className="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs font-bold">
-                    ⚠️ {settings?.dayOffMessage || "عطلة الصالون الأسبوعية"}
+                    ⚠️ {getBranchDayOffInfo(selectedBranchId).dayOffMessage || "عطلة الصالون الأسبوعية"}
                   </div>
                 )}
 
@@ -1532,6 +1594,60 @@ export default function HomePage() {
 
       {!(showRoyalPortal && customer) && (
         <>
+          {/* ─────────────────────────────────────────────────────────────
+              1.7 BRANCH ROYAL HIGHLIGHT & ANNOUNCEMENT BANNER
+             ───────────────────────────────────────────────────────────── */}
+          {selectedBranch && (
+            <div className="max-w-6xl w-full mx-auto px-4 sm:px-8 pt-4">
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-l from-amber-500/15 via-[#16141a] to-emerald-500/10 border-2 border-amber-500/40 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-300 text-xl shrink-0 shadow-md">
+                    👑
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-black text-amber-300">
+                        أهلاً بك في {selectedBranch.name} 📍
+                      </span>
+                      <span className="text-[10px] py-0.5 px-2 rounded-full font-bold border bg-amber-500/10 text-amber-300 border-amber-500/30">
+                        {getBranchDayOffInfo(selectedBranch.id).isDayOffEnabled
+                          ? `عطلة الفرع الأسبوعية: ${getBranchDayOffInfo(selectedBranch.id).dayLabel}`
+                          : "يعمل طوال الأسبوع بدون إجازة 🟢"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-200 leading-relaxed">
+                      {filteredOffers.find((o) => o.announcementText)?.announcementText ||
+                        `استمتع بأقوى العروض والخدمات المخصصة حصرياً لرواد ${selectedBranch.name}. احجز موعدك الملكي الآن!`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+                  <button
+                    type="button"
+                    onClick={() => setShowBranchGateway(true)}
+                    className="py-2 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                    <span>تبديل الفرع</span>
+                  </button>
+                  {filteredOffers.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("offers-section");
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="py-2 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-lg shadow-amber-500/20 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>عروض الفرع ({filteredOffers.length})</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
       {/* ─────────────────────────────────────────────────────────────
           2. GRAND VISUAL HERO SECTION (ROYAL SADDAM BARBER EXPERIENCE)
@@ -1641,7 +1757,7 @@ export default function HomePage() {
           2.5 DYNAMIC ROYAL OFFERS & PACKAGES (FROM OFFICIAL FLYERS)
          ───────────────────────────────────────────────────────────── */}
       {filteredOffers.length > 0 && (
-        <section className="max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 space-y-6">
+        <section id="offers-section" className="max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/20 pb-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center font-black text-base shadow-md shadow-amber-500/20">
@@ -2182,12 +2298,12 @@ export default function HomePage() {
                     <div className="flex items-center gap-2 font-black text-rose-300">
                       <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
                       <span>
-                        عطلة الصالون الأسبوعية ({settings?.weeklyDayOff === "MONDAY" ? "يوم الإثنين" : settings?.weeklyDayOff}) 💈
+                        عطلة {getBranchDayOffInfo(selectedBranchId).branchName} الأسبوعية ({getBranchDayOffInfo(selectedBranchId).dayLabel}) 💈
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-200 leading-relaxed">
-                      {settings?.dayOffMessage ||
-                        "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"}
+                      {getBranchDayOffInfo(selectedBranchId).dayOffMessage ||
+                        "عفواً، الصالون في عطلة أسبوعية لهذا اليوم - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"}
                     </p>
                   </div>
                 )}
@@ -2443,12 +2559,12 @@ export default function HomePage() {
                   <div className="flex items-center gap-2 font-black text-rose-300">
                     <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>
-                      عطلة الصالون الأسبوعية ({settings?.weeklyDayOff === "MONDAY" ? "يوم الإثنين" : settings?.weeklyDayOff}) 💈
+                      عطلة {getBranchDayOffInfo(selectedBranchId).branchName} الأسبوعية ({getBranchDayOffInfo(selectedBranchId).dayLabel}) 💈
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-200 leading-relaxed">
-                    {settings?.dayOffMessage ||
-                      "عفواً، صالون صدام في عطلة أسبوعية يوم الإثنين - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"}
+                    {getBranchDayOffInfo(selectedBranchId).dayOffMessage ||
+                      "عفواً، الصالون في عطلة أسبوعية لهذا اليوم - نتشرف بحجز موعدكم طوال باقي أيام الأسبوع ✂️"}
                   </p>
                   <p className="text-[10px] text-amber-300 font-bold">
                     💡 يرجى اختيار تاريخ آخر (مثل غداً أو بعد غد) لإتمام وتأكيد الحجز.

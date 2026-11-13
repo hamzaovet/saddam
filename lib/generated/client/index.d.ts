@@ -2179,6 +2179,7 @@ export namespace Prisma {
     chatMessages: number
     shifts: number
     expenses: number
+    customers: number
   }
 
   export type BranchCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2193,6 +2194,7 @@ export namespace Prisma {
     chatMessages?: boolean | BranchCountOutputTypeCountChatMessagesArgs
     shifts?: boolean | BranchCountOutputTypeCountShiftsArgs
     expenses?: boolean | BranchCountOutputTypeCountExpensesArgs
+    customers?: boolean | BranchCountOutputTypeCountCustomersArgs
   }
 
   // Custom InputTypes
@@ -2281,6 +2283,13 @@ export namespace Prisma {
    */
   export type BranchCountOutputTypeCountExpensesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TreasuryExpenseWhereInput
+  }
+
+  /**
+   * BranchCountOutputType without action
+   */
+  export type BranchCountOutputTypeCountCustomersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CustomerWhereInput
   }
 
 
@@ -2397,6 +2406,9 @@ export namespace Prisma {
     googleMapsUrl: string | null
     isActive: boolean | null
     createdAt: Date | null
+    isDayOffEnabled: boolean | null
+    weeklyDayOff: string | null
+    dayOffMessage: string | null
   }
 
   export type BranchMaxAggregateOutputType = {
@@ -2409,6 +2421,9 @@ export namespace Prisma {
     googleMapsUrl: string | null
     isActive: boolean | null
     createdAt: Date | null
+    isDayOffEnabled: boolean | null
+    weeklyDayOff: string | null
+    dayOffMessage: string | null
   }
 
   export type BranchCountAggregateOutputType = {
@@ -2421,6 +2436,9 @@ export namespace Prisma {
     googleMapsUrl: number
     isActive: number
     createdAt: number
+    isDayOffEnabled: number
+    weeklyDayOff: number
+    dayOffMessage: number
     _all: number
   }
 
@@ -2435,6 +2453,9 @@ export namespace Prisma {
     googleMapsUrl?: true
     isActive?: true
     createdAt?: true
+    isDayOffEnabled?: true
+    weeklyDayOff?: true
+    dayOffMessage?: true
   }
 
   export type BranchMaxAggregateInputType = {
@@ -2447,6 +2468,9 @@ export namespace Prisma {
     googleMapsUrl?: true
     isActive?: true
     createdAt?: true
+    isDayOffEnabled?: true
+    weeklyDayOff?: true
+    dayOffMessage?: true
   }
 
   export type BranchCountAggregateInputType = {
@@ -2459,6 +2483,9 @@ export namespace Prisma {
     googleMapsUrl?: true
     isActive?: true
     createdAt?: true
+    isDayOffEnabled?: true
+    weeklyDayOff?: true
+    dayOffMessage?: true
     _all?: true
   }
 
@@ -2544,6 +2571,9 @@ export namespace Prisma {
     googleMapsUrl: string | null
     isActive: boolean
     createdAt: Date
+    isDayOffEnabled: boolean
+    weeklyDayOff: string
+    dayOffMessage: string | null
     _count: BranchCountAggregateOutputType | null
     _min: BranchMinAggregateOutputType | null
     _max: BranchMaxAggregateOutputType | null
@@ -2573,6 +2603,9 @@ export namespace Prisma {
     googleMapsUrl?: boolean
     isActive?: boolean
     createdAt?: boolean
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: boolean
+    dayOffMessage?: boolean
     users?: boolean | Branch$usersArgs<ExtArgs>
     specialists?: boolean | Branch$specialistsArgs<ExtArgs>
     services?: boolean | Branch$servicesArgs<ExtArgs>
@@ -2584,6 +2617,7 @@ export namespace Prisma {
     chatMessages?: boolean | Branch$chatMessagesArgs<ExtArgs>
     shifts?: boolean | Branch$shiftsArgs<ExtArgs>
     expenses?: boolean | Branch$expensesArgs<ExtArgs>
+    customers?: boolean | Branch$customersArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["branch"]>
 
@@ -2597,6 +2631,9 @@ export namespace Prisma {
     googleMapsUrl?: boolean
     isActive?: boolean
     createdAt?: boolean
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: boolean
+    dayOffMessage?: boolean
   }, ExtArgs["result"]["branch"]>
 
   export type BranchSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -2609,6 +2646,9 @@ export namespace Prisma {
     googleMapsUrl?: boolean
     isActive?: boolean
     createdAt?: boolean
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: boolean
+    dayOffMessage?: boolean
   }, ExtArgs["result"]["branch"]>
 
   export type BranchSelectScalar = {
@@ -2621,9 +2661,12 @@ export namespace Prisma {
     googleMapsUrl?: boolean
     isActive?: boolean
     createdAt?: boolean
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: boolean
+    dayOffMessage?: boolean
   }
 
-  export type BranchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "code" | "address" | "phone" | "whatsapp" | "googleMapsUrl" | "isActive" | "createdAt", ExtArgs["result"]["branch"]>
+  export type BranchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "code" | "address" | "phone" | "whatsapp" | "googleMapsUrl" | "isActive" | "createdAt" | "isDayOffEnabled" | "weeklyDayOff" | "dayOffMessage", ExtArgs["result"]["branch"]>
   export type BranchInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | Branch$usersArgs<ExtArgs>
     specialists?: boolean | Branch$specialistsArgs<ExtArgs>
@@ -2636,6 +2679,7 @@ export namespace Prisma {
     chatMessages?: boolean | Branch$chatMessagesArgs<ExtArgs>
     shifts?: boolean | Branch$shiftsArgs<ExtArgs>
     expenses?: boolean | Branch$expensesArgs<ExtArgs>
+    customers?: boolean | Branch$customersArgs<ExtArgs>
     _count?: boolean | BranchCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BranchIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2655,6 +2699,7 @@ export namespace Prisma {
       chatMessages: Prisma.$ChatMessagePayload<ExtArgs>[]
       shifts: Prisma.$CashShiftPayload<ExtArgs>[]
       expenses: Prisma.$TreasuryExpensePayload<ExtArgs>[]
+      customers: Prisma.$CustomerPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2666,6 +2711,9 @@ export namespace Prisma {
       googleMapsUrl: string | null
       isActive: boolean
       createdAt: Date
+      isDayOffEnabled: boolean
+      weeklyDayOff: string
+      dayOffMessage: string | null
     }, ExtArgs["result"]["branch"]>
     composites: {}
   }
@@ -3071,6 +3119,7 @@ export namespace Prisma {
     chatMessages<T extends Branch$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Branch$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     shifts<T extends Branch$shiftsArgs<ExtArgs> = {}>(args?: Subset<T, Branch$shiftsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CashShiftPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     expenses<T extends Branch$expensesArgs<ExtArgs> = {}>(args?: Subset<T, Branch$expensesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TreasuryExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    customers<T extends Branch$customersArgs<ExtArgs> = {}>(args?: Subset<T, Branch$customersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3109,6 +3158,9 @@ export namespace Prisma {
     readonly googleMapsUrl: FieldRef<"Branch", 'String'>
     readonly isActive: FieldRef<"Branch", 'Boolean'>
     readonly createdAt: FieldRef<"Branch", 'DateTime'>
+    readonly isDayOffEnabled: FieldRef<"Branch", 'Boolean'>
+    readonly weeklyDayOff: FieldRef<"Branch", 'String'>
+    readonly dayOffMessage: FieldRef<"Branch", 'String'>
   }
     
 
@@ -3763,6 +3815,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TreasuryExpenseScalarFieldEnum | TreasuryExpenseScalarFieldEnum[]
+  }
+
+  /**
+   * Branch.customers
+   */
+  export type Branch$customersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Customer
+     */
+    select?: CustomerSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Customer
+     */
+    omit?: CustomerOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerInclude<ExtArgs> | null
+    where?: CustomerWhereInput
+    orderBy?: CustomerOrderByWithRelationInput | CustomerOrderByWithRelationInput[]
+    cursor?: CustomerWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CustomerScalarFieldEnum | CustomerScalarFieldEnum[]
   }
 
   /**
@@ -5009,6 +5085,8 @@ export namespace Prisma {
     baseSalary: number | null
     commissionRate: number | null
     isActive: boolean | null
+    isArchived: boolean | null
+    archivedAt: Date | null
     createdAt: Date | null
   }
 
@@ -5028,6 +5106,8 @@ export namespace Prisma {
     baseSalary: number | null
     commissionRate: number | null
     isActive: boolean | null
+    isArchived: boolean | null
+    archivedAt: Date | null
     createdAt: Date | null
   }
 
@@ -5047,6 +5127,8 @@ export namespace Prisma {
     baseSalary: number
     commissionRate: number
     isActive: number
+    isArchived: number
+    archivedAt: number
     createdAt: number
     _all: number
   }
@@ -5082,6 +5164,8 @@ export namespace Prisma {
     baseSalary?: true
     commissionRate?: true
     isActive?: true
+    isArchived?: true
+    archivedAt?: true
     createdAt?: true
   }
 
@@ -5101,6 +5185,8 @@ export namespace Prisma {
     baseSalary?: true
     commissionRate?: true
     isActive?: true
+    isArchived?: true
+    archivedAt?: true
     createdAt?: true
   }
 
@@ -5120,6 +5206,8 @@ export namespace Prisma {
     baseSalary?: true
     commissionRate?: true
     isActive?: true
+    isArchived?: true
+    archivedAt?: true
     createdAt?: true
     _all?: true
   }
@@ -5226,6 +5314,8 @@ export namespace Prisma {
     baseSalary: number
     commissionRate: number
     isActive: boolean
+    isArchived: boolean
+    archivedAt: Date | null
     createdAt: Date
     _count: SpecialistCountAggregateOutputType | null
     _avg: SpecialistAvgAggregateOutputType | null
@@ -5264,6 +5354,8 @@ export namespace Prisma {
     baseSalary?: boolean
     commissionRate?: boolean
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     user?: boolean | Specialist$userArgs<ExtArgs>
     branch?: boolean | BranchDefaultArgs<ExtArgs>
@@ -5289,6 +5381,8 @@ export namespace Prisma {
     baseSalary?: boolean
     commissionRate?: boolean
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     user?: boolean | Specialist$userArgs<ExtArgs>
     branch?: boolean | BranchDefaultArgs<ExtArgs>
@@ -5310,6 +5404,8 @@ export namespace Prisma {
     baseSalary?: boolean
     commissionRate?: boolean
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     user?: boolean | Specialist$userArgs<ExtArgs>
     branch?: boolean | BranchDefaultArgs<ExtArgs>
@@ -5331,10 +5427,12 @@ export namespace Prisma {
     baseSalary?: boolean
     commissionRate?: boolean
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
   }
 
-  export type SpecialistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "branchId" | "name" | "phone" | "photo" | "title" | "chairNumber" | "status" | "statusReason" | "rating" | "payType" | "baseSalary" | "commissionRate" | "isActive" | "createdAt", ExtArgs["result"]["specialist"]>
+  export type SpecialistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "branchId" | "name" | "phone" | "photo" | "title" | "chairNumber" | "status" | "statusReason" | "rating" | "payType" | "baseSalary" | "commissionRate" | "isActive" | "isArchived" | "archivedAt" | "createdAt", ExtArgs["result"]["specialist"]>
   export type SpecialistInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | Specialist$userArgs<ExtArgs>
     branch?: boolean | BranchDefaultArgs<ExtArgs>
@@ -5377,6 +5475,8 @@ export namespace Prisma {
       baseSalary: number
       commissionRate: number
       isActive: boolean
+      isArchived: boolean
+      archivedAt: Date | null
       createdAt: Date
     }, ExtArgs["result"]["specialist"]>
     composites: {}
@@ -5821,6 +5921,8 @@ export namespace Prisma {
     readonly baseSalary: FieldRef<"Specialist", 'Float'>
     readonly commissionRate: FieldRef<"Specialist", 'Float'>
     readonly isActive: FieldRef<"Specialist", 'Boolean'>
+    readonly isArchived: FieldRef<"Specialist", 'Boolean'>
+    readonly archivedAt: FieldRef<"Specialist", 'DateTime'>
     readonly createdAt: FieldRef<"Specialist", 'DateTime'>
   }
     
@@ -7560,17 +7662,20 @@ export namespace Prisma {
   }
 
   export type CustomerAvgAggregateOutputType = {
+    loyaltyPoints: number | null
     totalVisits: number | null
     totalSpent: number | null
   }
 
   export type CustomerSumAggregateOutputType = {
+    loyaltyPoints: number | null
     totalVisits: number | null
     totalSpent: number | null
   }
 
   export type CustomerMinAggregateOutputType = {
     id: string | null
+    branchId: string | null
     name: string | null
     phone: string | null
     email: string | null
@@ -7580,6 +7685,7 @@ export namespace Prisma {
     avatar: string | null
     notes: string | null
     vipLevel: string | null
+    loyaltyPoints: number | null
     totalVisits: number | null
     totalSpent: number | null
     createdAt: Date | null
@@ -7588,6 +7694,7 @@ export namespace Prisma {
 
   export type CustomerMaxAggregateOutputType = {
     id: string | null
+    branchId: string | null
     name: string | null
     phone: string | null
     email: string | null
@@ -7597,6 +7704,7 @@ export namespace Prisma {
     avatar: string | null
     notes: string | null
     vipLevel: string | null
+    loyaltyPoints: number | null
     totalVisits: number | null
     totalSpent: number | null
     createdAt: Date | null
@@ -7605,6 +7713,7 @@ export namespace Prisma {
 
   export type CustomerCountAggregateOutputType = {
     id: number
+    branchId: number
     name: number
     phone: number
     email: number
@@ -7614,6 +7723,7 @@ export namespace Prisma {
     avatar: number
     notes: number
     vipLevel: number
+    loyaltyPoints: number
     totalVisits: number
     totalSpent: number
     createdAt: number
@@ -7623,17 +7733,20 @@ export namespace Prisma {
 
 
   export type CustomerAvgAggregateInputType = {
+    loyaltyPoints?: true
     totalVisits?: true
     totalSpent?: true
   }
 
   export type CustomerSumAggregateInputType = {
+    loyaltyPoints?: true
     totalVisits?: true
     totalSpent?: true
   }
 
   export type CustomerMinAggregateInputType = {
     id?: true
+    branchId?: true
     name?: true
     phone?: true
     email?: true
@@ -7643,6 +7756,7 @@ export namespace Prisma {
     avatar?: true
     notes?: true
     vipLevel?: true
+    loyaltyPoints?: true
     totalVisits?: true
     totalSpent?: true
     createdAt?: true
@@ -7651,6 +7765,7 @@ export namespace Prisma {
 
   export type CustomerMaxAggregateInputType = {
     id?: true
+    branchId?: true
     name?: true
     phone?: true
     email?: true
@@ -7660,6 +7775,7 @@ export namespace Prisma {
     avatar?: true
     notes?: true
     vipLevel?: true
+    loyaltyPoints?: true
     totalVisits?: true
     totalSpent?: true
     createdAt?: true
@@ -7668,6 +7784,7 @@ export namespace Prisma {
 
   export type CustomerCountAggregateInputType = {
     id?: true
+    branchId?: true
     name?: true
     phone?: true
     email?: true
@@ -7677,6 +7794,7 @@ export namespace Prisma {
     avatar?: true
     notes?: true
     vipLevel?: true
+    loyaltyPoints?: true
     totalVisits?: true
     totalSpent?: true
     createdAt?: true
@@ -7772,6 +7890,7 @@ export namespace Prisma {
 
   export type CustomerGroupByOutputType = {
     id: string
+    branchId: string | null
     name: string
     phone: string
     email: string | null
@@ -7781,6 +7900,7 @@ export namespace Prisma {
     avatar: string | null
     notes: string | null
     vipLevel: string
+    loyaltyPoints: number
     totalVisits: number
     totalSpent: number
     createdAt: Date
@@ -7808,6 +7928,7 @@ export namespace Prisma {
 
   export type CustomerSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    branchId?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -7817,10 +7938,12 @@ export namespace Prisma {
     avatar?: boolean
     notes?: boolean
     vipLevel?: boolean
+    loyaltyPoints?: boolean
     totalVisits?: boolean
     totalSpent?: boolean
     createdAt?: boolean
     lastVisitAt?: boolean
+    branch?: boolean | Customer$branchArgs<ExtArgs>
     bookings?: boolean | Customer$bookingsArgs<ExtArgs>
     tickets?: boolean | Customer$ticketsArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
@@ -7828,6 +7951,7 @@ export namespace Prisma {
 
   export type CustomerSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    branchId?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -7837,14 +7961,17 @@ export namespace Prisma {
     avatar?: boolean
     notes?: boolean
     vipLevel?: boolean
+    loyaltyPoints?: boolean
     totalVisits?: boolean
     totalSpent?: boolean
     createdAt?: boolean
     lastVisitAt?: boolean
+    branch?: boolean | Customer$branchArgs<ExtArgs>
   }, ExtArgs["result"]["customer"]>
 
   export type CustomerSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    branchId?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -7854,14 +7981,17 @@ export namespace Prisma {
     avatar?: boolean
     notes?: boolean
     vipLevel?: boolean
+    loyaltyPoints?: boolean
     totalVisits?: boolean
     totalSpent?: boolean
     createdAt?: boolean
     lastVisitAt?: boolean
+    branch?: boolean | Customer$branchArgs<ExtArgs>
   }, ExtArgs["result"]["customer"]>
 
   export type CustomerSelectScalar = {
     id?: boolean
+    branchId?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -7871,29 +8001,37 @@ export namespace Prisma {
     avatar?: boolean
     notes?: boolean
     vipLevel?: boolean
+    loyaltyPoints?: boolean
     totalVisits?: boolean
     totalSpent?: boolean
     createdAt?: boolean
     lastVisitAt?: boolean
   }
 
-  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "phone" | "email" | "passwordHash" | "isVerified" | "verificationCode" | "avatar" | "notes" | "vipLevel" | "totalVisits" | "totalSpent" | "createdAt" | "lastVisitAt", ExtArgs["result"]["customer"]>
+  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "branchId" | "name" | "phone" | "email" | "passwordHash" | "isVerified" | "verificationCode" | "avatar" | "notes" | "vipLevel" | "loyaltyPoints" | "totalVisits" | "totalSpent" | "createdAt" | "lastVisitAt", ExtArgs["result"]["customer"]>
   export type CustomerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Customer$branchArgs<ExtArgs>
     bookings?: boolean | Customer$bookingsArgs<ExtArgs>
     tickets?: boolean | Customer$ticketsArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type CustomerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type CustomerIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type CustomerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Customer$branchArgs<ExtArgs>
+  }
+  export type CustomerIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    branch?: boolean | Customer$branchArgs<ExtArgs>
+  }
 
   export type $CustomerPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Customer"
     objects: {
+      branch: Prisma.$BranchPayload<ExtArgs> | null
       bookings: Prisma.$BookingPayload<ExtArgs>[]
       tickets: Prisma.$TicketPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      branchId: string | null
       name: string
       phone: string
       email: string | null
@@ -7903,6 +8041,7 @@ export namespace Prisma {
       avatar: string | null
       notes: string | null
       vipLevel: string
+      loyaltyPoints: number
       totalVisits: number
       totalSpent: number
       createdAt: Date
@@ -8301,6 +8440,7 @@ export namespace Prisma {
    */
   export interface Prisma__CustomerClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    branch<T extends Customer$branchArgs<ExtArgs> = {}>(args?: Subset<T, Customer$branchArgs<ExtArgs>>): Prisma__BranchClient<$Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     bookings<T extends Customer$bookingsArgs<ExtArgs> = {}>(args?: Subset<T, Customer$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tickets<T extends Customer$ticketsArgs<ExtArgs> = {}>(args?: Subset<T, Customer$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -8333,6 +8473,7 @@ export namespace Prisma {
    */
   interface CustomerFieldRefs {
     readonly id: FieldRef<"Customer", 'String'>
+    readonly branchId: FieldRef<"Customer", 'String'>
     readonly name: FieldRef<"Customer", 'String'>
     readonly phone: FieldRef<"Customer", 'String'>
     readonly email: FieldRef<"Customer", 'String'>
@@ -8342,6 +8483,7 @@ export namespace Prisma {
     readonly avatar: FieldRef<"Customer", 'String'>
     readonly notes: FieldRef<"Customer", 'String'>
     readonly vipLevel: FieldRef<"Customer", 'String'>
+    readonly loyaltyPoints: FieldRef<"Customer", 'Int'>
     readonly totalVisits: FieldRef<"Customer", 'Int'>
     readonly totalSpent: FieldRef<"Customer", 'Float'>
     readonly createdAt: FieldRef<"Customer", 'DateTime'>
@@ -8600,6 +8742,10 @@ export namespace Prisma {
      */
     data: CustomerCreateManyInput | CustomerCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -8670,6 +8816,10 @@ export namespace Prisma {
      * Limit how many Customers to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -8736,6 +8886,25 @@ export namespace Prisma {
      * Limit how many Customers to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Customer.branch
+   */
+  export type Customer$branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Branch
+     */
+    select?: BranchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Branch
+     */
+    omit?: BranchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BranchInclude<ExtArgs> | null
+    where?: BranchWhereInput
   }
 
   /**
@@ -15155,6 +15324,8 @@ export namespace Prisma {
     description: string | null
     features: string | null
     branchId: string | null
+    announcementText: string | null
+    broadcastSentAt: Date | null
     isActive: boolean | null
     sortOrder: number | null
     createdAt: Date | null
@@ -15172,6 +15343,8 @@ export namespace Prisma {
     description: string | null
     features: string | null
     branchId: string | null
+    announcementText: string | null
+    broadcastSentAt: Date | null
     isActive: boolean | null
     sortOrder: number | null
     createdAt: Date | null
@@ -15189,6 +15362,8 @@ export namespace Prisma {
     description: number
     features: number
     branchId: number
+    announcementText: number
+    broadcastSentAt: number
     isActive: number
     sortOrder: number
     createdAt: number
@@ -15222,6 +15397,8 @@ export namespace Prisma {
     description?: true
     features?: true
     branchId?: true
+    announcementText?: true
+    broadcastSentAt?: true
     isActive?: true
     sortOrder?: true
     createdAt?: true
@@ -15239,6 +15416,8 @@ export namespace Prisma {
     description?: true
     features?: true
     branchId?: true
+    announcementText?: true
+    broadcastSentAt?: true
     isActive?: true
     sortOrder?: true
     createdAt?: true
@@ -15256,6 +15435,8 @@ export namespace Prisma {
     description?: true
     features?: true
     branchId?: true
+    announcementText?: true
+    broadcastSentAt?: true
     isActive?: true
     sortOrder?: true
     createdAt?: true
@@ -15360,6 +15541,8 @@ export namespace Prisma {
     description: string | null
     features: string
     branchId: string | null
+    announcementText: string | null
+    broadcastSentAt: Date | null
     isActive: boolean
     sortOrder: number
     createdAt: Date
@@ -15396,6 +15579,8 @@ export namespace Prisma {
     description?: boolean
     features?: boolean
     branchId?: boolean
+    announcementText?: boolean
+    broadcastSentAt?: boolean
     isActive?: boolean
     sortOrder?: boolean
     createdAt?: boolean
@@ -15414,6 +15599,8 @@ export namespace Prisma {
     description?: boolean
     features?: boolean
     branchId?: boolean
+    announcementText?: boolean
+    broadcastSentAt?: boolean
     isActive?: boolean
     sortOrder?: boolean
     createdAt?: boolean
@@ -15432,6 +15619,8 @@ export namespace Prisma {
     description?: boolean
     features?: boolean
     branchId?: boolean
+    announcementText?: boolean
+    broadcastSentAt?: boolean
     isActive?: boolean
     sortOrder?: boolean
     createdAt?: boolean
@@ -15450,13 +15639,15 @@ export namespace Prisma {
     description?: boolean
     features?: boolean
     branchId?: boolean
+    announcementText?: boolean
+    broadcastSentAt?: boolean
     isActive?: boolean
     sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type OfferOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "titleAr" | "badge" | "price" | "oldPrice" | "discountPercent" | "image" | "description" | "features" | "branchId" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["offer"]>
+  export type OfferOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "titleAr" | "badge" | "price" | "oldPrice" | "discountPercent" | "image" | "description" | "features" | "branchId" | "announcementText" | "broadcastSentAt" | "isActive" | "sortOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["offer"]>
   export type OfferInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     branch?: boolean | Offer$branchArgs<ExtArgs>
   }
@@ -15483,6 +15674,8 @@ export namespace Prisma {
       description: string | null
       features: string
       branchId: string | null
+      announcementText: string | null
+      broadcastSentAt: Date | null
       isActive: boolean
       sortOrder: number
       createdAt: Date
@@ -15921,6 +16114,8 @@ export namespace Prisma {
     readonly description: FieldRef<"Offer", 'String'>
     readonly features: FieldRef<"Offer", 'String'>
     readonly branchId: FieldRef<"Offer", 'String'>
+    readonly announcementText: FieldRef<"Offer", 'String'>
+    readonly broadcastSentAt: FieldRef<"Offer", 'DateTime'>
     readonly isActive: FieldRef<"Offer", 'Boolean'>
     readonly sortOrder: FieldRef<"Offer", 'Int'>
     readonly createdAt: FieldRef<"Offer", 'DateTime'>
@@ -21219,7 +21414,10 @@ export namespace Prisma {
     whatsapp: 'whatsapp',
     googleMapsUrl: 'googleMapsUrl',
     isActive: 'isActive',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    isDayOffEnabled: 'isDayOffEnabled',
+    weeklyDayOff: 'weeklyDayOff',
+    dayOffMessage: 'dayOffMessage'
   };
 
   export type BranchScalarFieldEnum = (typeof BranchScalarFieldEnum)[keyof typeof BranchScalarFieldEnum]
@@ -21258,6 +21456,8 @@ export namespace Prisma {
     baseSalary: 'baseSalary',
     commissionRate: 'commissionRate',
     isActive: 'isActive',
+    isArchived: 'isArchived',
+    archivedAt: 'archivedAt',
     createdAt: 'createdAt'
   };
 
@@ -21284,6 +21484,7 @@ export namespace Prisma {
 
   export const CustomerScalarFieldEnum: {
     id: 'id',
+    branchId: 'branchId',
     name: 'name',
     phone: 'phone',
     email: 'email',
@@ -21293,6 +21494,7 @@ export namespace Prisma {
     avatar: 'avatar',
     notes: 'notes',
     vipLevel: 'vipLevel',
+    loyaltyPoints: 'loyaltyPoints',
     totalVisits: 'totalVisits',
     totalSpent: 'totalSpent',
     createdAt: 'createdAt',
@@ -21426,6 +21628,8 @@ export namespace Prisma {
     description: 'description',
     features: 'features',
     branchId: 'branchId',
+    announcementText: 'announcementText',
+    broadcastSentAt: 'broadcastSentAt',
     isActive: 'isActive',
     sortOrder: 'sortOrder',
     createdAt: 'createdAt',
@@ -21625,6 +21829,9 @@ export namespace Prisma {
     googleMapsUrl?: StringNullableFilter<"Branch"> | string | null
     isActive?: BoolFilter<"Branch"> | boolean
     createdAt?: DateTimeFilter<"Branch"> | Date | string
+    isDayOffEnabled?: BoolFilter<"Branch"> | boolean
+    weeklyDayOff?: StringFilter<"Branch"> | string
+    dayOffMessage?: StringNullableFilter<"Branch"> | string | null
     users?: UserListRelationFilter
     specialists?: SpecialistListRelationFilter
     services?: ServiceListRelationFilter
@@ -21636,6 +21843,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageListRelationFilter
     shifts?: CashShiftListRelationFilter
     expenses?: TreasuryExpenseListRelationFilter
+    customers?: CustomerListRelationFilter
   }
 
   export type BranchOrderByWithRelationInput = {
@@ -21648,6 +21856,9 @@ export namespace Prisma {
     googleMapsUrl?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
+    isDayOffEnabled?: SortOrder
+    weeklyDayOff?: SortOrder
+    dayOffMessage?: SortOrderInput | SortOrder
     users?: UserOrderByRelationAggregateInput
     specialists?: SpecialistOrderByRelationAggregateInput
     services?: ServiceOrderByRelationAggregateInput
@@ -21659,6 +21870,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageOrderByRelationAggregateInput
     shifts?: CashShiftOrderByRelationAggregateInput
     expenses?: TreasuryExpenseOrderByRelationAggregateInput
+    customers?: CustomerOrderByRelationAggregateInput
   }
 
   export type BranchWhereUniqueInput = Prisma.AtLeast<{
@@ -21674,6 +21886,9 @@ export namespace Prisma {
     googleMapsUrl?: StringNullableFilter<"Branch"> | string | null
     isActive?: BoolFilter<"Branch"> | boolean
     createdAt?: DateTimeFilter<"Branch"> | Date | string
+    isDayOffEnabled?: BoolFilter<"Branch"> | boolean
+    weeklyDayOff?: StringFilter<"Branch"> | string
+    dayOffMessage?: StringNullableFilter<"Branch"> | string | null
     users?: UserListRelationFilter
     specialists?: SpecialistListRelationFilter
     services?: ServiceListRelationFilter
@@ -21685,6 +21900,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageListRelationFilter
     shifts?: CashShiftListRelationFilter
     expenses?: TreasuryExpenseListRelationFilter
+    customers?: CustomerListRelationFilter
   }, "id" | "code">
 
   export type BranchOrderByWithAggregationInput = {
@@ -21697,6 +21913,9 @@ export namespace Prisma {
     googleMapsUrl?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
+    isDayOffEnabled?: SortOrder
+    weeklyDayOff?: SortOrder
+    dayOffMessage?: SortOrderInput | SortOrder
     _count?: BranchCountOrderByAggregateInput
     _max?: BranchMaxOrderByAggregateInput
     _min?: BranchMinOrderByAggregateInput
@@ -21715,6 +21934,9 @@ export namespace Prisma {
     googleMapsUrl?: StringNullableWithAggregatesFilter<"Branch"> | string | null
     isActive?: BoolWithAggregatesFilter<"Branch"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Branch"> | Date | string
+    isDayOffEnabled?: BoolWithAggregatesFilter<"Branch"> | boolean
+    weeklyDayOff?: StringWithAggregatesFilter<"Branch"> | string
+    dayOffMessage?: StringNullableWithAggregatesFilter<"Branch"> | string | null
   }
 
   export type UserWhereInput = {
@@ -21824,6 +22046,8 @@ export namespace Prisma {
     baseSalary?: FloatFilter<"Specialist"> | number
     commissionRate?: FloatFilter<"Specialist"> | number
     isActive?: BoolFilter<"Specialist"> | boolean
+    isArchived?: BoolFilter<"Specialist"> | boolean
+    archivedAt?: DateTimeNullableFilter<"Specialist"> | Date | string | null
     createdAt?: DateTimeFilter<"Specialist"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     branch?: XOR<BranchScalarRelationFilter, BranchWhereInput>
@@ -21848,6 +22072,8 @@ export namespace Prisma {
     baseSalary?: SortOrder
     commissionRate?: SortOrder
     isActive?: SortOrder
+    isArchived?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
     branch?: BranchOrderByWithRelationInput
@@ -21875,6 +22101,8 @@ export namespace Prisma {
     baseSalary?: FloatFilter<"Specialist"> | number
     commissionRate?: FloatFilter<"Specialist"> | number
     isActive?: BoolFilter<"Specialist"> | boolean
+    isArchived?: BoolFilter<"Specialist"> | boolean
+    archivedAt?: DateTimeNullableFilter<"Specialist"> | Date | string | null
     createdAt?: DateTimeFilter<"Specialist"> | Date | string
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     branch?: XOR<BranchScalarRelationFilter, BranchWhereInput>
@@ -21899,6 +22127,8 @@ export namespace Prisma {
     baseSalary?: SortOrder
     commissionRate?: SortOrder
     isActive?: SortOrder
+    isArchived?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: SpecialistCountOrderByAggregateInput
     _avg?: SpecialistAvgOrderByAggregateInput
@@ -21926,6 +22156,8 @@ export namespace Prisma {
     baseSalary?: FloatWithAggregatesFilter<"Specialist"> | number
     commissionRate?: FloatWithAggregatesFilter<"Specialist"> | number
     isActive?: BoolWithAggregatesFilter<"Specialist"> | boolean
+    isArchived?: BoolWithAggregatesFilter<"Specialist"> | boolean
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"Specialist"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Specialist"> | Date | string
   }
 
@@ -22026,6 +22258,7 @@ export namespace Prisma {
     OR?: CustomerWhereInput[]
     NOT?: CustomerWhereInput | CustomerWhereInput[]
     id?: StringFilter<"Customer"> | string
+    branchId?: StringNullableFilter<"Customer"> | string | null
     name?: StringFilter<"Customer"> | string
     phone?: StringFilter<"Customer"> | string
     email?: StringNullableFilter<"Customer"> | string | null
@@ -22035,16 +22268,19 @@ export namespace Prisma {
     avatar?: StringNullableFilter<"Customer"> | string | null
     notes?: StringNullableFilter<"Customer"> | string | null
     vipLevel?: StringFilter<"Customer"> | string
+    loyaltyPoints?: IntFilter<"Customer"> | number
     totalVisits?: IntFilter<"Customer"> | number
     totalSpent?: FloatFilter<"Customer"> | number
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     lastVisitAt?: DateTimeNullableFilter<"Customer"> | Date | string | null
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
     bookings?: BookingListRelationFilter
     tickets?: TicketListRelationFilter
   }
 
   export type CustomerOrderByWithRelationInput = {
     id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrderInput | SortOrder
@@ -22054,10 +22290,12 @@ export namespace Prisma {
     avatar?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     vipLevel?: SortOrder
+    loyaltyPoints?: SortOrder
     totalVisits?: SortOrder
     totalSpent?: SortOrder
     createdAt?: SortOrder
     lastVisitAt?: SortOrderInput | SortOrder
+    branch?: BranchOrderByWithRelationInput
     bookings?: BookingOrderByRelationAggregateInput
     tickets?: TicketOrderByRelationAggregateInput
   }
@@ -22068,6 +22306,7 @@ export namespace Prisma {
     AND?: CustomerWhereInput | CustomerWhereInput[]
     OR?: CustomerWhereInput[]
     NOT?: CustomerWhereInput | CustomerWhereInput[]
+    branchId?: StringNullableFilter<"Customer"> | string | null
     name?: StringFilter<"Customer"> | string
     email?: StringNullableFilter<"Customer"> | string | null
     passwordHash?: StringNullableFilter<"Customer"> | string | null
@@ -22076,16 +22315,19 @@ export namespace Prisma {
     avatar?: StringNullableFilter<"Customer"> | string | null
     notes?: StringNullableFilter<"Customer"> | string | null
     vipLevel?: StringFilter<"Customer"> | string
+    loyaltyPoints?: IntFilter<"Customer"> | number
     totalVisits?: IntFilter<"Customer"> | number
     totalSpent?: FloatFilter<"Customer"> | number
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     lastVisitAt?: DateTimeNullableFilter<"Customer"> | Date | string | null
+    branch?: XOR<BranchNullableScalarRelationFilter, BranchWhereInput> | null
     bookings?: BookingListRelationFilter
     tickets?: TicketListRelationFilter
   }, "id" | "phone">
 
   export type CustomerOrderByWithAggregationInput = {
     id?: SortOrder
+    branchId?: SortOrderInput | SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrderInput | SortOrder
@@ -22095,6 +22337,7 @@ export namespace Prisma {
     avatar?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     vipLevel?: SortOrder
+    loyaltyPoints?: SortOrder
     totalVisits?: SortOrder
     totalSpent?: SortOrder
     createdAt?: SortOrder
@@ -22111,6 +22354,7 @@ export namespace Prisma {
     OR?: CustomerScalarWhereWithAggregatesInput[]
     NOT?: CustomerScalarWhereWithAggregatesInput | CustomerScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Customer"> | string
+    branchId?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     name?: StringWithAggregatesFilter<"Customer"> | string
     phone?: StringWithAggregatesFilter<"Customer"> | string
     email?: StringNullableWithAggregatesFilter<"Customer"> | string | null
@@ -22120,6 +22364,7 @@ export namespace Prisma {
     avatar?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     notes?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     vipLevel?: StringWithAggregatesFilter<"Customer"> | string
+    loyaltyPoints?: IntWithAggregatesFilter<"Customer"> | number
     totalVisits?: IntWithAggregatesFilter<"Customer"> | number
     totalSpent?: FloatWithAggregatesFilter<"Customer"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
@@ -22727,6 +22972,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"Offer"> | string | null
     features?: StringFilter<"Offer"> | string
     branchId?: StringNullableFilter<"Offer"> | string | null
+    announcementText?: StringNullableFilter<"Offer"> | string | null
+    broadcastSentAt?: DateTimeNullableFilter<"Offer"> | Date | string | null
     isActive?: BoolFilter<"Offer"> | boolean
     sortOrder?: IntFilter<"Offer"> | number
     createdAt?: DateTimeFilter<"Offer"> | Date | string
@@ -22745,6 +22992,8 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     features?: SortOrder
     branchId?: SortOrderInput | SortOrder
+    announcementText?: SortOrderInput | SortOrder
+    broadcastSentAt?: SortOrderInput | SortOrder
     isActive?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
@@ -22766,6 +23015,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"Offer"> | string | null
     features?: StringFilter<"Offer"> | string
     branchId?: StringNullableFilter<"Offer"> | string | null
+    announcementText?: StringNullableFilter<"Offer"> | string | null
+    broadcastSentAt?: DateTimeNullableFilter<"Offer"> | Date | string | null
     isActive?: BoolFilter<"Offer"> | boolean
     sortOrder?: IntFilter<"Offer"> | number
     createdAt?: DateTimeFilter<"Offer"> | Date | string
@@ -22784,6 +23035,8 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     features?: SortOrder
     branchId?: SortOrderInput | SortOrder
+    announcementText?: SortOrderInput | SortOrder
+    broadcastSentAt?: SortOrderInput | SortOrder
     isActive?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
@@ -22809,6 +23062,8 @@ export namespace Prisma {
     description?: StringNullableWithAggregatesFilter<"Offer"> | string | null
     features?: StringWithAggregatesFilter<"Offer"> | string
     branchId?: StringNullableWithAggregatesFilter<"Offer"> | string | null
+    announcementText?: StringNullableWithAggregatesFilter<"Offer"> | string | null
+    broadcastSentAt?: DateTimeNullableWithAggregatesFilter<"Offer"> | Date | string | null
     isActive?: BoolWithAggregatesFilter<"Offer"> | boolean
     sortOrder?: IntWithAggregatesFilter<"Offer"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Offer"> | Date | string
@@ -23236,6 +23491,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -23247,6 +23505,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateInput = {
@@ -23259,6 +23518,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -23270,6 +23532,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUpdateInput = {
@@ -23282,6 +23545,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -23293,6 +23559,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateInput = {
@@ -23305,6 +23572,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -23316,6 +23586,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateManyInput = {
@@ -23328,6 +23599,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
   }
 
   export type BranchUpdateManyMutationInput = {
@@ -23340,6 +23614,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type BranchUncheckedUpdateManyInput = {
@@ -23352,6 +23629,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserCreateInput = {
@@ -23469,6 +23749,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     user?: UserCreateNestedOneWithoutSpecialistProfileInput
     branch: BranchCreateNestedOneWithoutSpecialistsInput
@@ -23493,6 +23775,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutSpecialistInput
     tickets?: TicketUncheckedCreateNestedManyWithoutSpecialistInput
@@ -23513,6 +23797,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutSpecialistProfileNestedInput
     branch?: BranchUpdateOneRequiredWithoutSpecialistsNestedInput
@@ -23537,6 +23823,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutSpecialistNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutSpecialistNestedInput
@@ -23559,6 +23847,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -23576,6 +23866,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23595,6 +23887,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -23713,16 +24007,19 @@ export namespace Prisma {
     avatar?: string | null
     notes?: string | null
     vipLevel?: string
+    loyaltyPoints?: number
     totalVisits?: number
     totalSpent?: number
     createdAt?: Date | string
     lastVisitAt?: Date | string | null
+    branch?: BranchCreateNestedOneWithoutCustomersInput
     bookings?: BookingCreateNestedManyWithoutCustomerInput
     tickets?: TicketCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateInput = {
     id?: string
+    branchId?: string | null
     name: string
     phone: string
     email?: string | null
@@ -23732,6 +24029,7 @@ export namespace Prisma {
     avatar?: string | null
     notes?: string | null
     vipLevel?: string
+    loyaltyPoints?: number
     totalVisits?: number
     totalSpent?: number
     createdAt?: Date | string
@@ -23751,16 +24049,19 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastVisitAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    branch?: BranchUpdateOneWithoutCustomersNestedInput
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
     tickets?: TicketUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -23770,6 +24071,7 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23780,6 +24082,7 @@ export namespace Prisma {
 
   export type CustomerCreateManyInput = {
     id?: string
+    branchId?: string | null
     name: string
     phone: string
     email?: string | null
@@ -23789,6 +24092,7 @@ export namespace Prisma {
     avatar?: string | null
     notes?: string | null
     vipLevel?: string
+    loyaltyPoints?: number
     totalVisits?: number
     totalSpent?: number
     createdAt?: Date | string
@@ -23806,6 +24110,7 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23814,6 +24119,7 @@ export namespace Prisma {
 
   export type CustomerUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -23823,6 +24129,7 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24516,6 +24823,8 @@ export namespace Prisma {
     image: string
     description?: string | null
     features?: string
+    announcementText?: string | null
+    broadcastSentAt?: Date | string | null
     isActive?: boolean
     sortOrder?: number
     createdAt?: Date | string
@@ -24534,6 +24843,8 @@ export namespace Prisma {
     description?: string | null
     features?: string
     branchId?: string | null
+    announcementText?: string | null
+    broadcastSentAt?: Date | string | null
     isActive?: boolean
     sortOrder?: number
     createdAt?: Date | string
@@ -24550,6 +24861,8 @@ export namespace Prisma {
     image?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     features?: StringFieldUpdateOperationsInput | string
+    announcementText?: NullableStringFieldUpdateOperationsInput | string | null
+    broadcastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24568,6 +24881,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     features?: StringFieldUpdateOperationsInput | string
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    announcementText?: NullableStringFieldUpdateOperationsInput | string | null
+    broadcastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24585,6 +24900,8 @@ export namespace Prisma {
     description?: string | null
     features?: string
     branchId?: string | null
+    announcementText?: string | null
+    broadcastSentAt?: Date | string | null
     isActive?: boolean
     sortOrder?: number
     createdAt?: Date | string
@@ -24601,6 +24918,8 @@ export namespace Prisma {
     image?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     features?: StringFieldUpdateOperationsInput | string
+    announcementText?: NullableStringFieldUpdateOperationsInput | string | null
+    broadcastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24618,6 +24937,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     features?: StringFieldUpdateOperationsInput | string
     branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    announcementText?: NullableStringFieldUpdateOperationsInput | string | null
+    broadcastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25223,6 +25544,12 @@ export namespace Prisma {
     none?: TreasuryExpenseWhereInput
   }
 
+  export type CustomerListRelationFilter = {
+    every?: CustomerWhereInput
+    some?: CustomerWhereInput
+    none?: CustomerWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -25272,6 +25599,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type CustomerOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type BranchCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -25282,6 +25613,9 @@ export namespace Prisma {
     googleMapsUrl?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
+    isDayOffEnabled?: SortOrder
+    weeklyDayOff?: SortOrder
+    dayOffMessage?: SortOrder
   }
 
   export type BranchMaxOrderByAggregateInput = {
@@ -25294,6 +25628,9 @@ export namespace Prisma {
     googleMapsUrl?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
+    isDayOffEnabled?: SortOrder
+    weeklyDayOff?: SortOrder
+    dayOffMessage?: SortOrder
   }
 
   export type BranchMinOrderByAggregateInput = {
@@ -25306,6 +25643,9 @@ export namespace Prisma {
     googleMapsUrl?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
+    isDayOffEnabled?: SortOrder
+    weeklyDayOff?: SortOrder
+    dayOffMessage?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -25440,6 +25780,17 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type UserNullableScalarRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
@@ -25466,6 +25817,8 @@ export namespace Prisma {
     baseSalary?: SortOrder
     commissionRate?: SortOrder
     isActive?: SortOrder
+    isArchived?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25492,6 +25845,8 @@ export namespace Prisma {
     baseSalary?: SortOrder
     commissionRate?: SortOrder
     isActive?: SortOrder
+    isArchived?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25511,6 +25866,8 @@ export namespace Prisma {
     baseSalary?: SortOrder
     commissionRate?: SortOrder
     isActive?: SortOrder
+    isArchived?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25551,6 +25908,20 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type ServiceCountOrderByAggregateInput = {
@@ -25610,19 +25981,9 @@ export namespace Prisma {
     sortOrder?: SortOrder
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type CustomerCountOrderByAggregateInput = {
     id?: SortOrder
+    branchId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -25632,6 +25993,7 @@ export namespace Prisma {
     avatar?: SortOrder
     notes?: SortOrder
     vipLevel?: SortOrder
+    loyaltyPoints?: SortOrder
     totalVisits?: SortOrder
     totalSpent?: SortOrder
     createdAt?: SortOrder
@@ -25639,12 +26001,14 @@ export namespace Prisma {
   }
 
   export type CustomerAvgOrderByAggregateInput = {
+    loyaltyPoints?: SortOrder
     totalVisits?: SortOrder
     totalSpent?: SortOrder
   }
 
   export type CustomerMaxOrderByAggregateInput = {
     id?: SortOrder
+    branchId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -25654,6 +26018,7 @@ export namespace Prisma {
     avatar?: SortOrder
     notes?: SortOrder
     vipLevel?: SortOrder
+    loyaltyPoints?: SortOrder
     totalVisits?: SortOrder
     totalSpent?: SortOrder
     createdAt?: SortOrder
@@ -25662,6 +26027,7 @@ export namespace Prisma {
 
   export type CustomerMinOrderByAggregateInput = {
     id?: SortOrder
+    branchId?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -25671,6 +26037,7 @@ export namespace Prisma {
     avatar?: SortOrder
     notes?: SortOrder
     vipLevel?: SortOrder
+    loyaltyPoints?: SortOrder
     totalVisits?: SortOrder
     totalSpent?: SortOrder
     createdAt?: SortOrder
@@ -25678,22 +26045,9 @@ export namespace Prisma {
   }
 
   export type CustomerSumOrderByAggregateInput = {
+    loyaltyPoints?: SortOrder
     totalVisits?: SortOrder
     totalSpent?: SortOrder
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type CustomerScalarRelationFilter = {
@@ -26114,6 +26468,8 @@ export namespace Prisma {
     description?: SortOrder
     features?: SortOrder
     branchId?: SortOrder
+    announcementText?: SortOrder
+    broadcastSentAt?: SortOrder
     isActive?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
@@ -26138,6 +26494,8 @@ export namespace Prisma {
     description?: SortOrder
     features?: SortOrder
     branchId?: SortOrder
+    announcementText?: SortOrder
+    broadcastSentAt?: SortOrder
     isActive?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
@@ -26155,6 +26513,8 @@ export namespace Prisma {
     description?: SortOrder
     features?: SortOrder
     branchId?: SortOrder
+    announcementText?: SortOrder
+    broadcastSentAt?: SortOrder
     isActive?: SortOrder
     sortOrder?: SortOrder
     createdAt?: SortOrder
@@ -26509,6 +26869,13 @@ export namespace Prisma {
     connect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
   }
 
+  export type CustomerCreateNestedManyWithoutBranchInput = {
+    create?: XOR<CustomerCreateWithoutBranchInput, CustomerUncheckedCreateWithoutBranchInput> | CustomerCreateWithoutBranchInput[] | CustomerUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CustomerCreateOrConnectWithoutBranchInput | CustomerCreateOrConnectWithoutBranchInput[]
+    createMany?: CustomerCreateManyBranchInputEnvelope
+    connect?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutBranchInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -26584,6 +26951,13 @@ export namespace Prisma {
     connectOrCreate?: TreasuryExpenseCreateOrConnectWithoutBranchInput | TreasuryExpenseCreateOrConnectWithoutBranchInput[]
     createMany?: TreasuryExpenseCreateManyBranchInputEnvelope
     connect?: TreasuryExpenseWhereUniqueInput | TreasuryExpenseWhereUniqueInput[]
+  }
+
+  export type CustomerUncheckedCreateNestedManyWithoutBranchInput = {
+    create?: XOR<CustomerCreateWithoutBranchInput, CustomerUncheckedCreateWithoutBranchInput> | CustomerCreateWithoutBranchInput[] | CustomerUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CustomerCreateOrConnectWithoutBranchInput | CustomerCreateOrConnectWithoutBranchInput[]
+    createMany?: CustomerCreateManyBranchInputEnvelope
+    connect?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -26756,6 +27130,20 @@ export namespace Prisma {
     deleteMany?: TreasuryExpenseScalarWhereInput | TreasuryExpenseScalarWhereInput[]
   }
 
+  export type CustomerUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<CustomerCreateWithoutBranchInput, CustomerUncheckedCreateWithoutBranchInput> | CustomerCreateWithoutBranchInput[] | CustomerUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CustomerCreateOrConnectWithoutBranchInput | CustomerCreateOrConnectWithoutBranchInput[]
+    upsert?: CustomerUpsertWithWhereUniqueWithoutBranchInput | CustomerUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: CustomerCreateManyBranchInputEnvelope
+    set?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    disconnect?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    delete?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    connect?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    update?: CustomerUpdateWithWhereUniqueWithoutBranchInput | CustomerUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: CustomerUpdateManyWithWhereWithoutBranchInput | CustomerUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: CustomerScalarWhereInput | CustomerScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutBranchNestedInput = {
     create?: XOR<UserCreateWithoutBranchInput, UserUncheckedCreateWithoutBranchInput> | UserCreateWithoutBranchInput[] | UserUncheckedCreateWithoutBranchInput[]
     connectOrCreate?: UserCreateOrConnectWithoutBranchInput | UserCreateOrConnectWithoutBranchInput[]
@@ -26910,6 +27298,20 @@ export namespace Prisma {
     deleteMany?: TreasuryExpenseScalarWhereInput | TreasuryExpenseScalarWhereInput[]
   }
 
+  export type CustomerUncheckedUpdateManyWithoutBranchNestedInput = {
+    create?: XOR<CustomerCreateWithoutBranchInput, CustomerUncheckedCreateWithoutBranchInput> | CustomerCreateWithoutBranchInput[] | CustomerUncheckedCreateWithoutBranchInput[]
+    connectOrCreate?: CustomerCreateOrConnectWithoutBranchInput | CustomerCreateOrConnectWithoutBranchInput[]
+    upsert?: CustomerUpsertWithWhereUniqueWithoutBranchInput | CustomerUpsertWithWhereUniqueWithoutBranchInput[]
+    createMany?: CustomerCreateManyBranchInputEnvelope
+    set?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    disconnect?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    delete?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    connect?: CustomerWhereUniqueInput | CustomerWhereUniqueInput[]
+    update?: CustomerUpdateWithWhereUniqueWithoutBranchInput | CustomerUpdateWithWhereUniqueWithoutBranchInput[]
+    updateMany?: CustomerUpdateManyWithWhereWithoutBranchInput | CustomerUpdateManyWithWhereWithoutBranchInput[]
+    deleteMany?: CustomerScalarWhereInput | CustomerScalarWhereInput[]
+  }
+
   export type BranchCreateNestedOneWithoutUsersInput = {
     create?: XOR<BranchCreateWithoutUsersInput, BranchUncheckedCreateWithoutUsersInput>
     connectOrCreate?: BranchCreateOrConnectWithoutUsersInput
@@ -27026,6 +27428,10 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type UserUpdateOneWithoutSpecialistProfileNestedInput = {
@@ -27146,6 +27552,12 @@ export namespace Prisma {
     update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutServicesInput, BranchUpdateWithoutServicesInput>, BranchUncheckedUpdateWithoutServicesInput>
   }
 
+  export type BranchCreateNestedOneWithoutCustomersInput = {
+    create?: XOR<BranchCreateWithoutCustomersInput, BranchUncheckedCreateWithoutCustomersInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutCustomersInput
+    connect?: BranchWhereUniqueInput
+  }
+
   export type BookingCreateNestedManyWithoutCustomerInput = {
     create?: XOR<BookingCreateWithoutCustomerInput, BookingUncheckedCreateWithoutCustomerInput> | BookingCreateWithoutCustomerInput[] | BookingUncheckedCreateWithoutCustomerInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutCustomerInput | BookingCreateOrConnectWithoutCustomerInput[]
@@ -27174,8 +27586,14 @@ export namespace Prisma {
     connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
+  export type BranchUpdateOneWithoutCustomersNestedInput = {
+    create?: XOR<BranchCreateWithoutCustomersInput, BranchUncheckedCreateWithoutCustomersInput>
+    connectOrCreate?: BranchCreateOrConnectWithoutCustomersInput
+    upsert?: BranchUpsertWithoutCustomersInput
+    disconnect?: BranchWhereInput | boolean
+    delete?: BranchWhereInput | boolean
+    connect?: BranchWhereUniqueInput
+    update?: XOR<XOR<BranchUpdateToOneWithWhereWithoutCustomersInput, BranchUpdateWithoutCustomersInput>, BranchUncheckedUpdateWithoutCustomersInput>
   }
 
   export type BookingUpdateManyWithoutCustomerNestedInput = {
@@ -27577,6 +27995,17 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -27607,17 +28036,6 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -27729,6 +28147,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     user?: UserCreateNestedOneWithoutSpecialistProfileInput
     bookings?: BookingCreateNestedManyWithoutSpecialistInput
@@ -27751,6 +28171,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutSpecialistInput
     tickets?: TicketUncheckedCreateNestedManyWithoutSpecialistInput
@@ -27991,6 +28413,8 @@ export namespace Prisma {
     image: string
     description?: string | null
     features?: string
+    announcementText?: string | null
+    broadcastSentAt?: Date | string | null
     isActive?: boolean
     sortOrder?: number
     createdAt?: Date | string
@@ -28007,6 +28431,8 @@ export namespace Prisma {
     image: string
     description?: string | null
     features?: string
+    announcementText?: string | null
+    broadcastSentAt?: Date | string | null
     isActive?: boolean
     sortOrder?: number
     createdAt?: Date | string
@@ -28153,6 +28579,56 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CustomerCreateWithoutBranchInput = {
+    id?: string
+    name: string
+    phone: string
+    email?: string | null
+    passwordHash?: string | null
+    isVerified?: boolean
+    verificationCode?: string | null
+    avatar?: string | null
+    notes?: string | null
+    vipLevel?: string
+    loyaltyPoints?: number
+    totalVisits?: number
+    totalSpent?: number
+    createdAt?: Date | string
+    lastVisitAt?: Date | string | null
+    bookings?: BookingCreateNestedManyWithoutCustomerInput
+    tickets?: TicketCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerUncheckedCreateWithoutBranchInput = {
+    id?: string
+    name: string
+    phone: string
+    email?: string | null
+    passwordHash?: string | null
+    isVerified?: boolean
+    verificationCode?: string | null
+    avatar?: string | null
+    notes?: string | null
+    vipLevel?: string
+    loyaltyPoints?: number
+    totalVisits?: number
+    totalSpent?: number
+    createdAt?: Date | string
+    lastVisitAt?: Date | string | null
+    bookings?: BookingUncheckedCreateNestedManyWithoutCustomerInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerCreateOrConnectWithoutBranchInput = {
+    where: CustomerWhereUniqueInput
+    create: XOR<CustomerCreateWithoutBranchInput, CustomerUncheckedCreateWithoutBranchInput>
+  }
+
+  export type CustomerCreateManyBranchInputEnvelope = {
+    data: CustomerCreateManyBranchInput | CustomerCreateManyBranchInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithWhereUniqueWithoutBranchInput = {
     where: UserWhereUniqueInput
     update: XOR<UserUpdateWithoutBranchInput, UserUncheckedUpdateWithoutBranchInput>
@@ -28221,6 +28697,8 @@ export namespace Prisma {
     baseSalary?: FloatFilter<"Specialist"> | number
     commissionRate?: FloatFilter<"Specialist"> | number
     isActive?: BoolFilter<"Specialist"> | boolean
+    isArchived?: BoolFilter<"Specialist"> | boolean
+    archivedAt?: DateTimeNullableFilter<"Specialist"> | Date | string | null
     createdAt?: DateTimeFilter<"Specialist"> | Date | string
   }
 
@@ -28436,6 +28914,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"Offer"> | string | null
     features?: StringFilter<"Offer"> | string
     branchId?: StringNullableFilter<"Offer"> | string | null
+    announcementText?: StringNullableFilter<"Offer"> | string | null
+    broadcastSentAt?: DateTimeNullableFilter<"Offer"> | Date | string | null
     isActive?: BoolFilter<"Offer"> | boolean
     sortOrder?: IntFilter<"Offer"> | number
     createdAt?: DateTimeFilter<"Offer"> | Date | string
@@ -28552,6 +29032,44 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"TreasuryExpense"> | Date | string
   }
 
+  export type CustomerUpsertWithWhereUniqueWithoutBranchInput = {
+    where: CustomerWhereUniqueInput
+    update: XOR<CustomerUpdateWithoutBranchInput, CustomerUncheckedUpdateWithoutBranchInput>
+    create: XOR<CustomerCreateWithoutBranchInput, CustomerUncheckedCreateWithoutBranchInput>
+  }
+
+  export type CustomerUpdateWithWhereUniqueWithoutBranchInput = {
+    where: CustomerWhereUniqueInput
+    data: XOR<CustomerUpdateWithoutBranchInput, CustomerUncheckedUpdateWithoutBranchInput>
+  }
+
+  export type CustomerUpdateManyWithWhereWithoutBranchInput = {
+    where: CustomerScalarWhereInput
+    data: XOR<CustomerUpdateManyMutationInput, CustomerUncheckedUpdateManyWithoutBranchInput>
+  }
+
+  export type CustomerScalarWhereInput = {
+    AND?: CustomerScalarWhereInput | CustomerScalarWhereInput[]
+    OR?: CustomerScalarWhereInput[]
+    NOT?: CustomerScalarWhereInput | CustomerScalarWhereInput[]
+    id?: StringFilter<"Customer"> | string
+    branchId?: StringNullableFilter<"Customer"> | string | null
+    name?: StringFilter<"Customer"> | string
+    phone?: StringFilter<"Customer"> | string
+    email?: StringNullableFilter<"Customer"> | string | null
+    passwordHash?: StringNullableFilter<"Customer"> | string | null
+    isVerified?: BoolFilter<"Customer"> | boolean
+    verificationCode?: StringNullableFilter<"Customer"> | string | null
+    avatar?: StringNullableFilter<"Customer"> | string | null
+    notes?: StringNullableFilter<"Customer"> | string | null
+    vipLevel?: StringFilter<"Customer"> | string
+    loyaltyPoints?: IntFilter<"Customer"> | number
+    totalVisits?: IntFilter<"Customer"> | number
+    totalSpent?: FloatFilter<"Customer"> | number
+    createdAt?: DateTimeFilter<"Customer"> | Date | string
+    lastVisitAt?: DateTimeNullableFilter<"Customer"> | Date | string | null
+  }
+
   export type BranchCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -28562,6 +29080,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
@@ -28572,6 +29093,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutUsersInput = {
@@ -28584,6 +29106,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
@@ -28594,6 +29119,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutUsersInput = {
@@ -28615,6 +29141,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     branch: BranchCreateNestedOneWithoutSpecialistsInput
     bookings?: BookingCreateNestedManyWithoutSpecialistInput
@@ -28637,6 +29165,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutSpecialistInput
     tickets?: TicketUncheckedCreateNestedManyWithoutSpecialistInput
@@ -28669,6 +29199,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
@@ -28679,6 +29212,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutUsersInput = {
@@ -28691,6 +29225,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
@@ -28701,6 +29238,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutUserInput = {
@@ -28728,6 +29266,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     branch?: BranchUpdateOneRequiredWithoutSpecialistsNestedInput
     bookings?: BookingUpdateManyWithoutSpecialistNestedInput
@@ -28750,6 +29290,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutSpecialistNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutSpecialistNestedInput
@@ -28799,6 +29341,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
@@ -28809,6 +29354,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutSpecialistsInput = {
@@ -28821,6 +29367,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
@@ -28831,6 +29380,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutSpecialistsInput = {
@@ -29036,6 +29586,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
@@ -29046,6 +29599,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutSpecialistsInput = {
@@ -29058,6 +29612,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
@@ -29068,6 +29625,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BookingUpsertWithWhereUniqueWithoutSpecialistInput = {
@@ -29128,6 +29686,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     bookings?: BookingCreateNestedManyWithoutBranchInput
@@ -29138,6 +29699,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutServicesInput = {
@@ -29150,6 +29712,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
@@ -29160,6 +29725,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutServicesInput = {
@@ -29188,6 +29754,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     bookings?: BookingUpdateManyWithoutBranchNestedInput
@@ -29198,6 +29767,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutServicesInput = {
@@ -29210,6 +29780,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
@@ -29220,6 +29793,64 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchCreateWithoutCustomersInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
+    users?: UserCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistCreateNestedManyWithoutBranchInput
+    services?: ServiceCreateNestedManyWithoutBranchInput
+    bookings?: BookingCreateNestedManyWithoutBranchInput
+    tickets?: TicketCreateNestedManyWithoutBranchInput
+    products?: ProductCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerCreateNestedManyWithoutBranchInput
+    offers?: OfferCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchUncheckedCreateWithoutCustomersInput = {
+    id?: string
+    name: string
+    code: string
+    address: string
+    phone: string
+    whatsapp?: string | null
+    googleMapsUrl?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
+    users?: UserUncheckedCreateNestedManyWithoutBranchInput
+    specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
+    services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
+    bookings?: BookingUncheckedCreateNestedManyWithoutBranchInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutBranchInput
+    products?: ProductUncheckedCreateNestedManyWithoutBranchInput
+    ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutBranchInput
+    offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
+    shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+  }
+
+  export type BranchCreateOrConnectWithoutCustomersInput = {
+    where: BranchWhereUniqueInput
+    create: XOR<BranchCreateWithoutCustomersInput, BranchUncheckedCreateWithoutCustomersInput>
   }
 
   export type BookingCreateWithoutCustomerInput = {
@@ -29328,6 +29959,69 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type BranchUpsertWithoutCustomersInput = {
+    update: XOR<BranchUpdateWithoutCustomersInput, BranchUncheckedUpdateWithoutCustomersInput>
+    create: XOR<BranchCreateWithoutCustomersInput, BranchUncheckedCreateWithoutCustomersInput>
+    where?: BranchWhereInput
+  }
+
+  export type BranchUpdateToOneWithWhereWithoutCustomersInput = {
+    where?: BranchWhereInput
+    data: XOR<BranchUpdateWithoutCustomersInput, BranchUncheckedUpdateWithoutCustomersInput>
+  }
+
+  export type BranchUpdateWithoutCustomersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    users?: UserUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUpdateManyWithoutBranchNestedInput
+    services?: ServiceUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUpdateManyWithoutBranchNestedInput
+    products?: ProductUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUpdateManyWithoutBranchNestedInput
+    offers?: OfferUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+  }
+
+  export type BranchUncheckedUpdateWithoutCustomersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    address?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    whatsapp?: NullableStringFieldUpdateOperationsInput | string | null
+    googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
+    users?: UserUncheckedUpdateManyWithoutBranchNestedInput
+    specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
+    services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
+    bookings?: BookingUncheckedUpdateManyWithoutBranchNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutBranchNestedInput
+    products?: ProductUncheckedUpdateManyWithoutBranchNestedInput
+    ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutBranchNestedInput
+    offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
+    shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+  }
+
   export type BookingUpsertWithWhereUniqueWithoutCustomerInput = {
     where: BookingWhereUniqueInput
     update: XOR<BookingUpdateWithoutCustomerInput, BookingUncheckedUpdateWithoutCustomerInput>
@@ -29371,15 +30065,18 @@ export namespace Prisma {
     avatar?: string | null
     notes?: string | null
     vipLevel?: string
+    loyaltyPoints?: number
     totalVisits?: number
     totalSpent?: number
     createdAt?: Date | string
     lastVisitAt?: Date | string | null
+    branch?: BranchCreateNestedOneWithoutCustomersInput
     tickets?: TicketCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutBookingsInput = {
     id?: string
+    branchId?: string | null
     name: string
     phone: string
     email?: string | null
@@ -29389,6 +30086,7 @@ export namespace Prisma {
     avatar?: string | null
     notes?: string | null
     vipLevel?: string
+    loyaltyPoints?: number
     totalVisits?: number
     totalSpent?: number
     createdAt?: Date | string
@@ -29411,6 +30109,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -29421,6 +30122,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutBookingsInput = {
@@ -29433,6 +30135,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -29443,6 +30148,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutBookingsInput = {
@@ -29464,6 +30170,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     user?: UserCreateNestedOneWithoutSpecialistProfileInput
     branch: BranchCreateNestedOneWithoutSpecialistsInput
@@ -29487,6 +30195,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     tickets?: TicketUncheckedCreateNestedManyWithoutSpecialistInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutSpecialistInput
@@ -29519,15 +30229,18 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastVisitAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    branch?: BranchUpdateOneWithoutCustomersNestedInput
     tickets?: TicketUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutBookingsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29537,6 +30250,7 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29565,6 +30279,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -29575,6 +30292,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutBookingsInput = {
@@ -29587,6 +30305,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -29597,6 +30318,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutBookingsInput = {
@@ -29624,6 +30346,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutSpecialistProfileNestedInput
     branch?: BranchUpdateOneRequiredWithoutSpecialistsNestedInput
@@ -29647,6 +30371,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tickets?: TicketUncheckedUpdateManyWithoutSpecialistNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutSpecialistNestedInput
@@ -29662,6 +30388,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -29672,6 +30401,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutTicketsInput = {
@@ -29684,6 +30414,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -29694,6 +30427,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutTicketsInput = {
@@ -29715,6 +30449,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     user?: UserCreateNestedOneWithoutSpecialistProfileInput
     branch: BranchCreateNestedOneWithoutSpecialistsInput
@@ -29738,6 +30474,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutSpecialistInput
     ledgers?: SpecialistLedgerUncheckedCreateNestedManyWithoutSpecialistInput
@@ -29759,15 +30497,18 @@ export namespace Prisma {
     avatar?: string | null
     notes?: string | null
     vipLevel?: string
+    loyaltyPoints?: number
     totalVisits?: number
     totalSpent?: number
     createdAt?: Date | string
     lastVisitAt?: Date | string | null
+    branch?: BranchCreateNestedOneWithoutCustomersInput
     bookings?: BookingCreateNestedManyWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutTicketsInput = {
     id?: string
+    branchId?: string | null
     name: string
     phone: string
     email?: string | null
@@ -29777,6 +30518,7 @@ export namespace Prisma {
     avatar?: string | null
     notes?: string | null
     vipLevel?: string
+    loyaltyPoints?: number
     totalVisits?: number
     totalSpent?: number
     createdAt?: Date | string
@@ -29810,6 +30552,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -29820,6 +30565,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutTicketsInput = {
@@ -29832,6 +30578,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -29842,6 +30591,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistUpsertWithoutTicketsInput = {
@@ -29869,6 +30619,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutSpecialistProfileNestedInput
     branch?: BranchUpdateOneRequiredWithoutSpecialistsNestedInput
@@ -29892,6 +30644,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutSpecialistNestedInput
     ledgers?: SpecialistLedgerUncheckedUpdateManyWithoutSpecialistNestedInput
@@ -29919,15 +30673,18 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastVisitAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    branch?: BranchUpdateOneWithoutCustomersNestedInput
     bookings?: BookingUpdateManyWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutTicketsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29937,6 +30694,7 @@ export namespace Prisma {
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
     totalVisits?: IntFieldUpdateOperationsInput | number
     totalSpent?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29954,6 +30712,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -29964,6 +30725,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutProductsInput = {
@@ -29976,6 +30738,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -29986,6 +30751,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutProductsInput = {
@@ -30014,6 +30780,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -30024,6 +30793,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutProductsInput = {
@@ -30036,6 +30806,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -30046,6 +30819,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type SpecialistCreateWithoutLedgersInput = {
@@ -30062,6 +30836,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     user?: UserCreateNestedOneWithoutSpecialistProfileInput
     branch: BranchCreateNestedOneWithoutSpecialistsInput
@@ -30085,6 +30861,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     bookings?: BookingUncheckedCreateNestedManyWithoutSpecialistInput
     tickets?: TicketUncheckedCreateNestedManyWithoutSpecialistInput
@@ -30105,6 +30883,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -30115,6 +30896,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutLedgersInput = {
@@ -30127,6 +30909,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -30137,6 +30922,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutLedgersInput = {
@@ -30169,6 +30955,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutSpecialistProfileNestedInput
     branch?: BranchUpdateOneRequiredWithoutSpecialistsNestedInput
@@ -30192,6 +30980,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutSpecialistNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutSpecialistNestedInput
@@ -30218,6 +31008,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -30228,6 +31021,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutLedgersInput = {
@@ -30240,6 +31034,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -30250,6 +31047,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateWithoutOffersInput = {
@@ -30262,6 +31060,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -30272,6 +31073,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutOffersInput = {
@@ -30284,6 +31086,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -30294,6 +31099,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutOffersInput = {
@@ -30322,6 +31128,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -30332,6 +31141,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutOffersInput = {
@@ -30344,6 +31154,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -30354,6 +31167,7 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateWithoutChatMessagesInput = {
@@ -30366,6 +31180,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -30376,6 +31193,7 @@ export namespace Prisma {
     offers?: OfferCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutChatMessagesInput = {
@@ -30388,6 +31206,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -30398,6 +31219,7 @@ export namespace Prisma {
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutChatMessagesInput = {
@@ -30426,6 +31248,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -30436,6 +31261,7 @@ export namespace Prisma {
     offers?: OfferUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutChatMessagesInput = {
@@ -30448,6 +31274,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -30458,6 +31287,7 @@ export namespace Prisma {
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateWithoutShiftsInput = {
@@ -30470,6 +31300,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -30480,6 +31313,7 @@ export namespace Prisma {
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutShiftsInput = {
@@ -30492,6 +31326,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -30502,6 +31339,7 @@ export namespace Prisma {
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     expenses?: TreasuryExpenseUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutShiftsInput = {
@@ -30530,6 +31368,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -30540,6 +31381,7 @@ export namespace Prisma {
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutShiftsInput = {
@@ -30552,6 +31394,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -30562,6 +31407,7 @@ export namespace Prisma {
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     expenses?: TreasuryExpenseUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchCreateWithoutExpensesInput = {
@@ -30574,6 +31420,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserCreateNestedManyWithoutBranchInput
     specialists?: SpecialistCreateNestedManyWithoutBranchInput
     services?: ServiceCreateNestedManyWithoutBranchInput
@@ -30584,6 +31433,7 @@ export namespace Prisma {
     offers?: OfferCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageCreateNestedManyWithoutBranchInput
     shifts?: CashShiftCreateNestedManyWithoutBranchInput
+    customers?: CustomerCreateNestedManyWithoutBranchInput
   }
 
   export type BranchUncheckedCreateWithoutExpensesInput = {
@@ -30596,6 +31446,9 @@ export namespace Prisma {
     googleMapsUrl?: string | null
     isActive?: boolean
     createdAt?: Date | string
+    isDayOffEnabled?: boolean
+    weeklyDayOff?: string
+    dayOffMessage?: string | null
     users?: UserUncheckedCreateNestedManyWithoutBranchInput
     specialists?: SpecialistUncheckedCreateNestedManyWithoutBranchInput
     services?: ServiceUncheckedCreateNestedManyWithoutBranchInput
@@ -30606,6 +31459,7 @@ export namespace Prisma {
     offers?: OfferUncheckedCreateNestedManyWithoutBranchInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutBranchInput
     shifts?: CashShiftUncheckedCreateNestedManyWithoutBranchInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBranchInput
   }
 
   export type BranchCreateOrConnectWithoutExpensesInput = {
@@ -30634,6 +31488,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUpdateManyWithoutBranchNestedInput
     services?: ServiceUpdateManyWithoutBranchNestedInput
@@ -30644,6 +31501,7 @@ export namespace Prisma {
     offers?: OfferUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchUncheckedUpdateWithoutExpensesInput = {
@@ -30656,6 +31514,9 @@ export namespace Prisma {
     googleMapsUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDayOffEnabled?: BoolFieldUpdateOperationsInput | boolean
+    weeklyDayOff?: StringFieldUpdateOperationsInput | string
+    dayOffMessage?: NullableStringFieldUpdateOperationsInput | string | null
     users?: UserUncheckedUpdateManyWithoutBranchNestedInput
     specialists?: SpecialistUncheckedUpdateManyWithoutBranchNestedInput
     services?: ServiceUncheckedUpdateManyWithoutBranchNestedInput
@@ -30666,6 +31527,7 @@ export namespace Prisma {
     offers?: OfferUncheckedUpdateManyWithoutBranchNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutBranchNestedInput
     shifts?: CashShiftUncheckedUpdateManyWithoutBranchNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type UserCreateManyBranchInput = {
@@ -30696,6 +31558,8 @@ export namespace Prisma {
     baseSalary?: number
     commissionRate?: number
     isActive?: boolean
+    isArchived?: boolean
+    archivedAt?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -30791,6 +31655,8 @@ export namespace Prisma {
     image: string
     description?: string | null
     features?: string
+    announcementText?: string | null
+    broadcastSentAt?: Date | string | null
     isActive?: boolean
     sortOrder?: number
     createdAt?: Date | string
@@ -30845,6 +31711,24 @@ export namespace Prisma {
     recordedBy?: string
     date?: Date | string
     createdAt?: Date | string
+  }
+
+  export type CustomerCreateManyBranchInput = {
+    id?: string
+    name: string
+    phone: string
+    email?: string | null
+    passwordHash?: string | null
+    isVerified?: boolean
+    verificationCode?: string | null
+    avatar?: string | null
+    notes?: string | null
+    vipLevel?: string
+    loyaltyPoints?: number
+    totalVisits?: number
+    totalSpent?: number
+    createdAt?: Date | string
+    lastVisitAt?: Date | string | null
   }
 
   export type UserUpdateWithoutBranchInput = {
@@ -30902,6 +31786,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneWithoutSpecialistProfileNestedInput
     bookings?: BookingUpdateManyWithoutSpecialistNestedInput
@@ -30924,6 +31810,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bookings?: BookingUncheckedUpdateManyWithoutSpecialistNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutSpecialistNestedInput
@@ -30945,6 +31833,8 @@ export namespace Prisma {
     baseSalary?: FloatFieldUpdateOperationsInput | number
     commissionRate?: FloatFieldUpdateOperationsInput | number
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -31204,6 +32094,8 @@ export namespace Prisma {
     image?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     features?: StringFieldUpdateOperationsInput | string
+    announcementText?: NullableStringFieldUpdateOperationsInput | string | null
+    broadcastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31220,6 +32112,8 @@ export namespace Prisma {
     image?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     features?: StringFieldUpdateOperationsInput | string
+    announcementText?: NullableStringFieldUpdateOperationsInput | string | null
+    broadcastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31236,6 +32130,8 @@ export namespace Prisma {
     image?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     features?: StringFieldUpdateOperationsInput | string
+    announcementText?: NullableStringFieldUpdateOperationsInput | string | null
+    broadcastSentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31390,6 +32286,64 @@ export namespace Prisma {
     recordedBy?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CustomerUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationCode?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
+    totalVisits?: IntFieldUpdateOperationsInput | number
+    totalSpent?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastVisitAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bookings?: BookingUpdateManyWithoutCustomerNestedInput
+    tickets?: TicketUpdateManyWithoutCustomerNestedInput
+  }
+
+  export type CustomerUncheckedUpdateWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationCode?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
+    totalVisits?: IntFieldUpdateOperationsInput | number
+    totalSpent?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastVisitAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bookings?: BookingUncheckedUpdateManyWithoutCustomerNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutCustomerNestedInput
+  }
+
+  export type CustomerUncheckedUpdateManyWithoutBranchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    phone?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    isVerified?: BoolFieldUpdateOperationsInput | boolean
+    verificationCode?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    vipLevel?: StringFieldUpdateOperationsInput | string
+    loyaltyPoints?: IntFieldUpdateOperationsInput | number
+    totalVisits?: IntFieldUpdateOperationsInput | number
+    totalSpent?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastVisitAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type BookingCreateManySpecialistInput = {

@@ -437,14 +437,16 @@ export async function PATCH(req: Request) {
         },
       });
 
-      // Update customer loyalty if registered
+      // Update customer loyalty if registered (1 loyalty point per 10 EGP spent)
       if (ticket.customerId) {
         try {
+          const earnedPoints = Math.max(1, Math.floor(finalTotal / 10));
           await prisma.customer.update({
             where: { id: ticket.customerId },
             data: {
               totalVisits: { increment: 1 },
               totalSpent: { increment: finalTotal },
+              loyaltyPoints: { increment: earnedPoints },
               lastVisitAt: new Date(),
             },
           });

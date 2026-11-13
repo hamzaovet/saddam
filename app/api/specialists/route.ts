@@ -7,10 +7,18 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const branchId = searchParams.get("branchId");
-    const activeOnly = searchParams.get("activeOnly") !== "false";
+    const activeOnly = searchParams.get("activeOnly");
 
     const where: any = {};
-    if (activeOnly) where.isActive = true;
+    if (activeOnly === "archived") {
+      where.OR = [{ isActive: false }, { isArchived: true }];
+    } else if (activeOnly === "all" || activeOnly === "false") {
+      // include all without filter
+    } else {
+      // default: active only
+      where.isActive = true;
+      where.isArchived = false;
+    }
     if (branchId && branchId !== "ALL") where.branchId = branchId;
 
     const specialists = await prisma.specialist.findMany({
@@ -186,6 +194,8 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const {
       id,
+      action,
+      reason,
       name,
       phone,
       photo,
@@ -204,23 +214,102 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: false, error: "معرف المتخصص مطلوب" }, { status: 400 });
     }
 
+    // 1. Archive Specialist (Deactivate & preserve all revenues/tickets/ledgers)
+    if (action === "ARCHIVE") {
+      const specialist = await prisma.specialist.update({
+        where: { id },
+        data: {
+          isActive: false,
+          isArchived: true,
+          archivedAt: new Date(),
+          status: "OFF_DUTY",
+          statusReason: reason?.trim() || "تم نقل الكابتن إلى الأرشيف / تعطيل الحساب",
+        },
+      });
+
+      if (specialist.userId) {
+        await prisma.user
+          .update({
+            where: { id: specialist.userId },
+            data: { isActive: false },
+          })
+          .catch(() => {});
+      }
+
+      return NextResponse.json({
+        success: true,
+        specialist,
+        message: "تم نقل المتخصص إلى الأرشيف بنجاح مع الحفاظ الكامل على كافة إيراداته وتذاكره 🗄️",
+      });
+    }
+
+    // 2. Restore Specialist from Archive
+    if (action === "RESTORE") {
+      const specialist = await prisma.specialist.update({
+        where: { id },
+        data: {
+          isActive: true,
+          isArchived: false,
+          archivedAt: null,
+          status: "AVAILABLE",
+          statusReason: null,
+        },
+      });
+
+      if (specialist.userId) {
+        await prisma.user
+          .update({
+            where: { id: specialist.userId },
+            data: { isActive: true },
+          })
+          .catch(() => {});
+      }
+
+      return NextResponse.json({
+        success: true,
+        specialist,
+        message: "تمت استعادة وتنشيط الكابتن للعمل بالكرسي بنجاح 🔄",
+      });
+    }
+
+    const updateData: any = {
+      ...(name && { name: name.trim() }),
+      ...(phone !== undefined && { phone: phone?.trim() || null }),
+      ...(photo !== undefined && { photo: photo?.trim() || null }),
+      ...(title && { title: title.trim() }),
+      ...(chairNumber !== undefined && { chairNumber: Number(chairNumber) }),
+      ...(status && { status }),
+      ...(statusReason !== undefined && { statusReason: statusReason?.trim() || null }),
+      ...(payType && { payType }),
+      ...(baseSalary !== undefined && { baseSalary: Number(baseSalary) }),
+      ...(commissionRate !== undefined && { commissionRate: Number(commissionRate) }),
+      ...(branchId && { branchId }),
+    };
+
+    if (isActive !== undefined) {
+      updateData.isActive = Boolean(isActive);
+      if (!isActive) {
+        updateData.isArchived = true;
+        updateData.archivedAt = new Date();
+      } else {
+        updateData.isArchived = false;
+        updateData.archivedAt = null;
+      }
+    }
+
     const specialist = await prisma.specialist.update({
       where: { id },
-      data: {
-        ...(name && { name: name.trim() }),
-        ...(phone !== undefined && { phone: phone?.trim() || null }),
-        ...(photo !== undefined && { photo: photo?.trim() || null }),
-        ...(title && { title: title.trim() }),
-        ...(chairNumber !== undefined && { chairNumber: Number(chairNumber) }),
-        ...(status && { status }),
-        ...(statusReason !== undefined && { statusReason: statusReason?.trim() || null }),
-        ...(payType && { payType }),
-        ...(baseSalary !== undefined && { baseSalary: Number(baseSalary) }),
-        ...(commissionRate !== undefined && { commissionRate: Number(commissionRate) }),
-        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
-        ...(branchId && { branchId }),
-      },
+      data: updateData,
     });
+
+    if (isActive !== undefined && specialist.userId) {
+      await prisma.user
+        .update({
+          where: { id: specialist.userId },
+          data: { isActive: Boolean(isActive) },
+        })
+        .catch(() => {});
+    }
 
     return NextResponse.json({ success: true, specialist });
   } catch (error: any) {
@@ -237,8 +326,31 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: "معرف المتخصص مطلوب" }, { status: 400 });
     }
 
-    await prisma.specialist.delete({ where: { id } });
-    return NextResponse.json({ success: true, message: "تم حذف المتخصص بنجاح" });
+    // Soft Archive - NEVER delete historical revenue, tickets or ledgers!
+    const specialist = await prisma.specialist.update({
+      where: { id },
+      data: {
+        isActive: false,
+        isArchived: true,
+        archivedAt: new Date(),
+        status: "OFF_DUTY",
+        statusReason: "تم نقل الكابتن إلى الأرشيف / تعطيل الحساب",
+      },
+    });
+
+    if (specialist.userId) {
+      await prisma.user
+        .update({
+          where: { id: specialist.userId },
+          data: { isActive: false },
+        })
+        .catch(() => {});
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "تم نقل المتخصص إلى الأرشيف بنجاح مع الحفاظ الكامل على كافة إيراداته وتذاكره وحساباته 🗄️",
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
